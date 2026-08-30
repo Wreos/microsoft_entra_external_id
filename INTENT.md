@@ -66,6 +66,15 @@ Continuation handles are opaque, short-lived, and in-memory only. Applications a
 
 ## Architecture decisions
 
+- **Native Authentication is a hard invariant.** On Android, create and retain
+  `INativeAuthPublicClientApplication` through
+  `PublicClientApplication.createNativeAuthPublicClientApplication(...)`, as
+  defined by Microsoft's [External ID Native Authentication tutorial][native-auth-android].
+  The iOS bridge must create `MSALNativeAuthPublicClientApplication` with
+  `MSALNativeAuthPublicClientApplicationConfig` and map its delegate states, as
+  demonstrated by Microsoft's [iOS Native Authentication quickstart][native-auth-ios].
+  Ordinary browser-based MSAL interactive acquisition, embedded WebViews, and
+  a custom Dart OAuth implementation are not acceptable substitutes.
 - Start as one Flutter plugin package with in-package Android and iOS implementations. Revisit package-separated federation only after the public API stabilizes.
 - Bootstrap with Flutter's official `plugin` template using Kotlin and Swift.
 - Use Pigeon-generated channels for the production contract instead of handwritten map-based method channels.
@@ -113,7 +122,7 @@ Every implementation stage must pass its gate before the next stage starts:
 - Android uses Kotlin and an OSS-safe reverse-domain namespace.
 - iOS uses Swift.
 - The generated example, unit tests, and native test locations are retained.
-- `flutter format`, `flutter analyze`, and `flutter test` pass.
+- `dart format`, `flutter analyze`, and `flutter test` pass.
 - The initial implementation plan is checked into the repository.
 - No package is published and no API is presented as stable.
 
@@ -126,7 +135,12 @@ Every implementation stage must pass its gate before the next stage starts:
 
 ## Open questions
 
-- Minimum Android API and iOS deployment targets required by the selected MSAL Native Authentication releases.
 - Which MFA and strong-auth registration states have stable parity across the current Android and iOS SDKs.
 - Whether the first public release should expose browser fallback or return a typed unsupported result until the fallback bridge is implemented.
 - Final package publisher and GitHub organization.
+
+The bootstrap deployment floors are resolved as Android API 24 and iOS 17.
+See `docs/STACK.md` for the selected toolchain and the reason for each floor.
+
+[native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
+[native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in
