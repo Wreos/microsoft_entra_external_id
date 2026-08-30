@@ -23,10 +23,10 @@ The bootstrap milestone establishes:
 - a gate-based implementation and validation plan.
 
 Read [INTENT.md](INTENT.md) for product scope and
-[docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the execution
+[doc/IMPLEMENTATION_PLAN.md](doc/IMPLEMENTATION_PLAN.md) for the execution
 sequence. The verified toolchain and deployment floors are recorded in
-[docs/STACK.md](docs/STACK.md), and the exact bootstrap evidence and environment
-limitations are recorded in [docs/VALIDATION.md](docs/VALIDATION.md).
+[doc/STACK.md](doc/STACK.md), and the exact bootstrap evidence and environment
+limitations are recorded in [doc/VALIDATION.md](doc/VALIDATION.md).
 
 ## Requirements
 

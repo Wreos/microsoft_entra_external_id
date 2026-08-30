@@ -29,7 +29,7 @@ substitute for deterministic unit and contract tests.
 - Add a typed Pigeon diagnostic channel without linking MSAL prematurely.
 - Retain Dart, native, widget, and integration-test locations.
 - Pin the Flutter 3.47.2 toolchain baseline and document native SDK candidates
-  and deployment floors in `docs/STACK.md`.
+  and deployment floors in `doc/STACK.md`.
 
 **Validation gate**
 
@@ -43,7 +43,7 @@ substitute for deterministic unit and contract tests.
 - Verify that no `com.example`, `TODO`, or `getPlatformVersion` template code
   remains.
 
-**Status:** complete. See `docs/VALIDATION.md`. The iOS Runner and XCTest bundle
+**Status:** complete. See `doc/VALIDATION.md`. The iOS Runner and XCTest bundle
 compile, but executing XCTest remains environment-blocked until a working iOS
 Simulator device is available; this remains a required CI and release gate.
 

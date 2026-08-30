@@ -140,7 +140,7 @@ Every implementation stage must pass its gate before the next stage starts:
 - Final package publisher and GitHub organization.
 
 The bootstrap deployment floors are resolved as Android API 24 and iOS 17.
-See `docs/STACK.md` for the selected toolchain and the reason for each floor.
+See `doc/STACK.md` for the selected toolchain and the reason for each floor.
 
 [native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
 [native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in

@@ -42,6 +42,7 @@ Swift Package Manager manifest resolution            PASS
 xcodebuild build (plugin/example)                    PASS
 xcodebuild build-for-testing                         PASS
 template-placeholder scan                            PASS
+flutter pub publish --dry-run (clean Git snapshot)   PASS
 ```
 
 Pigeon generation and its required formatting step were run again together and
