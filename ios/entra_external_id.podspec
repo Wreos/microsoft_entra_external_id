@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 Flutter bridge for Microsoft Entra External ID Native Authentication using the official MSAL Android and iOS SDKs.
                        DESC
-  s.homepage         = 'https://github.com/Wreos/entra_external_id'
+  s.homepage         = 'https://github.com/Wreos/microsoft_entra_external_id'
   s.license          = { :file => '../LICENSE' }
   s.author           = 'Aleksandr Lozhkovoi'
   s.source           = { :path => '.' }
