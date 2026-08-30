@@ -1,8 +1,8 @@
 ---
-status: bootstrap
+status: experimental-mvp
 date: 2026-08-30
 package: entra_external_id
-repository: entra_external_id
+repository: microsoft_entra_external_id
 ---
 
 # Entra External ID for Flutter — Intent

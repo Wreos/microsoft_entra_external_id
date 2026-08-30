@@ -99,6 +99,17 @@ int _deepHash(Object? value) {
 
 enum NativePlatformMessage { android, ios }
 
+enum NativeAuthOperationMessage { signIn, signUp }
+
+enum NativeAuthResultTypeMessage {
+  initialized,
+  signedOut,
+  codeRequired,
+  signedIn,
+  error,
+  browserRequired,
+}
+
 class NativeSdkStatusMessage {
   NativeSdkStatusMessage({
     required this.platform,
@@ -153,6 +164,144 @@ class NativeSdkStatusMessage {
   }
 }
 
+class NativeAuthConfigurationMessage {
+  NativeAuthConfigurationMessage({
+    required this.clientId,
+    required this.tenantSubdomain,
+  });
+
+  String clientId;
+
+  String tenantSubdomain;
+
+  List<Object?> _toList() {
+    return <Object?>[clientId, tenantSubdomain];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthConfigurationMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthConfigurationMessage(
+      clientId: result[0]! as String,
+      tenantSubdomain: result[1]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthConfigurationMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(clientId, other.clientId) &&
+        _deepEquals(tenantSubdomain, other.tenantSubdomain);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthConfigurationMessage(clientId: $clientId, tenantSubdomain: $tenantSubdomain)';
+  }
+}
+
+class NativeAuthResultMessage {
+  NativeAuthResultMessage({
+    required this.type,
+    this.operation,
+    this.continuationId,
+    this.username,
+    this.sentTo,
+    this.codeLength,
+    this.errorCode,
+    this.errorMessage,
+  });
+
+  NativeAuthResultTypeMessage type;
+
+  NativeAuthOperationMessage? operation;
+
+  String? continuationId;
+
+  String? username;
+
+  String? sentTo;
+
+  int? codeLength;
+
+  String? errorCode;
+
+  String? errorMessage;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      type,
+      operation,
+      continuationId,
+      username,
+      sentTo,
+      codeLength,
+      errorCode,
+      errorMessage,
+    ];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthResultMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthResultMessage(
+      type: result[0]! as NativeAuthResultTypeMessage,
+      operation: result[1] as NativeAuthOperationMessage?,
+      continuationId: result[2] as String?,
+      username: result[3] as String?,
+      sentTo: result[4] as String?,
+      codeLength: result[5] as int?,
+      errorCode: result[6] as String?,
+      errorMessage: result[7] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthResultMessage || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(type, other.type) &&
+        _deepEquals(operation, other.operation) &&
+        _deepEquals(continuationId, other.continuationId) &&
+        _deepEquals(username, other.username) &&
+        _deepEquals(sentTo, other.sentTo) &&
+        _deepEquals(codeLength, other.codeLength) &&
+        _deepEquals(errorCode, other.errorCode) &&
+        _deepEquals(errorMessage, other.errorMessage);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthResultMessage(type: $type, operation: $operation, continuationId: $continuationId, username: $username, sentTo: $sentTo, codeLength: $codeLength, errorCode: $errorCode, errorMessage: $errorMessage)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -163,8 +312,20 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NativePlatformMessage) {
       buffer.putUint8(129);
       writeValue(buffer, value.index);
-    } else if (value is NativeSdkStatusMessage) {
+    } else if (value is NativeAuthOperationMessage) {
       buffer.putUint8(130);
+      writeValue(buffer, value.index);
+    } else if (value is NativeAuthResultTypeMessage) {
+      buffer.putUint8(131);
+      writeValue(buffer, value.index);
+    } else if (value is NativeSdkStatusMessage) {
+      buffer.putUint8(132);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthConfigurationMessage) {
+      buffer.putUint8(133);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthResultMessage) {
+      buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -178,7 +339,17 @@ class _PigeonCodec extends StandardMessageCodec {
         final value = readValue(buffer) as int?;
         return value == null ? null : NativePlatformMessage.values[value];
       case 130:
+        final value = readValue(buffer) as int?;
+        return value == null ? null : NativeAuthOperationMessage.values[value];
+      case 131:
+        final value = readValue(buffer) as int?;
+        return value == null ? null : NativeAuthResultTypeMessage.values[value];
+      case 132:
         return NativeSdkStatusMessage.decode(readValue(buffer)!);
+      case 133:
+        return NativeAuthConfigurationMessage.decode(readValue(buffer)!);
+      case 134:
+        return NativeAuthResultMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -219,5 +390,153 @@ class NativeAuthHostApi {
       isNullValid: false,
     );
     return pigeonVar_replyValue! as NativeSdkStatusMessage;
+  }
+
+  Future<NativeAuthResultMessage> initialize(
+    NativeAuthConfigurationMessage configuration,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.initialize$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[configuration],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> getCurrentAccount() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getCurrentAccount$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> startSignIn(String username) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignIn$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[username],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> startSignUp(String username) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignUp$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[username],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> submitCode(
+    String continuationId,
+    String code,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.submitCode$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[continuationId, code],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> resendCode(String continuationId) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.resendCode$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[continuationId],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> signOut() async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.signOut$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
   }
 }

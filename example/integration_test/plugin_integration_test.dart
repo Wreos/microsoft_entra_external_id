@@ -12,7 +12,7 @@ void main() {
     final EntraExternalId plugin = EntraExternalId();
     final status = await plugin.getNativeSdkStatus();
 
-    expect(status.linked, isFalse);
-    expect(status.sdkVersion, isNull);
+    expect(status.linked, isTrue);
+    expect(status.sdkVersion, isNotEmpty);
   });
 }

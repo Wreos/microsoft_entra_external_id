@@ -8,19 +8,21 @@ MSAL handles the authentication protocol, native token cache, and platform
 behavior.
 
 > [!WARNING]
-> This repository is in bootstrap. MSAL is not linked yet and no authentication
-> flow is usable. Do not add this package to a production application.
+> The API is experimental and is not production-ready. The current MVP covers
+> the Email one-time passcode slice only; expect breaking changes before 1.0.
 
 ## Current milestone
 
-The bootstrap milestone establishes:
+The current MVP establishes:
 
 - a Flutter plugin for Android and iOS, implemented in Kotlin and Swift;
 - a typed Pigeon channel shared by Dart and the native platforms;
-- a diagnostic `getNativeSdkStatus()` call that reports `linked: false` until
-  the native MSAL dependencies are integrated;
-- Dart, Android, iOS, example, and integration-test locations;
-- a gate-based implementation and validation plan.
+- exact native SDK pins: MSAL Android `8.4.2` and MSAL iOS `2.15.0`;
+- Swift Package Manager as the only iOS dependency integration path;
+- native initialization, cached-account lookup, Email OTP sign-in/sign-up,
+  code submission/resend, automatic sign-in after sign-up, and sign-out;
+- an example whose Flutter widgets own the complete authentication UI, with no
+  embedded WebView.
 
 Read [INTENT.md](INTENT.md) for product scope and
 [doc/IMPLEMENTATION_PLAN.md](doc/IMPLEMENTATION_PLAN.md) for the execution
@@ -54,15 +56,27 @@ On iOS, the corresponding implementation target is
 `MSALNativeAuthPublicClientApplication` plus its typed delegate states, following
 Microsoft's [iOS Native Authentication quickstart][native-auth-ios].
 
-## Bootstrap check
+## Quick start
 
 ```dart
-final status = await EntraExternalId().getNativeSdkStatus();
+final entra = EntraExternalId();
+await entra.initialize(
+  const NativeAuthConfiguration(
+    clientId: 'application-client-id',
+    tenantSubdomain: 'contoso',
+  ),
+);
 
-// false during bootstrap; becomes true only after the platform MSAL SDK is
-// actually linked and registered.
-print(status.linked);
+final state = await entra.signIn('user@example.com');
+if (state case final NativeAuthCodeRequired codeRequired) {
+  final result = await entra.submitCode(codeRequired, '123456');
+  // Handle NativeAuthSignedIn or NativeAuthFailure.
+}
 ```
+
+See the [working example](example/README.md) for tenant prerequisites and run
+commands. Client ID and tenant subdomain are public configuration values; never
+put client secrets in a mobile application.
 
 ## Contributing
 

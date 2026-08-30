@@ -5,19 +5,56 @@ import 'package:entra_external_id/src/pigeon_entra_external_id_platform.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
-  FakeNativeAuthHostApi(this.message);
+  FakeNativeAuthHostApi({required this.status, this.result});
 
-  final pigeon.NativeSdkStatusMessage message;
+  final pigeon.NativeSdkStatusMessage status;
+  final pigeon.NativeAuthResultMessage? result;
 
   @override
-  Future<pigeon.NativeSdkStatusMessage> getNativeSdkStatus() async => message;
+  Future<pigeon.NativeSdkStatusMessage> getNativeSdkStatus() async => status;
+
+  pigeon.NativeAuthResultMessage get _result =>
+      result ??
+      pigeon.NativeAuthResultMessage(
+        type: pigeon.NativeAuthResultTypeMessage.signedOut,
+      );
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> initialize(
+    pigeon.NativeAuthConfigurationMessage configuration,
+  ) async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> getCurrentAccount() async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> startSignIn(String username) async =>
+      _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> startSignUp(String username) async =>
+      _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> submitCode(
+    String continuationId,
+    String code,
+  ) async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> resendCode(
+    String continuationId,
+  ) async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> signOut() async => _result;
 }
 
 void main() {
   test('maps Android SDK status without exposing generated types', () async {
     final platform = PigeonEntraExternalIdPlatform(
       hostApi: FakeNativeAuthHostApi(
-        pigeon.NativeSdkStatusMessage(
+        status: pigeon.NativeSdkStatusMessage(
           platform: pigeon.NativePlatformMessage.android,
           linked: false,
         ),
@@ -33,7 +70,7 @@ void main() {
   test('maps iOS SDK version when linked', () async {
     final platform = PigeonEntraExternalIdPlatform(
       hostApi: FakeNativeAuthHostApi(
-        pigeon.NativeSdkStatusMessage(
+        status: pigeon.NativeSdkStatusMessage(
           platform: pigeon.NativePlatformMessage.ios,
           linked: true,
           sdkVersion: 'test-version',
@@ -49,5 +86,56 @@ void main() {
         sdkVersion: 'test-version',
       ),
     );
+  });
+
+  test('maps an OTP continuation without exposing generated types', () async {
+    final platform = PigeonEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.android,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.codeRequired,
+          operation: pigeon.NativeAuthOperationMessage.signIn,
+          continuationId: 'opaque-id',
+          sentTo: 'u***@example.com',
+          codeLength: 6,
+        ),
+      ),
+    );
+
+    final state = await platform.signIn('user@example.com');
+
+    expect(state, isA<NativeAuthCodeRequired>());
+    final codeRequired = state as NativeAuthCodeRequired;
+    expect(codeRequired.operation, NativeAuthOperation.signIn);
+    expect(codeRequired.continuationId, 'opaque-id');
+    expect(codeRequired.sentTo, 'u***@example.com');
+    expect(codeRequired.codeLength, 6);
+  });
+
+  test('maps browser-required as a typed failure', () async {
+    final platform = PigeonEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.ios,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.browserRequired,
+          errorCode: 'browser_required',
+          errorMessage: 'Continue in browser.',
+        ),
+      ),
+    );
+
+    final state = await platform.signUp('user@example.com');
+
+    expect(state, isA<NativeAuthFailure>());
+    final failure = state as NativeAuthFailure;
+    expect(failure.browserRequired, isTrue);
+    expect(failure.code, 'browser_required');
+    expect(failure.message, 'Continue in browser.');
   });
 }

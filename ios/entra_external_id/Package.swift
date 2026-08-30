@@ -12,13 +12,21 @@ let package = Package(
         .library(name: "entra-external-id", targets: ["entra_external_id"])
     ],
     dependencies: [
-        .package(name: "FlutterFramework", path: "../FlutterFramework")
+        .package(name: "FlutterFramework", path: "../FlutterFramework"),
+        .package(
+            url: "https://github.com/AzureAD/microsoft-authentication-library-for-objc",
+            exact: "2.15.0"
+        )
     ],
     targets: [
         .target(
             name: "entra_external_id",
             dependencies: [
-                .product(name: "FlutterFramework", package: "FlutterFramework")
+                .product(name: "FlutterFramework", package: "FlutterFramework"),
+                .product(
+                    name: "MSAL",
+                    package: "microsoft-authentication-library-for-objc"
+                )
             ],
             resources: [
                 // If your plugin requires a privacy manifest, for example if it uses any required

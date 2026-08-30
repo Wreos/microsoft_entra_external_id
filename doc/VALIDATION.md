@@ -1,92 +1,70 @@
-# Bootstrap validation report
+# Validation report
 
-Validated on 2026-08-30. This report covers Stages 0 and 1 only. MSAL is not
-linked, no authentication flow is implemented, and no live-tenant result is
-claimed.
+Validated on 2026-08-30. This report covers the repository bootstrap and the
+deterministic Email one-time-passcode implementation slice. It does not claim a
+live-tenant result or production readiness.
 
 ## Environment
 
 - Flutter `3.47.2` stable, framework revision `d3b14c8769`.
-- Dart `3.13.2`; DevTools `2.60.0`.
-- Android CLI `1.0.15985488`.
+- Dart `3.13.2`; Pigeon `28.0.0`.
 - Android Gradle Plugin `9.1.0`; Gradle `9.3.1`; Java `17.0.18`.
-- Xcode `26.6`; CocoaPods `1.16.2`.
-- Pigeon `28.0.0`.
+- Xcode `26.6`; Swift Package Manager only.
+- MSAL Android `8.4.2`; MSAL iOS `2.15.0`.
 
-## Stage 0 — Intent
+## Implemented slice
 
-- Cross-checked the product boundary against Microsoft's Android and iOS Native
-  Authentication guides.
-- Recorded External ID as the supported tenant type and custom Flutter UI as
-  the product value.
-- Made the native client types an architectural invariant:
+- Official native-authentication clients on both platforms:
   `INativeAuthPublicClientApplication` on Android and
   `MSALNativeAuthPublicClientApplication` on iOS.
-- Kept browser fallback explicit and excluded an embedded WebView from the core
-  implementation.
+- Initialization from application client ID and external-tenant subdomain.
+- Cached-account lookup.
+- Email OTP sign-in and sign-up.
+- Verification-code submission and resend.
+- Automatic sign-in after sign-up.
+- Sign-out and typed browser-required/error states.
+- Custom Flutter example UI with no embedded WebView.
+- SwiftPM-only iOS integration and MSAL keychain entitlement in the example.
 
-## Stage 1 — Repository bootstrap
+## Deterministic gates
 
-The final bootstrap snapshot passed:
+The final implementation snapshot passed:
 
 ```text
-dart run pigeon, then format generated output        PASS
-dart format --output=none --set-exit-if-changed ...   PASS
+Pigeon regeneration + generated-output drift check   PASS
+dart format                                           PASS
 flutter analyze                                      PASS
-flutter test                                         PASS (4 tests)
-flutter test (example)                               PASS (1 test)
-./gradlew testDebugUnitTest                          PASS
+flutter test                                         PASS (9 tests)
+flutter test (example)                               PASS (2 widget tests)
+Android plugin testDebugUnitTest                     PASS (1 native test)
 flutter build apk --debug (example)                  PASS
-pod ipc spec ios/entra_external_id.podspec           PASS
-Swift Package Manager manifest resolution            PASS
-xcodebuild build (plugin/example)                    PASS
-xcodebuild build-for-testing                         PASS
-template-placeholder scan                            PASS
-flutter pub publish --dry-run (clean Git snapshot)   PASS
+Swift Package manifest resolution                    PASS
+iOS xcodebuild build-for-testing                     PASS
+dart pub publish --dry-run (clean Git snapshot)      PASS
+repository secret/placeholder scan                   PASS
 ```
 
-Pigeon generation and its required formatting step were run again together and
-checked for repository drift. The public diagnostic remains intentionally
-honest: both native
-implementations return `linked: false` and no SDK version until MSAL is added in
-the platform integration stages.
+The iOS build resolves `MSAL` `2.15.0` from the official Microsoft repository,
+then compiles the Swift plugin, Runner, and XCTest bundle for both simulator
+architectures. CocoaPods is not part of the package or validation graph.
 
-### Android decisions validated
+The Android aggregate `testDebugUnitTest` task also executes tests shipped
+inside Flutter's `integration_test` module. Three of those upstream Mockito
+tests fail on this Java/AGP environment before the plugin task completes. The
+scoped plugin native test task passes, and the complete example APK builds.
+This upstream test-runner incompatibility is not hidden as a plugin pass.
 
-The example and plugin compile with AGP 9 built-in Kotlin. The deprecated
-`kotlin-android` plugin is version-declared for Flutter's dependency validator
-but is not applied to either module.
+## Environment and live-test boundaries
 
-Removing `android.newDsl=false` was tested and failed inside Flutter 3.47 with
-an AGP extension cast to `AbstractAppExtension`. The flag is therefore a
-documented Flutter compatibility requirement, not an unexamined legacy option.
-It must be re-tested on every Flutter upgrade.
+`build-for-testing` passes, but this machine exposes no usable iOS Simulator
+device, so XCTest execution cannot start locally. Simulator runtime tests remain
+a CI/release gate.
 
-Android native tests run on JUnit `6.1.3`. The initial `kotlin.test.Test`
-configuration did not provide a discovered Gradle test; migrating to JUnit
-Platform made native test execution explicit and verifiable.
+No external-tenant client ID, tenant subdomain, or test mailbox was supplied.
+Therefore the end-to-end Email OTP flow has not yet been run against Microsoft
+Entra External ID. A live Android and iOS smoke test is required before calling
+this slice production-ready or publishing a prerelease.
 
-### iOS validation boundary
-
-Swift Package Manager resolves and the plugin, Runner, and XCTest bundle all
-compile when the checkout directory has the package name `entra_external_id`.
-The current Codex workspace directory has a task-generated name, so validation
-used a temporary, unchanged checkout with the normal repository basename.
-
-After `flutter pub get`, Flutter's generated plugin aggregator starts at the
-framework default iOS target. The required `flutter build ios --config-only`
-phase reads the Runner's iOS 17 deployment target and raises the generated
-package before `xcodebuild`; the validation repeats that production sequence.
-
-`build-for-testing` passed, but XCTest execution could not start because this
-machine exposes zero usable iOS Simulator devices. Xcode reported simulator
-devices stuck in creation, and XcodeBuildMCP independently returned an empty
-simulator list. No repository workaround was committed. Running the test bundle
-on a healthy simulator remains a required CI and release gate.
-
-## Remaining gate before native implementation
-
-Stage 2 must define the cross-platform public state machine before either MSAL
-dependency is linked. Stage 3 and Stage 4 must then revalidate the exact current
-MSAL releases, run native mapping tests, and pass live External ID password and
-email-OTP smoke tests on their respective platforms.
+Password authentication, required attributes, password reset, token retrieval,
+MFA/strong-auth continuations, and system-browser fallback execution remain out
+of this slice and are tracked in `doc/IMPLEMENTATION_PLAN.md`.

@@ -189,6 +189,20 @@ enum NativePlatformMessage: Int, CaseIterable {
   case ios = 1
 }
 
+enum NativeAuthOperationMessage: Int, CaseIterable {
+  case signIn = 0
+  case signUp = 1
+}
+
+enum NativeAuthResultTypeMessage: Int, CaseIterable {
+  case initialized = 0
+  case signedOut = 1
+  case codeRequired = 2
+  case signedIn = 3
+  case error = 4
+  case browserRequired = 5
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct NativeSdkStatusMessage: Hashable, CustomStringConvertible {
   var platform: NativePlatformMessage
@@ -234,6 +248,116 @@ struct NativeSdkStatusMessage: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeAuthConfigurationMessage: Hashable, CustomStringConvertible {
+  var clientId: String
+  var tenantSubdomain: String
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeAuthConfigurationMessage? {
+    let clientId = pigeonVar_list[0] as! String
+    let tenantSubdomain = pigeonVar_list[1] as! String
+
+    return NativeAuthConfigurationMessage(
+      clientId: clientId,
+      tenantSubdomain: tenantSubdomain
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      clientId,
+      tenantSubdomain,
+    ]
+  }
+  static func == (lhs: NativeAuthConfigurationMessage, rhs: NativeAuthConfigurationMessage) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return NativeAuthApiPigeonInternal.deepEquals(lhs.clientId, rhs.clientId) && NativeAuthApiPigeonInternal.deepEquals(lhs.tenantSubdomain, rhs.tenantSubdomain)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NativeAuthConfigurationMessage")
+    NativeAuthApiPigeonInternal.deepHash(value: clientId, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: tenantSubdomain, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "NativeAuthConfigurationMessage(clientId: \(String(describing: clientId)), tenantSubdomain: \(String(describing: tenantSubdomain)))"
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeAuthResultMessage: Hashable, CustomStringConvertible {
+  var type: NativeAuthResultTypeMessage
+  var operation: NativeAuthOperationMessage? = nil
+  var continuationId: String? = nil
+  var username: String? = nil
+  var sentTo: String? = nil
+  var codeLength: Int64? = nil
+  var errorCode: String? = nil
+  var errorMessage: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeAuthResultMessage? {
+    let type = pigeonVar_list[0] as! NativeAuthResultTypeMessage
+    let operation: NativeAuthOperationMessage? = nilOrValue(pigeonVar_list[1])
+    let continuationId: String? = nilOrValue(pigeonVar_list[2])
+    let username: String? = nilOrValue(pigeonVar_list[3])
+    let sentTo: String? = nilOrValue(pigeonVar_list[4])
+    let codeLength: Int64? = nilOrValue(pigeonVar_list[5])
+    let errorCode: String? = nilOrValue(pigeonVar_list[6])
+    let errorMessage: String? = nilOrValue(pigeonVar_list[7])
+
+    return NativeAuthResultMessage(
+      type: type,
+      operation: operation,
+      continuationId: continuationId,
+      username: username,
+      sentTo: sentTo,
+      codeLength: codeLength,
+      errorCode: errorCode,
+      errorMessage: errorMessage
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      type,
+      operation,
+      continuationId,
+      username,
+      sentTo,
+      codeLength,
+      errorCode,
+      errorMessage,
+    ]
+  }
+  static func == (lhs: NativeAuthResultMessage, rhs: NativeAuthResultMessage) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return NativeAuthApiPigeonInternal.deepEquals(lhs.type, rhs.type) && NativeAuthApiPigeonInternal.deepEquals(lhs.operation, rhs.operation) && NativeAuthApiPigeonInternal.deepEquals(lhs.continuationId, rhs.continuationId) && NativeAuthApiPigeonInternal.deepEquals(lhs.username, rhs.username) && NativeAuthApiPigeonInternal.deepEquals(lhs.sentTo, rhs.sentTo) && NativeAuthApiPigeonInternal.deepEquals(lhs.codeLength, rhs.codeLength) && NativeAuthApiPigeonInternal.deepEquals(lhs.errorCode, rhs.errorCode) && NativeAuthApiPigeonInternal.deepEquals(lhs.errorMessage, rhs.errorMessage)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NativeAuthResultMessage")
+    NativeAuthApiPigeonInternal.deepHash(value: type, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: operation, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: continuationId, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: username, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: sentTo, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: codeLength, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: errorCode, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: errorMessage, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "NativeAuthResultMessage(type: \(String(describing: type)), operation: \(String(describing: operation)), continuationId: \(String(describing: continuationId)), username: \(String(describing: username)), sentTo: \(String(describing: sentTo)), codeLength: \(String(describing: codeLength)), errorCode: \(String(describing: errorCode)), errorMessage: \(String(describing: errorMessage)))"
+  }
+}
+
 private class NativeAuthApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -244,7 +368,23 @@ private class NativeAuthApiPigeonCodecReader: FlutterStandardReader {
       }
       return nil
     case 130:
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return NativeAuthOperationMessage(rawValue: enumResultAsInt)
+      }
+      return nil
+    case 131:
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return NativeAuthResultTypeMessage(rawValue: enumResultAsInt)
+      }
+      return nil
+    case 132:
       return NativeSdkStatusMessage.fromList(self.readValue() as! [Any?])
+    case 133:
+      return NativeAuthConfigurationMessage.fromList(self.readValue() as! [Any?])
+    case 134:
+      return NativeAuthResultMessage.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -256,8 +396,20 @@ private class NativeAuthApiPigeonCodecWriter: FlutterStandardWriter {
     if let value = value as? NativePlatformMessage {
       super.writeByte(129)
       super.writeValue(value.rawValue)
-    } else if let value = value as? NativeSdkStatusMessage {
+    } else if let value = value as? NativeAuthOperationMessage {
       super.writeByte(130)
+      super.writeValue(value.rawValue)
+    } else if let value = value as? NativeAuthResultTypeMessage {
+      super.writeByte(131)
+      super.writeValue(value.rawValue)
+    } else if let value = value as? NativeSdkStatusMessage {
+      super.writeByte(132)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeAuthConfigurationMessage {
+      super.writeByte(133)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeAuthResultMessage {
+      super.writeByte(134)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -279,9 +431,17 @@ class NativeAuthApiPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable
   static let shared = NativeAuthApiPigeonCodec(readerWriter: NativeAuthApiPigeonCodecReaderWriter())
 }
 
+
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NativeAuthHostApi {
   func getNativeSdkStatus() throws -> NativeSdkStatusMessage
+  func initialize(configuration: NativeAuthConfigurationMessage) async throws -> NativeAuthResultMessage
+  func getCurrentAccount() async throws -> NativeAuthResultMessage
+  func startSignIn(username: String) async throws -> NativeAuthResultMessage
+  func startSignUp(username: String) async throws -> NativeAuthResultMessage
+  func submitCode(continuationId: String, code: String) async throws -> NativeAuthResultMessage
+  func resendCode(continuationId: String) async throws -> NativeAuthResultMessage
+  func signOut() async throws -> NativeAuthResultMessage
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -302,6 +462,122 @@ class NativeAuthHostApiSetup {
       }
     } else {
       getNativeSdkStatusChannel.setMessageHandler(nil)
+    }
+    let initializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.initialize\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      initializeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let configurationArg = args[0] as! NativeAuthConfigurationMessage
+        Task { @MainActor in
+          do {
+            let result = try await api.initialize(configuration: configurationArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      initializeChannel.setMessageHandler(nil)
+    }
+    let getCurrentAccountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getCurrentAccount\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getCurrentAccountChannel.setMessageHandler { _, reply in
+        Task { @MainActor in
+          do {
+            let result = try await api.getCurrentAccount()
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getCurrentAccountChannel.setMessageHandler(nil)
+    }
+    let startSignInChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignIn\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startSignInChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let usernameArg = args[0] as! String
+        Task { @MainActor in
+          do {
+            let result = try await api.startSignIn(username: usernameArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startSignInChannel.setMessageHandler(nil)
+    }
+    let startSignUpChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignUp\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      startSignUpChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let usernameArg = args[0] as! String
+        Task { @MainActor in
+          do {
+            let result = try await api.startSignUp(username: usernameArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      startSignUpChannel.setMessageHandler(nil)
+    }
+    let submitCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.submitCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      submitCodeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let continuationIdArg = args[0] as! String
+        let codeArg = args[1] as! String
+        Task { @MainActor in
+          do {
+            let result = try await api.submitCode(continuationId: continuationIdArg, code: codeArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      submitCodeChannel.setMessageHandler(nil)
+    }
+    let resendCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.resendCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      resendCodeChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let continuationIdArg = args[0] as! String
+        Task { @MainActor in
+          do {
+            let result = try await api.resendCode(continuationId: continuationIdArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      resendCodeChannel.setMessageHandler(nil)
+    }
+    let signOutChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.signOut\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      signOutChannel.setMessageHandler { _, reply in
+        Task { @MainActor in
+          do {
+            let result = try await api.signOut()
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      signOutChannel.setMessageHandler(nil)
     }
   }
 }

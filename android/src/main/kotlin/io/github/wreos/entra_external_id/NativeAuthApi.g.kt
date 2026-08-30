@@ -13,6 +13,12 @@ import io.flutter.plugin.common.StandardMethodCodec
 import io.flutter.plugin.common.StandardMessageCodec
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 private object NativeAuthApiPigeonUtils {
 
   fun wrapResult(result: Any?): List<Any?> {
@@ -203,6 +209,32 @@ enum class NativePlatformMessage(val raw: Int) {
   }
 }
 
+enum class NativeAuthOperationMessage(val raw: Int) {
+  SIGN_IN(0),
+  SIGN_UP(1);
+
+  companion object {
+    fun ofRaw(raw: Int): NativeAuthOperationMessage? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
+enum class NativeAuthResultTypeMessage(val raw: Int) {
+  INITIALIZED(0),
+  SIGNED_OUT(1),
+  CODE_REQUIRED(2),
+  SIGNED_IN(3),
+  ERROR(4),
+  BROWSER_REQUIRED(5);
+
+  companion object {
+    fun ofRaw(raw: Int): NativeAuthResultTypeMessage? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class NativeSdkStatusMessage (
   val platform: NativePlatformMessage,
@@ -247,6 +279,112 @@ data class NativeSdkStatusMessage (
     return "NativeSdkStatusMessage(platform=$platform, linked=$linked, sdkVersion=$sdkVersion)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAuthConfigurationMessage (
+  val clientId: String,
+  val tenantSubdomain: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeAuthConfigurationMessage {
+      val clientId = pigeonVar_list[0] as String
+      val tenantSubdomain = pigeonVar_list[1] as String
+      return NativeAuthConfigurationMessage(clientId, tenantSubdomain)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      clientId,
+      tenantSubdomain,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeAuthConfigurationMessage
+    return NativeAuthApiPigeonUtils.deepEquals(this.clientId, other.clientId) && NativeAuthApiPigeonUtils.deepEquals(this.tenantSubdomain, other.tenantSubdomain)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.clientId)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.tenantSubdomain)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeAuthConfigurationMessage(clientId=$clientId, tenantSubdomain=$tenantSubdomain)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAuthResultMessage (
+  val type: NativeAuthResultTypeMessage,
+  val operation: NativeAuthOperationMessage? = null,
+  val continuationId: String? = null,
+  val username: String? = null,
+  val sentTo: String? = null,
+  val codeLength: Long? = null,
+  val errorCode: String? = null,
+  val errorMessage: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeAuthResultMessage {
+      val type = pigeonVar_list[0] as NativeAuthResultTypeMessage
+      val operation = pigeonVar_list[1] as NativeAuthOperationMessage?
+      val continuationId = pigeonVar_list[2] as String?
+      val username = pigeonVar_list[3] as String?
+      val sentTo = pigeonVar_list[4] as String?
+      val codeLength = pigeonVar_list[5] as Long?
+      val errorCode = pigeonVar_list[6] as String?
+      val errorMessage = pigeonVar_list[7] as String?
+      return NativeAuthResultMessage(type, operation, continuationId, username, sentTo, codeLength, errorCode, errorMessage)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      type,
+      operation,
+      continuationId,
+      username,
+      sentTo,
+      codeLength,
+      errorCode,
+      errorMessage,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeAuthResultMessage
+    return NativeAuthApiPigeonUtils.deepEquals(this.type, other.type) && NativeAuthApiPigeonUtils.deepEquals(this.operation, other.operation) && NativeAuthApiPigeonUtils.deepEquals(this.continuationId, other.continuationId) && NativeAuthApiPigeonUtils.deepEquals(this.username, other.username) && NativeAuthApiPigeonUtils.deepEquals(this.sentTo, other.sentTo) && NativeAuthApiPigeonUtils.deepEquals(this.codeLength, other.codeLength) && NativeAuthApiPigeonUtils.deepEquals(this.errorCode, other.errorCode) && NativeAuthApiPigeonUtils.deepEquals(this.errorMessage, other.errorMessage)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.type)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.operation)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.continuationId)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.username)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.sentTo)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.codeLength)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.errorCode)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.errorMessage)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeAuthResultMessage(type=$type, operation=$operation, continuationId=$continuationId, username=$username, sentTo=$sentTo, codeLength=$codeLength, errorCode=$errorCode, errorMessage=$errorMessage)"
+  }
+}
 private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -256,8 +394,28 @@ private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
         }
       }
       130.toByte() -> {
+        return (readValue(buffer) as Long?)?.let {
+          NativeAuthOperationMessage.ofRaw(it.toInt())
+        }
+      }
+      131.toByte() -> {
+        return (readValue(buffer) as Long?)?.let {
+          NativeAuthResultTypeMessage.ofRaw(it.toInt())
+        }
+      }
+      132.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeSdkStatusMessage.fromList(it)
+        }
+      }
+      133.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeAuthConfigurationMessage.fromList(it)
+        }
+      }
+      134.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeAuthResultMessage.fromList(it)
         }
       }
       else -> super.readValueOfType(type, buffer)
@@ -269,8 +427,24 @@ private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.raw.toLong())
       }
-      is NativeSdkStatusMessage -> {
+      is NativeAuthOperationMessage -> {
         stream.write(130)
+        writeValue(stream, value.raw.toLong())
+      }
+      is NativeAuthResultTypeMessage -> {
+        stream.write(131)
+        writeValue(stream, value.raw.toLong())
+      }
+      is NativeSdkStatusMessage -> {
+        stream.write(132)
+        writeValue(stream, value.toList())
+      }
+      is NativeAuthConfigurationMessage -> {
+        stream.write(133)
+        writeValue(stream, value.toList())
+      }
+      is NativeAuthResultMessage -> {
+        stream.write(134)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -278,9 +452,17 @@ private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
   }
 }
 
+
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface NativeAuthHostApi {
   fun getNativeSdkStatus(): NativeSdkStatusMessage
+  suspend fun initialize(configuration: NativeAuthConfigurationMessage): NativeAuthResultMessage
+  suspend fun getCurrentAccount(): NativeAuthResultMessage
+  suspend fun startSignIn(username: String): NativeAuthResultMessage
+  suspend fun startSignUp(username: String): NativeAuthResultMessage
+  suspend fun submitCode(continuationId: String, code: String): NativeAuthResultMessage
+  suspend fun resendCode(continuationId: String): NativeAuthResultMessage
+  suspend fun signOut(): NativeAuthResultMessage
 
   companion object {
     /** The codec used by NativeAuthHostApi. */
@@ -301,6 +483,136 @@ interface NativeAuthHostApi {
               NativeAuthApiPigeonUtils.wrapError(exception)
             }
             reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.initialize$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val configurationArg = args[0] as NativeAuthConfigurationMessage
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.initialize(configurationArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getCurrentAccount$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.getCurrentAccount())
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignIn$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val usernameArg = args[0] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.startSignIn(usernameArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignUp$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val usernameArg = args[0] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.startSignUp(usernameArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.submitCode$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val continuationIdArg = args[0] as String
+            val codeArg = args[1] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.submitCode(continuationIdArg, codeArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.resendCode$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val continuationIdArg = args[0] as String
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.resendCode(continuationIdArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.signOut$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.signOut())
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
           }
         } else {
           channel.setMessageHandler(null)

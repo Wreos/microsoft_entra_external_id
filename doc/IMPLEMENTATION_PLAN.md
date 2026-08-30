@@ -36,7 +36,7 @@ substitute for deterministic unit and contract tests.
 - Generate Pigeon output from a checked-in schema.
 - Run Dart formatting, Flutter analysis, and Flutter tests.
 - Run Android unit tests and build the Android example.
-- Run iOS tests/build when an iOS simulator and CocoaPods/Xcode environment are
+- Run iOS tests/build when an iOS simulator and Xcode/SwiftPM environment are
   available.
 - Confirm the generated Android and iOS projects match Flutter 3.47.2's current
   plugin template, except for documented package-specific decisions.
@@ -66,6 +66,9 @@ Simulator device is available; this remains a required CI and release gate.
 - No password, one-time code, token, or continuation can be serialized by a
   public model accidentally.
 
+**Status:** Email OTP contract slice complete. Account/token, password,
+attributes, MFA, cancellation, and correlation metadata remain in later slices.
+
 ## Stage 3 — Android initialization and sign-in slice
 
 **Deliverables**
@@ -82,6 +85,10 @@ Simulator device is available; this remains a required CI and release gate.
 - A manual external-tenant smoke test passes for password and OTP sign-in.
 - Logs contain no credentials, codes, tokens, continuation data, or PII.
 
+**Status:** Email OTP implementation and deterministic build gate complete with
+MSAL Android 8.4.2. Password/token APIs, complete native branch tests, and a
+live-tenant smoke test are still open, so the full stage is not complete.
+
 ## Stage 4 — iOS parity for the sign-in slice
 
 **Deliverables**
@@ -93,9 +100,14 @@ Simulator device is available; this remains a required CI and release gate.
 **Validation gate**
 
 - XCTest covers every mapped delegate callback and continuation.
-- CocoaPods and Swift Package Manager integration compile.
+- Swift Package Manager integration compiles without a CocoaPods fallback.
 - The iOS example and integration tests pass on a simulator.
 - The same live-tenant password and OTP scenarios pass as on Android.
+
+**Status:** Email OTP implementation and SwiftPM build-for-testing gate complete
+with MSAL iOS 2.15.0. Runtime XCTest is blocked by the local simulator
+environment; password/token APIs, complete delegate tests, and live-tenant
+smoke tests are still open, so the full stage is not complete.
 
 ## Stage 5 — Sign-up, attributes, and password reset
 

@@ -26,7 +26,7 @@ second Android build setup before the public API exists.
 - `compileSdk`: `36`.
 - `minSdk`: `24`.
 - Android unit tests: JUnit `6.1.3` on JUnit Platform.
-- Next native integration candidate: MSAL Android `8.4.1`.
+- MSAL Android: exact `8.4.2`.
 
 `android.newDsl=false` is retained because Flutter 3.47 still casts AGP 9's
 extension to `AbstractAppExtension`; removing the switch fails the example
@@ -38,20 +38,21 @@ compatibility declarations once Flutter and AGP expose one converged baseline.
 ## iOS
 
 - Xcode used by the bootstrap validation: `26.6`.
-- Swift Package Manager and CocoaPods plugin manifests are retained.
+- Swift Package Manager is the only iOS dependency integration path. The
+  package intentionally does not ship a CocoaPods fallback.
 - Minimum deployment target: iOS `17.0`.
-- Next native integration candidate: MSAL iOS `2.15.0`.
+- MSAL iOS: exact `2.15.0`.
 
-iOS 17 is selected because the official MSAL iOS `2.15.0` package and podspec
-both require it. Lowering the plugin target would mean pinning an older MSAL
-release and creating dependency debt before the first native flow exists.
+iOS 17 is selected because the official MSAL iOS `2.15.0` Swift package
+requires it. Lowering the plugin target would mean pinning an older MSAL release
+and creating dependency debt before the first native flow exists.
 
 ## Dependency policy
 
 - Pin build generators and native SDKs exactly; do not use floating versions
   such as `8.+`.
-- The bootstrap does not link MSAL yet. Its diagnostic reports `linked: false`
-  until a native client is actually integrated and covered by native tests.
+- Both native SDKs are linked and `getNativeSdkStatus()` reports the exact pin
+  compiled into each platform implementation.
 - Add automated dependency-update pull requests with CI before the first
   prerelease.
 - A native version bump must pass Dart contracts, native unit tests, both
@@ -60,6 +61,6 @@ release and creating dependency debt before the first native flow exists.
 [flutter-built-in-kotlin]: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
 [flutter-plugin-guide]: https://docs.flutter.dev/packages-and-plugins/developing-packages
 [flutter-347]: https://docs.flutter.dev/release/release-notes/release-notes-3.47.0
-[msal-android-841]: https://github.com/AzureAD/microsoft-authentication-library-for-android/releases/tag/v8.4.1
+[msal-android-842]: https://github.com/AzureAD/microsoft-authentication-library-for-android/releases/tag/v8.4.2
 [msal-ios-2150]: https://github.com/AzureAD/microsoft-authentication-library-for-objc/releases/tag/2.15.0
 [pigeon]: https://pub.dev/packages/pigeon
