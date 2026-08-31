@@ -2,20 +2,22 @@
 
 [![CI](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml/badge.svg)](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml)
 
-An experimental, unofficial Flutter bridge for Microsoft Entra External ID
-Native Authentication through the official MSAL Android and iOS SDKs.
+An unofficial Flutter plugin for Microsoft Entra External ID Native
+Authentication, backed by the official MSAL Android and iOS SDKs.
 
-The goal is to let a Flutter application own its sign-up and sign-in UI while
-MSAL handles the authentication protocol, native token cache, and platform
-behavior.
+It lets Flutter applications build fully custom sign-up and sign-in experiences
+while MSAL handles the authentication protocol, native token cache, and
+platform-specific behavior. Native-supported flows do not use an embedded
+WebView.
 
-> [!WARNING]
-> The API is experimental and is not production-ready. The current MVP covers
-> the Email one-time passcode slice only; expect breaking changes before 1.0.
+## Custom Flutter UI, native authentication
 
-## Current milestone
+![Successful Entra External ID native sign-in on Android](docs/assets/android-authenticated.png)
 
-The current MVP establishes:
+The screenshot shows a real Email OTP sign-in against an External ID tenant on
+an Android device. The account identifier is redacted.
+
+## What the plugin enables
 
 - a Flutter plugin for Android and iOS, implemented in Kotlin and Swift;
 - a typed Pigeon channel shared by Dart and the native platforms;
@@ -82,8 +84,8 @@ put client secrets in a mobile application.
 
 ## Contributing
 
-The public API is not stable. Before implementing a new flow, update its
-contract tests and pass the validation gate defined in the implementation plan.
+Before implementing a new flow, update its contract tests and pass the
+validation gate defined in the implementation plan.
 
 Pull requests run Dart formatting, analysis, unit and widget tests, generated
 Pigeon drift detection, Android native and emulator tests, iOS XCTest and
