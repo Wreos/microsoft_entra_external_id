@@ -166,10 +166,11 @@ dependency review, targeted secret scanning, publish dry-run, weekly dependency
 updates, and tag-gated draft GitHub releases are configured. CI does not build
 or run the example app. The threat model, security-reporting path, migration
 policy, and initial API/integration documentation are complete. The
-independent-team trial, live-tenant matrix, and prerelease publication remain
-open, so the stage is not complete. Those open parity gates block a stable
-release; they are documented limitations rather than hidden blockers for the
-`0.1.0-dev.1` development preview.
+`0.1.0-dev.1` development preview is published on pub.dev with a matching
+public GitHub prerelease. The independent-team trial and live-tenant matrix
+remain open, so the full stage is not complete. Those open parity gates block a
+stable release; they are documented limitations rather than hidden blockers
+for the published development preview.
 
 ## Working rules
 
