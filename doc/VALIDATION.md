@@ -1,6 +1,6 @@
 # Validation report
 
-Validated on 2026-08-30. This report covers the repository bootstrap and the
+Validated on 2026-08-31. This report covers the repository bootstrap and the
 deterministic Email one-time-passcode implementation slice. It does not claim a
 live-tenant result or production readiness.
 
@@ -36,17 +36,21 @@ dart format                                           PASS
 flutter analyze                                      PASS
 flutter test                                         PASS (9 tests)
 flutter test (example)                               PASS (2 widget tests)
-Android plugin testDebugUnitTest                     PASS (1 native test)
+Android plugin testDebugUnitTest                     PASS (3 native tests)
 flutter build apk --debug (example)                  PASS
+Android API 35 install/start/native initialization   PASS
 Swift Package manifest resolution                    PASS
 iOS xcodebuild build-for-testing                     PASS
+iOS Simulator install/start/native SDK invocation    PASS
 dart pub publish --dry-run (clean Git snapshot)      PASS
 repository secret/placeholder scan                   PASS
 ```
 
 The iOS build resolves `MSAL` `2.15.0` from the official Microsoft repository,
 then compiles the Swift plugin, Runner, and XCTest bundle for both simulator
-architectures. CocoaPods is not part of the package or validation graph.
+architectures. The check also uses a temporary checkout whose directory name
+differs from the Dart package name, guarding against SwiftPM package-identity
+coupling. CocoaPods is not part of the package or validation graph.
 
 The Android aggregate `testDebugUnitTest` task also executes tests shipped
 inside Flutter's `integration_test` module. Three of those upstream Mockito
@@ -54,11 +58,23 @@ tests fail on this Java/AGP environment before the plugin task completes. The
 scoped plugin native test task passes, and the complete example APK builds.
 This upstream test-runner incompatibility is not hidden as a plugin pass.
 
+The example was also installed and started on a Pixel Tablet Android 15
+emulator. With syntactically valid non-production identifiers, the official
+MSAL native client initialized, cached-account lookup returned signed-out, and
+the custom Flutter sign-in/sign-up screen rendered without an embedded WebView.
+This proves device-level bridge wiring but is not a live-tenant authentication
+claim.
+
 ## Environment and live-test boundaries
 
-`build-for-testing` passes, but this machine exposes no usable iOS Simulator
-device, so XCTest execution cannot start locally. Simulator runtime tests remain
-a CI/release gate.
+The iOS app was installed and started on an isolated iPhone 17 Pro simulator.
+The Flutter UI rendered and the official MSAL native client returned the
+expected configuration failure for the deliberately non-production identifiers.
+This proves the iOS runtime bridge and native SDK invocation without claiming a
+live-tenant authentication result. Xcode does not discover devices from this
+isolated device set as test destinations, so XCTest execution remains a
+CI/release gate even though the XCTest bundle compiles for both simulator
+architectures.
 
 No external-tenant client ID, tenant subdomain, or test mailbox was supplied.
 Therefore the end-to-end Email OTP flow has not yet been run against Microsoft

@@ -43,9 +43,10 @@ substitute for deterministic unit and contract tests.
 - Verify that no `com.example`, `TODO`, or `getPlatformVersion` template code
   remains.
 
-**Status:** complete. See `doc/VALIDATION.md`. The iOS Runner and XCTest bundle
-compile, but executing XCTest remains environment-blocked until a working iOS
-Simulator device is available; this remains a required CI and release gate.
+**Status:** complete. See `doc/VALIDATION.md`. The iOS Runner starts on an
+isolated simulator and the XCTest bundle compiles, but Xcode does not expose
+that isolated device set as a test destination. XCTest execution remains a
+required CI and release gate.
 
 ## Stage 2 — Cross-platform contract spike
 
@@ -104,10 +105,11 @@ live-tenant smoke test are still open, so the full stage is not complete.
 - The iOS example and integration tests pass on a simulator.
 - The same live-tenant password and OTP scenarios pass as on Android.
 
-**Status:** Email OTP implementation and SwiftPM build-for-testing gate complete
-with MSAL iOS 2.15.0. Runtime XCTest is blocked by the local simulator
-environment; password/token APIs, complete delegate tests, and live-tenant
-smoke tests are still open, so the full stage is not complete.
+**Status:** Email OTP implementation, SwiftPM build-for-testing, and isolated
+simulator app-launch gates complete with MSAL iOS 2.15.0. Runtime XCTest is
+blocked by local Xcode destination discovery; password/token APIs, complete
+delegate tests, and live-tenant smoke tests are still open, so the full stage
+is not complete.
 
 ## Stage 5 — Sign-up, attributes, and password reset
 

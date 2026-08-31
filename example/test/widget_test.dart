@@ -6,6 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:entra_external_id_example/main.dart';
 
 final class FakeNativeAuthPlatform extends EntraExternalIdPlatform {
+  int signInCalls = 0;
+  int submitCodeCalls = 0;
+
   @override
   Future<NativeSdkStatus> getNativeSdkStatus() async => const NativeSdkStatus(
     platform: NativePlatform.android,
@@ -23,13 +26,15 @@ final class FakeNativeAuthPlatform extends EntraExternalIdPlatform {
       const NativeAuthSignedOut();
 
   @override
-  Future<NativeAuthState> signIn(String username) async =>
-      const NativeAuthCodeRequired(
-        operation: NativeAuthOperation.signIn,
-        continuationId: 'sign-in-id',
-        sentTo: 'u***@example.com',
-        codeLength: 6,
-      );
+  Future<NativeAuthState> signIn(String username) async {
+    signInCalls += 1;
+    return const NativeAuthCodeRequired(
+      operation: NativeAuthOperation.signIn,
+      continuationId: 'sign-in-id',
+      sentTo: 'u***@example.com',
+      codeLength: 6,
+    );
+  }
 
   @override
   Future<NativeAuthState> signUp(String username) async =>
@@ -40,10 +45,10 @@ final class FakeNativeAuthPlatform extends EntraExternalIdPlatform {
       );
 
   @override
-  Future<NativeAuthState> submitCode(
-    String continuationId,
-    String code,
-  ) async => const NativeAuthSignedIn(username: 'user@example.com');
+  Future<NativeAuthState> submitCode(String continuationId, String code) async {
+    submitCodeCalls += 1;
+    return const NativeAuthSignedIn(username: 'user@example.com');
+  }
 
   @override
   Future<NativeAuthState> resendCode(String continuationId) async =>
@@ -66,7 +71,8 @@ void main() {
   });
 
   testWidgets('runs the email OTP sign-in UI flow', (tester) async {
-    final plugin = EntraExternalId(platform: FakeNativeAuthPlatform());
+    final platform = FakeNativeAuthPlatform();
+    final plugin = EntraExternalId(platform: platform);
     await tester.pumpWidget(
       NativeAuthExampleApp(
         clientId: 'client-id',
@@ -77,6 +83,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('email')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('signIn')));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter a valid email address.'), findsOneWidget);
+    expect(platform.signInCalls, 0);
+
     await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
@@ -92,9 +103,17 @@ void main() {
 
     await tester.tap(find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
+    expect(platform.signInCalls, 2);
+
+    await tester.tap(find.byKey(const Key('verifyCode')));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter the 6-digit verification code.'), findsOneWidget);
+    expect(platform.submitCodeCalls, 0);
+
     await tester.enterText(find.byKey(const Key('code')), '123456');
     await tester.tap(find.byKey(const Key('verifyCode')));
     await tester.pumpAndSettle();
+    expect(platform.submitCodeCalls, 1);
 
     expect(find.text('Signed in successfully.'), findsOneWidget);
     expect(find.text('user@example.com'), findsOneWidget);

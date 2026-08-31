@@ -1,5 +1,6 @@
 import 'package:entra_external_id/entra_external_id.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 const _clientId = String.fromEnvironment('ENTRA_CLIENT_ID');
 const _tenantSubdomain = String.fromEnvironment('ENTRA_TENANT_SUBDOMAIN');
@@ -98,20 +99,38 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     });
   }
 
-  Future<void> _signIn() => _perform(
-    () => _plugin.signIn(_emailController.text),
-    progress: 'Starting sign in...',
-  );
+  Future<void> _signIn() =>
+      _startEmailFlow(_plugin.signIn, progress: 'Starting sign in...');
 
-  Future<void> _signUp() => _perform(
-    () => _plugin.signUp(_emailController.text),
-    progress: 'Starting sign up...',
-  );
+  Future<void> _signUp() =>
+      _startEmailFlow(_plugin.signUp, progress: 'Starting sign up...');
+
+  Future<void> _startEmailFlow(
+    Future<NativeAuthState> Function(String username) action, {
+    required String progress,
+  }) async {
+    final email = _emailController.text.trim();
+    if (!_isValidEmail(email)) {
+      setState(() => _status = 'Enter a valid email address.');
+      return;
+    }
+    await _perform(() => action(email), progress: progress);
+  }
 
   Future<void> _submitCode() async {
     final continuation = _codeRequired;
     if (continuation == null) return;
-    final code = _codeController.text;
+    final code = _codeController.text.trim();
+    final expectedLength = continuation.codeLength;
+    if (code.isEmpty ||
+        (expectedLength != null && code.length != expectedLength)) {
+      setState(() {
+        _status = expectedLength == null
+            ? 'Enter the verification code.'
+            : 'Enter the $expectedLength-digit verification code.';
+      });
+      return;
+    }
     _codeController.clear();
     await _perform(
       () => _plugin.submitCode(continuation, code),
@@ -188,6 +207,9 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
             : state.message;
     }
   }
+
+  static bool _isValidEmail(String value) =>
+      RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
 
   @override
   Widget build(BuildContext context) {
@@ -301,6 +323,8 @@ class _EmailForm extends StatelessWidget {
           controller: controller,
           enabled: !busy,
           keyboardType: TextInputType.emailAddress,
+          textCapitalization: TextCapitalization.none,
+          autocorrect: false,
           autofillHints: const [AutofillHints.email],
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
@@ -358,6 +382,9 @@ class _CodeForm extends StatelessWidget {
           controller: controller,
           enabled: !busy,
           keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          textInputAction: TextInputAction.done,
+          onSubmitted: busy ? null : (_) => onSubmit(),
           autofillHints: const [AutofillHints.oneTimeCode],
           maxLength: codeLength,
           decoration: const InputDecoration(

@@ -31,3 +31,6 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 /build/
 /coverage/
+# Flutter's generated Xcode project workspace duplicates the canonical lock
+# stored under Runner.xcworkspace.
+/example/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
