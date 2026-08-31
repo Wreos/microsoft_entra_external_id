@@ -1,7 +1,5 @@
 # Microsoft Entra External ID for Flutter
 
-[![CI](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml/badge.svg)](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml)
-
 An unofficial Flutter plugin for Microsoft Entra External ID Native
 Authentication, backed by the official MSAL Android and iOS SDKs.
 
