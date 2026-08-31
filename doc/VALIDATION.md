@@ -38,6 +38,7 @@ flutter test                                         PASS (9 tests)
 flutter test (example)                               PASS (2 widget tests)
 Android plugin testDebugUnitTest                     PASS (3 native tests)
 flutter build apk --debug (example)                  PASS
+Android device integration_test native bridge       PASS (1 test)
 Android API 35 install/start/native initialization   PASS
 Swift Package manifest resolution                    PASS
 iOS xcodebuild build-for-testing                     PASS
