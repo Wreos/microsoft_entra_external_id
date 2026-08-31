@@ -1,8 +1,8 @@
 # Validation report
 
-Validated on 2026-08-31. This report covers the repository bootstrap and the
-deterministic Email one-time-passcode implementation slice. It does not claim a
-live-tenant result or production readiness.
+Validated on 2026-08-31. This report covers the repository bootstrap, the
+deterministic Email one-time-passcode implementation slice, and a live Android
+tenant test. It does not claim production readiness or iOS live-tenant parity.
 
 ## Environment
 
@@ -63,8 +63,7 @@ The example was also installed and started on a Pixel Tablet Android 15
 emulator. With syntactically valid non-production identifiers, the official
 MSAL native client initialized, cached-account lookup returned signed-out, and
 the custom Flutter sign-in/sign-up screen rendered without an embedded WebView.
-This proves device-level bridge wiring but is not a live-tenant authentication
-claim.
+This proves device-level bridge wiring independently of tenant configuration.
 
 ## Environment and live-test boundaries
 
@@ -78,11 +77,14 @@ not discover devices from this isolated device set as test destinations, so
 XCTest execution remains a CI/release gate even though the XCTest bundle
 compiles for both simulator architectures.
 
-No external-tenant client ID, tenant subdomain, or test mailbox was supplied.
-Therefore the end-to-end Email OTP flow has not yet been run against Microsoft
-Entra External ID. A live Android and iOS smoke test is required before calling
-this slice production-ready or publishing a prerelease.
+The complete Email OTP sign-up, automatic sign-in, sign-out, and subsequent
+sign-in flow passed against a real Microsoft Entra External ID tenant on a
+physical Android device. Tenant identifiers and the test account are not stored
+in the repository. The equivalent iOS live-tenant flow remains required before
+claiming cross-platform parity.
 
 Password authentication, required attributes, password reset, token retrieval,
 MFA/strong-auth continuations, and system-browser fallback execution remain out
-of this slice and are tracked in `doc/IMPLEMENTATION_PLAN.md`.
+of this slice and are tracked in `doc/IMPLEMENTATION_PLAN.md`. A browser-required
+MSAL result is exposed to Dart, but the plugin does not automatically start a
+browser flow after an SDK error or fallback signal.

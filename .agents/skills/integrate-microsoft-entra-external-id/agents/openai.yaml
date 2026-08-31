@@ -1,0 +1,4 @@
+interface:
+  display_name: "Integrate Microsoft Entra External ID"
+  short_description: "Integrate native External ID authentication into Flutter apps"
+  default_prompt: "Use $integrate-microsoft-entra-external-id to integrate microsoft_entra_external_id into this Flutter application with custom native authentication UI."

@@ -1,14 +1,14 @@
 import Flutter
 import MSAL
 
-public class EntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuthHostApi {
+public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuthHostApi {
   private var nativeAuth: MSALNativeAuthPublicClientApplication?
   private var accountResult: MSALNativeAuthUserAccountResult?
   private var continuations: [String: CodeContinuation] = [:]
   private var activeDelegates: [UUID: AnyObject] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let instance = EntraExternalIdPlugin()
+    let instance = MicrosoftEntraExternalIdPlugin()
     NativeAuthHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
   }
 
@@ -377,7 +377,7 @@ private final class SignInStartHandler: NSObject, SignInStartDelegate {
   }
 
   @MainActor func onSignInPasswordRequired(newState _: SignInPasswordRequiredState) {
-    callback(.unsupported("password_required", "This example is configured for email one-time passcodes."))
+    callback(.unsupported("password_required", "The plugin currently supports email one-time passcodes only."))
   }
 
   @MainActor func onSignInStrongAuthMethodRegistration(
@@ -497,7 +497,7 @@ private final class SignUpVerifyHandler: NSObject, SignUpVerifyCodeDelegate {
   }
 
   @MainActor func onSignUpPasswordRequired(newState _: SignUpPasswordRequiredState) {
-    callback(.unsupported("password_required", "This example is configured for email one-time passcodes."))
+    callback(.unsupported("password_required", "The plugin currently supports email one-time passcodes only."))
   }
 }
 

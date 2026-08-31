@@ -1,11 +1,12 @@
-import '../entra_external_id_platform_interface.dart';
+import '../microsoft_entra_external_id_platform_interface.dart';
 import 'generated/native_auth_api.g.dart' as pigeon;
 import 'native_auth_state.dart';
 import 'native_sdk_status.dart';
 
 /// Pigeon-backed implementation of the platform bridge.
-final class PigeonEntraExternalIdPlatform extends EntraExternalIdPlatform {
-  PigeonEntraExternalIdPlatform({pigeon.NativeAuthHostApi? hostApi})
+final class PigeonMicrosoftEntraExternalIdPlatform
+    extends MicrosoftEntraExternalIdPlatform {
+  PigeonMicrosoftEntraExternalIdPlatform({pigeon.NativeAuthHostApi? hostApi})
     : _hostApi = hostApi ?? pigeon.NativeAuthHostApi();
 
   final pigeon.NativeAuthHostApi _hostApi;

@@ -1,7 +1,7 @@
-import 'package:entra_external_id/entra_external_id.dart';
-import 'package:entra_external_id/src/generated/native_auth_api.g.dart'
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id.dart';
+import 'package:microsoft_entra_external_id/src/generated/native_auth_api.g.dart'
     as pigeon;
-import 'package:entra_external_id/src/pigeon_entra_external_id_platform.dart';
+import 'package:microsoft_entra_external_id/src/pigeon_microsoft_entra_external_id_platform.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
@@ -52,7 +52,7 @@ final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
 
 void main() {
   test('maps Android SDK status without exposing generated types', () async {
-    final platform = PigeonEntraExternalIdPlatform(
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
       hostApi: FakeNativeAuthHostApi(
         status: pigeon.NativeSdkStatusMessage(
           platform: pigeon.NativePlatformMessage.android,
@@ -68,7 +68,7 @@ void main() {
   });
 
   test('maps iOS SDK version when linked', () async {
-    final platform = PigeonEntraExternalIdPlatform(
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
       hostApi: FakeNativeAuthHostApi(
         status: pigeon.NativeSdkStatusMessage(
           platform: pigeon.NativePlatformMessage.ios,
@@ -89,7 +89,7 @@ void main() {
   });
 
   test('maps an OTP continuation without exposing generated types', () async {
-    final platform = PigeonEntraExternalIdPlatform(
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
       hostApi: FakeNativeAuthHostApi(
         status: pigeon.NativeSdkStatusMessage(
           platform: pigeon.NativePlatformMessage.android,
@@ -116,7 +116,7 @@ void main() {
   });
 
   test('maps browser-required as a typed failure', () async {
-    final platform = PigeonEntraExternalIdPlatform(
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
       hostApi: FakeNativeAuthHostApi(
         status: pigeon.NativeSdkStatusMessage(
           platform: pigeon.NativePlatformMessage.ios,

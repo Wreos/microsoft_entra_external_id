@@ -10,7 +10,7 @@ substitute for deterministic unit and contract tests.
 
 - Define the External ID-only target and custom-UI value proposition.
 - Separate native authentication from browser-delegated MSAL flows.
-- Record MVP scope, non-goals, security constraints, and success criteria.
+- Record initial scope, non-goals, security constraints, and success criteria.
 
 **Validation gate**
 
@@ -24,7 +24,7 @@ substitute for deterministic unit and contract tests.
 **Deliverables**
 
 - Generate one Android/iOS Flutter plugin package with Kotlin and Swift.
-- Use the OSS namespace `io.github.wreos.entra_external_id`.
+- Use the OSS namespace `io.github.wreos.microsoft_entra_external_id`.
 - Replace template placeholders with project metadata and an MIT license.
 - Add a typed Pigeon diagnostic channel without linking MSAL prematurely.
 - Retain Dart, native, widget, and integration-test locations.
@@ -35,8 +35,8 @@ substitute for deterministic unit and contract tests.
 
 - Generate Pigeon output from a checked-in schema.
 - Run Dart formatting, Flutter analysis, and Flutter tests.
-- Run Android unit tests and build the Android example.
-- Run iOS tests/build when an iOS simulator and Xcode/SwiftPM environment are
+- Run Android unit and emulator integration tests.
+- Run iOS tests when an iOS simulator and Xcode/SwiftPM environment are
   available.
 - Confirm the generated Android and iOS projects match Flutter 3.47.2's current
   plugin template, except for documented package-specific decisions.
@@ -82,13 +82,14 @@ attributes, MFA, cancellation, and correlation metadata remain in later slices.
 **Validation gate**
 
 - Kotlin tests cover every mapped result and continuation.
-- Gradle unit tests and the Android example build pass.
+- Gradle unit tests and Android emulator integration pass.
 - A manual external-tenant smoke test passes for password and OTP sign-in.
 - Logs contain no credentials, codes, tokens, continuation data, or PII.
 
-**Status:** Email OTP implementation and deterministic build gate complete with
-MSAL Android 8.4.2. Password/token APIs, complete native branch tests, and a
-live-tenant smoke test are still open, so the full stage is not complete.
+**Status:** Email OTP implementation, deterministic gates, and a physical-device
+live-tenant smoke test are complete with MSAL Android 8.4.2. Password/token APIs
+and complete native branch tests are still open, so the full stage is not
+complete.
 
 ## Stage 4 — iOS parity for the sign-in slice
 
@@ -144,7 +145,7 @@ is not complete.
 **Deliverables**
 
 - Add a threat model, `SECURITY.md`, migration policy, and full integration docs.
-- Add CI for Dart, Android, iOS, generated-code drift, and example builds.
+- Add CI for Dart, Android, iOS, generated-code drift, and simulator integration.
 - Prepare API docs and a prerelease package.
 
 **Validation gate**
@@ -156,7 +157,7 @@ is not complete.
 - Publish only as a prerelease until both platforms pass the documented matrix.
 
 **Status:** CI/CD infrastructure complete: immutable Action pins, Dart and
-Pigeon quality gates, Android unit/build/emulator gates, iOS XCTest/simulator
+Pigeon quality gates, Android unit/emulator gates, iOS XCTest/simulator
 gates, dependency review, targeted secret scanning, publish dry-run, weekly
 dependency updates, and tag-gated draft GitHub releases are configured. The
 threat model, complete API/integration documentation, independent-team trial,

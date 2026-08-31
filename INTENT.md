@@ -1,15 +1,15 @@
 ---
-status: experimental-mvp
+status: pre-release
 date: 2026-08-30
-package: entra_external_id
+package: microsoft_entra_external_id
 repository: microsoft_entra_external_id
 ---
 
-# Entra External ID for Flutter — Intent
+# Microsoft Entra External ID for Flutter — Intent
 
 ## Product thesis
 
-`entra_external_id` will be an unofficial Flutter plugin that bridges the official Microsoft Authentication Library (MSAL) Native Authentication SDKs for Android and iOS.
+`microsoft_entra_external_id` will be an unofficial Flutter plugin that bridges the official Microsoft Authentication Library (MSAL) Native Authentication SDKs for Android and iOS.
 
 It will let Flutter applications build their own sign-up, sign-in, password-reset, and challenge UI while delegating authentication protocol handling, token caching, and platform-specific behavior to Microsoft's native SDKs.
 
@@ -31,7 +31,7 @@ Expose the native authentication flow as a typed Dart state machine. The host ap
 
 The plugin must never claim that every flow is browserless. It must surface browser fallback explicitly when Entra or a federated identity provider requires it.
 
-## MVP scope
+## Initial release scope
 
 The first usable release targets Android and iOS and includes:
 
@@ -80,7 +80,7 @@ Continuation handles are opaque, short-lived, and in-memory only. Applications a
 - Use Pigeon-generated channels for the production contract instead of handwritten map-based method channels.
 - Keep engine-specific state on each plugin instance and release it when the Flutter engine detaches.
 - Keep UI widgets out of the core package. The example app demonstrates custom UI; an optional UI companion package may be considered later.
-- Depend on official Microsoft MSAL artifacts only. Do not reimplement the Native Authentication protocol in Dart for the MVP.
+- Depend on official Microsoft MSAL artifacts only. Do not reimplement the Native Authentication protocol in Dart for the initial release.
 
 ## Security constraints
 
@@ -92,7 +92,7 @@ Continuation handles are opaque, short-lived, and in-memory only. Applications a
 - Document the shared security responsibility introduced by custom native authentication UI.
 - Provide a private security-reporting path before the first public release.
 
-## Non-goals for MVP
+## Initial non-goals
 
 - Workforce Entra ID authentication.
 - Legacy Azure AD B2C compatibility guarantees.
@@ -113,12 +113,12 @@ Every implementation stage must pass its gate before the next stage starts:
 5. **iOS gate:** native unit tests cover every mapped delegate callback and continuation before a live-tenant smoke test.
 6. **Cross-platform gate:** the same Dart scenario tests pass against both native implementations.
 7. **Security gate:** credential/token logging checks, dependency review, and documented threat model pass.
-8. **Release gate:** formatting, static analysis, Dart tests, Android tests/build, iOS tests/build, example integration tests, and `flutter pub publish --dry-run` all pass.
+8. **Release gate:** formatting, static analysis, Dart tests, Android and iOS native tests, simulator integration tests, and `flutter pub publish --dry-run` all pass.
 
 ## Bootstrap acceptance criteria
 
 - The repository is initialized with Git.
-- The package is named `entra_external_id` and supports only Android and iOS.
+- The package is named `microsoft_entra_external_id` and supports only Android and iOS.
 - Android uses Kotlin and an OSS-safe reverse-domain namespace.
 - iOS uses Swift.
 - The generated example, unit tests, and native test locations are retained.
@@ -126,7 +126,7 @@ Every implementation stage must pass its gate before the next stage starts:
 - The initial implementation plan is checked into the repository.
 - No package is published and no API is presented as stable.
 
-## Success criteria for the MVP
+## Initial release success criteria
 
 - One example External ID tenant completes password and email-OTP sign-up/sign-in on both Android and iOS.
 - Password reset and token retrieval work on both platforms.

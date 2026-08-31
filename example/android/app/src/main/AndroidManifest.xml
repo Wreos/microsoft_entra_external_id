@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="entra_external_id_example"
+        android:label="Microsoft Entra External ID"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

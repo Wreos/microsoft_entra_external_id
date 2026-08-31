@@ -1,4 +1,4 @@
-package io.github.wreos.entra_external_id
+package io.github.wreos.microsoft_entra_external_id
 
 import android.content.Context
 import com.microsoft.identity.client.PublicClientApplication
@@ -28,7 +28,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.util.UUID
 
 /** Pigeon host implementation backed by MSAL Native Authentication. */
-class EntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
+class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
     private var applicationContext: Context? = null
     private var authClient: INativeAuthPublicClientApplication? = null
     private val continuations = mutableMapOf<String, CodeContinuation>()
@@ -206,15 +206,15 @@ class EntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         is SignInContinuationError -> failure(result)
         is SignInResult.PasswordRequired -> failure(
             "password_required",
-            "This example is configured for email one-time passcodes.",
+            "The plugin currently supports email one-time passcodes only.",
         )
         is SignInResult.MFARequired -> failure(
             "mfa_required",
-            "This example does not yet implement multifactor authentication.",
+            "The plugin does not yet implement multifactor authentication.",
         )
         is SignInResult.StrongAuthMethodRegistrationRequired -> failure(
             "strong_auth_registration_required",
-            "This example does not yet implement strong authentication registration.",
+            "The plugin does not yet implement strong authentication registration.",
         )
         else -> unsupported(result)
     }
@@ -236,11 +236,11 @@ class EntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         )
         is SignUpResult.AttributesRequired -> failure(
             "attributes_required",
-            "The tenant requires user attributes that this minimal example does not collect.",
+            "The tenant requires user attributes that the plugin does not yet collect.",
         )
         is SignUpResult.PasswordRequired -> failure(
             "password_required",
-            "This example is configured for email one-time passcodes.",
+            "The plugin currently supports email one-time passcodes only.",
         )
         is SignUpError -> failure(result)
         else -> unsupported(result)

@@ -1,4 +1,4 @@
-# Entra External ID for Flutter
+# Microsoft Entra External ID for Flutter
 
 [![CI](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml/badge.svg)](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml)
 
@@ -12,7 +12,11 @@ WebView.
 
 ## Custom Flutter UI, native authentication
 
-![Successful Entra External ID native sign-in on Android](docs/assets/android-authenticated.png)
+<img
+  src="doc/assets/android-authenticated.png"
+  alt="Successful Microsoft Entra External ID native sign-in on Android"
+  width="320"
+>
 
 The screenshot shows a real Email OTP sign-in against an External ID tenant on
 an Android device. The account identifier is redacted.
@@ -28,11 +32,10 @@ an Android device. The account identifier is redacted.
 - an example whose Flutter widgets own the complete authentication UI, with no
   embedded WebView.
 
-Read [INTENT.md](INTENT.md) for product scope and
-[doc/IMPLEMENTATION_PLAN.md](doc/IMPLEMENTATION_PLAN.md) for the execution
-sequence. The verified toolchain and deployment floors are recorded in
-[doc/STACK.md](doc/STACK.md), and the exact bootstrap evidence and environment
-limitations are recorded in [doc/VALIDATION.md](doc/VALIDATION.md).
+Read [INTENT.md][intent] for product scope and [the implementation plan][plan]
+for the execution sequence. The verified toolchain and deployment floors are
+recorded in [the stack guide][stack], and the exact evidence and environment
+limitations are recorded in [the validation report][validation].
 
 ## Requirements
 
@@ -46,9 +49,8 @@ This plugin targets **external tenants** in Microsoft Entra External ID. It is
 not intended for workforce Entra ID, legacy Azure AD B2C compatibility, or
 browser-only MSAL flows.
 
-The host Flutter app will own the UI. The plugin will expose native
-authentication as typed states and continuations. Browser fallback will remain
-explicit for flows that cannot stay native.
+The host Flutter app owns the UI. The plugin exposes native authentication as
+typed states and continuations.
 
 On Android, the implementation target is Microsoft's
 `INativeAuthPublicClientApplication`, created with
@@ -63,7 +65,9 @@ Microsoft's [iOS Native Authentication quickstart][native-auth-ios].
 ## Quick start
 
 ```dart
-final entra = EntraExternalId();
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id.dart';
+
+final entra = MicrosoftEntraExternalId();
 await entra.initialize(
   const NativeAuthConfiguration(
     clientId: 'application-client-id',
@@ -78,9 +82,20 @@ if (state case final NativeAuthCodeRequired codeRequired) {
 }
 ```
 
-See the [working example](example/README.md) for tenant prerequisites and run
-commands. Client ID and tenant subdomain are public configuration values; never
-put client secrets in a mobile application.
+See the [working example][example] for tenant prerequisites and run commands.
+Client ID and tenant subdomain are public configuration values; never put
+client secrets in a mobile application.
+
+## Browser fallback
+
+The plugin does not open a browser automatically. When MSAL determines that a
+flow must leave native authentication, the plugin returns
+`NativeAuthFailure(browserRequired: true)`. The host application must then
+start its own system-browser authentication flow.
+
+An SDK initialization or runtime error is returned as a normal
+`NativeAuthFailure`; it does not silently switch authentication mechanisms.
+Embedded WebViews are never used as a fallback.
 
 ## Contributing
 
@@ -89,9 +104,9 @@ validation gate defined in the implementation plan.
 
 Pull requests run Dart formatting, analysis, unit and widget tests, generated
 Pigeon drift detection, Android native and emulator tests, iOS XCTest and
-simulator tests, dependency review, an example APK build, and a pub.dev dry run.
-All third-party GitHub Actions are pinned to immutable commit SHAs and updated
-through Dependabot.
+simulator tests, dependency review, and a pub.dev dry run. CI does not publish
+example application binaries. All third-party GitHub Actions are pinned to
+immutable commit SHAs and updated through Dependabot.
 
 Pushing a version tag that exactly matches `version` in `pubspec.yaml` (for
 example, `v0.1.0`) reruns the complete CI workflow and creates a draft GitHub
@@ -100,3 +115,8 @@ manual release decision until the live-tenant validation matrix is complete.
 
 [native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
 [native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in
+[example]: https://github.com/Wreos/microsoft_entra_external_id/tree/main/example
+[intent]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/INTENT.md
+[plan]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/IMPLEMENTATION_PLAN.md
+[stack]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/STACK.md
+[validation]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/VALIDATION.md

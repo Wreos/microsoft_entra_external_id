@@ -11,7 +11,7 @@ kotlin {
 }
 
 android {
-    namespace = "io.github.wreos.entra_external_id_example"
+    namespace = "io.github.wreos.microsoft_entra_external_id_example"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.wreos.entra_external_id_example"
+        applicationId = "io.github.wreos.microsoft_entra_external_id_example"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

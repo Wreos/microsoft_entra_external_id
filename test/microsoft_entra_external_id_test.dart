@@ -1,12 +1,12 @@
-import 'package:entra_external_id/entra_external_id.dart';
-import 'package:entra_external_id/entra_external_id_platform_interface.dart';
-import 'package:entra_external_id/src/pigeon_entra_external_id_platform.dart';
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id.dart';
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id_platform_interface.dart';
+import 'package:microsoft_entra_external_id/src/pigeon_microsoft_entra_external_id_platform.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-class MockEntraExternalIdPlatform
+class MockMicrosoftEntraExternalIdPlatform
     with MockPlatformInterfaceMixin
-    implements EntraExternalIdPlatform {
+    implements MicrosoftEntraExternalIdPlatform {
   NativeAuthConfiguration? initializedWith;
   String? signedInUsername;
   String? signedUpUsername;
@@ -63,16 +63,16 @@ class MockEntraExternalIdPlatform
 }
 
 void main() {
-  test('$PigeonEntraExternalIdPlatform is the default instance', () {
+  test('$PigeonMicrosoftEntraExternalIdPlatform is the default instance', () {
     expect(
-      EntraExternalIdPlatform.instance,
-      isInstanceOf<PigeonEntraExternalIdPlatform>(),
+      MicrosoftEntraExternalIdPlatform.instance,
+      isInstanceOf<PigeonMicrosoftEntraExternalIdPlatform>(),
     );
   });
 
   test('getNativeSdkStatus delegates to the platform implementation', () async {
-    final fakePlatform = MockEntraExternalIdPlatform();
-    final plugin = EntraExternalId(platform: fakePlatform);
+    final fakePlatform = MockMicrosoftEntraExternalIdPlatform();
+    final plugin = MicrosoftEntraExternalId(platform: fakePlatform);
 
     expect(
       await plugin.getNativeSdkStatus(),
@@ -85,8 +85,8 @@ void main() {
   });
 
   test('initialize trims and delegates public configuration', () async {
-    final fakePlatform = MockEntraExternalIdPlatform();
-    final plugin = EntraExternalId(platform: fakePlatform);
+    final fakePlatform = MockMicrosoftEntraExternalIdPlatform();
+    final plugin = MicrosoftEntraExternalId(platform: fakePlatform);
 
     expect(
       await plugin.initialize(
@@ -102,7 +102,9 @@ void main() {
   });
 
   test('initialize rejects a tenant domain instead of a subdomain', () {
-    final plugin = EntraExternalId(platform: MockEntraExternalIdPlatform());
+    final plugin = MicrosoftEntraExternalId(
+      platform: MockMicrosoftEntraExternalIdPlatform(),
+    );
 
     expect(
       () => plugin.initialize(
@@ -118,8 +120,8 @@ void main() {
   test(
     'interactive operations normalize input and preserve continuation',
     () async {
-      final fakePlatform = MockEntraExternalIdPlatform();
-      final plugin = EntraExternalId(platform: fakePlatform);
+      final fakePlatform = MockMicrosoftEntraExternalIdPlatform();
+      final plugin = MicrosoftEntraExternalId(platform: fakePlatform);
       const state = NativeAuthCodeRequired(
         operation: NativeAuthOperation.signIn,
         continuationId: 'continuation-id',

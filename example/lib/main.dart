@@ -1,4 +1,4 @@
-import 'package:entra_external_id/entra_external_id.dart';
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,12 +19,12 @@ class NativeAuthExampleApp extends StatelessWidget {
 
   final String clientId;
   final String tenantSubdomain;
-  final EntraExternalId? plugin;
+  final MicrosoftEntraExternalId? plugin;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Entra External ID Native Auth',
+      title: 'Microsoft Entra External ID Native Auth',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
@@ -48,14 +48,14 @@ class NativeAuthHomePage extends StatefulWidget {
 
   final String clientId;
   final String tenantSubdomain;
-  final EntraExternalId? plugin;
+  final MicrosoftEntraExternalId? plugin;
 
   @override
   State<NativeAuthHomePage> createState() => _NativeAuthHomePageState();
 }
 
 class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
-  late final EntraExternalId _plugin;
+  late final MicrosoftEntraExternalId _plugin;
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
 
@@ -71,7 +71,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   @override
   void initState() {
     super.initState();
-    _plugin = widget.plugin ?? EntraExternalId();
+    _plugin = widget.plugin ?? MicrosoftEntraExternalId();
     if (_configured) {
       _initialize();
     } else {
@@ -214,7 +214,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Entra External ID')),
+      appBar: AppBar(title: const Text('Microsoft Entra External ID')),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(

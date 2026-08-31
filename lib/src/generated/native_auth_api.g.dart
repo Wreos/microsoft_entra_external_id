@@ -375,7 +375,7 @@ class NativeAuthHostApi {
 
   Future<NativeSdkStatusMessage> getNativeSdkStatus() async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getNativeSdkStatus$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getNativeSdkStatus$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -396,7 +396,7 @@ class NativeAuthHostApi {
     NativeAuthConfigurationMessage configuration,
   ) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.initialize$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.initialize$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -417,7 +417,7 @@ class NativeAuthHostApi {
 
   Future<NativeAuthResultMessage> getCurrentAccount() async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getCurrentAccount$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getCurrentAccount$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -436,7 +436,7 @@ class NativeAuthHostApi {
 
   Future<NativeAuthResultMessage> startSignIn(String username) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignIn$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignIn$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -457,7 +457,7 @@ class NativeAuthHostApi {
 
   Future<NativeAuthResultMessage> startSignUp(String username) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignUp$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignUp$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -481,7 +481,7 @@ class NativeAuthHostApi {
     String code,
   ) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.submitCode$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitCode$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -502,7 +502,7 @@ class NativeAuthHostApi {
 
   Future<NativeAuthResultMessage> resendCode(String continuationId) async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.resendCode$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.resendCode$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,
@@ -523,7 +523,7 @@ class NativeAuthHostApi {
 
   Future<NativeAuthResultMessage> signOut() async {
     final pigeonVar_channelName =
-        'dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.signOut$pigeonVar_messageChannelSuffix';
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.signOut$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

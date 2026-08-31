@@ -450,7 +450,7 @@ class NativeAuthHostApiSetup {
   /// Sets up an instance of `NativeAuthHostApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: NativeAuthHostApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
-    let getNativeSdkStatusChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getNativeSdkStatus\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let getNativeSdkStatusChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getNativeSdkStatus\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getNativeSdkStatusChannel.setMessageHandler { _, reply in
         do {
@@ -463,7 +463,7 @@ class NativeAuthHostApiSetup {
     } else {
       getNativeSdkStatusChannel.setMessageHandler(nil)
     }
-    let initializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.initialize\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let initializeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.initialize\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       initializeChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -480,7 +480,7 @@ class NativeAuthHostApiSetup {
     } else {
       initializeChannel.setMessageHandler(nil)
     }
-    let getCurrentAccountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getCurrentAccount\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let getCurrentAccountChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getCurrentAccount\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getCurrentAccountChannel.setMessageHandler { _, reply in
         Task { @MainActor in
@@ -495,7 +495,7 @@ class NativeAuthHostApiSetup {
     } else {
       getCurrentAccountChannel.setMessageHandler(nil)
     }
-    let startSignInChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignIn\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let startSignInChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignIn\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       startSignInChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -512,7 +512,7 @@ class NativeAuthHostApiSetup {
     } else {
       startSignInChannel.setMessageHandler(nil)
     }
-    let startSignUpChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignUp\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let startSignUpChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignUp\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       startSignUpChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -529,7 +529,7 @@ class NativeAuthHostApiSetup {
     } else {
       startSignUpChannel.setMessageHandler(nil)
     }
-    let submitCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.submitCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let submitCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       submitCodeChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -547,7 +547,7 @@ class NativeAuthHostApiSetup {
     } else {
       submitCodeChannel.setMessageHandler(nil)
     }
-    let resendCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.resendCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let resendCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.resendCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       resendCodeChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
@@ -564,7 +564,7 @@ class NativeAuthHostApiSetup {
     } else {
       resendCodeChannel.setMessageHandler(nil)
     }
-    let signOutChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.signOut\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    let signOutChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.signOut\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       signOutChannel.setMessageHandler { _, reply in
         Task { @MainActor in

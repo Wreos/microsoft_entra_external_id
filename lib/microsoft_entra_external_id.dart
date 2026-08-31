@@ -1,17 +1,17 @@
-import 'entra_external_id_platform_interface.dart';
+import 'microsoft_entra_external_id_platform_interface.dart';
 import 'src/native_auth_state.dart';
 import 'src/native_sdk_status.dart';
 
 export 'src/native_auth_state.dart';
 export 'src/native_sdk_status.dart';
 
-/// Entry point for the Entra External ID native authentication bridge.
+/// Entry point for the Microsoft Entra External ID native authentication bridge.
 ///
-class EntraExternalId {
-  EntraExternalId({EntraExternalIdPlatform? platform})
-    : _platform = platform ?? EntraExternalIdPlatform.instance;
+class MicrosoftEntraExternalId {
+  MicrosoftEntraExternalId({MicrosoftEntraExternalIdPlatform? platform})
+    : _platform = platform ?? MicrosoftEntraExternalIdPlatform.instance;
 
-  final EntraExternalIdPlatform _platform;
+  final MicrosoftEntraExternalIdPlatform _platform;
 
   /// Returns whether the official MSAL SDK is linked on the current platform.
   Future<NativeSdkStatus> getNativeSdkStatus() =>

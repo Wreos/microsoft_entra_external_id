@@ -1,4 +1,4 @@
-name: entra_external_id
+name: microsoft_entra_external_id
 description: "Flutter bridge for Microsoft Entra External ID Native Authentication using the official MSAL Android and iOS SDKs."
 version: 0.0.1
 homepage: https://github.com/Wreos/microsoft_entra_external_id
@@ -31,7 +31,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: io.github.wreos.entra_external_id
-        pluginClass: EntraExternalIdPlugin
+        package: io.github.wreos.microsoft_entra_external_id
+        pluginClass: MicrosoftEntraExternalIdPlugin
       ios:
-        pluginClass: EntraExternalIdPlugin
+        pluginClass: MicrosoftEntraExternalIdPlugin

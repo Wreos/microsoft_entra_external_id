@@ -1,11 +1,11 @@
-import 'package:entra_external_id/entra_external_id.dart';
-import 'package:entra_external_id/entra_external_id_platform_interface.dart';
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id.dart';
+import 'package:microsoft_entra_external_id/microsoft_entra_external_id_platform_interface.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:entra_external_id_example/main.dart';
+import 'package:microsoft_entra_external_id_example/main.dart';
 
-final class FakeNativeAuthPlatform extends EntraExternalIdPlatform {
+final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
   int signInCalls = 0;
   int submitCodeCalls = 0;
 
@@ -72,7 +72,7 @@ void main() {
 
   testWidgets('runs the email OTP sign-in UI flow', (tester) async {
     final platform = FakeNativeAuthPlatform();
-    final plugin = EntraExternalId(platform: platform);
+    final plugin = MicrosoftEntraExternalId(platform: platform);
     await tester.pumpWidget(
       NativeAuthExampleApp(
         clientId: 'client-id',

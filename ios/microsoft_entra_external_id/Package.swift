@@ -4,12 +4,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "entra_external_id",
+    name: "microsoft_entra_external_id",
     platforms: [
         .iOS("17.0")
     ],
     products: [
-        .library(name: "entra-external-id", targets: ["entra_external_id"])
+        .library(name: "microsoft-entra-external-id", targets: ["microsoft_entra_external_id"])
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework"),
@@ -20,7 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "entra_external_id",
+            name: "microsoft_entra_external_id",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework"),
                 .product(

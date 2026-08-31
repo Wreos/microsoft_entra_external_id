@@ -2,7 +2,7 @@
 // See also: https://pub.dev/packages/pigeon
 @file:Suppress("UNCHECKED_CAST", "ArrayInDataClass")
 
-package io.github.wreos.entra_external_id
+package io.github.wreos.microsoft_entra_external_id
 
 import android.util.Log
 import io.flutter.plugin.common.BasicMessageChannel
@@ -474,7 +474,7 @@ interface NativeAuthHostApi {
     fun setUp(binaryMessenger: BinaryMessenger, api: NativeAuthHostApi?, messageChannelSuffix: String = "") {
       val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getNativeSdkStatus$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getNativeSdkStatus$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
@@ -489,7 +489,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.initialize$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.initialize$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
@@ -508,7 +508,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.getCurrentAccount$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getCurrentAccount$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             CoroutineScope(Dispatchers.Main).launch {
@@ -525,7 +525,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignIn$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignIn$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
@@ -544,7 +544,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.startSignUp$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignUp$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
@@ -563,7 +563,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.submitCode$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitCode$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
@@ -583,7 +583,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.resendCode$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.resendCode$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
@@ -602,7 +602,7 @@ interface NativeAuthHostApi {
         }
       }
       run {
-        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.entra_external_id.NativeAuthHostApi.signOut$separatedMessageChannelSuffix", codec)
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.signOut$separatedMessageChannelSuffix", codec)
         if (api != null) {
           channel.setMessageHandler { _, reply ->
             CoroutineScope(Dispatchers.Main).launch {

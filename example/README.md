@@ -1,4 +1,4 @@
-# Entra External ID native-authentication example
+# Microsoft Entra External ID native-authentication example
 
 This app mirrors the simple Email one-time-passcode flow from Microsoft's
 official native-authentication samples, while keeping the UI in Flutter:

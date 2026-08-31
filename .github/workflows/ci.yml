@@ -46,8 +46,8 @@ jobs:
           dart format lib/src/generated/native_auth_api.g.dart
           git diff --exit-code -- \
             lib/src/generated/native_auth_api.g.dart \
-            android/src/main/kotlin/io/github/wreos/entra_external_id/NativeAuthApi.g.kt \
-            ios/entra_external_id/Sources/entra_external_id/NativeAuthApi.g.swift
+            android/src/main/kotlin/io/github/wreos/microsoft_entra_external_id/NativeAuthApi.g.kt \
+            ios/microsoft_entra_external_id/Sources/microsoft_entra_external_id/NativeAuthApi.g.swift
 
       - name: Verify formatting
         run: >-
@@ -84,7 +84,7 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
   android:
-    name: Android unit tests and APK
+    name: Android unit tests
     runs-on: ubuntu-24.04
     timeout-minutes: 30
 
@@ -135,19 +135,11 @@ jobs:
 
       - name: Run plugin Kotlin tests
         working-directory: example/android
-        run: ./gradlew :entra_external_id:testDebugUnitTest --no-daemon --stacktrace
-
-      - name: Build example APK
-        working-directory: example
-        run: flutter build apk --debug
-
-      - name: Upload example APK
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: entra-external-id-example-debug-apk
-          path: example/build/app/outputs/flutter-apk/app-debug.apk
-          if-no-files-found: error
-          retention-days: 7
+        run: >-
+          ./gradlew
+          :microsoft_entra_external_id:testDebugUnitTest
+          --no-daemon
+          --stacktrace
 
   android-integration:
     name: Android emulator integration
@@ -244,10 +236,6 @@ jobs:
       - name: Resolve dependencies
         working-directory: example
         run: flutter pub get
-
-      - name: Build iOS example with Swift Package Manager
-        working-directory: example
-        run: flutter build ios --simulator --debug --no-codesign
 
       - name: Boot an iOS simulator
         run: |

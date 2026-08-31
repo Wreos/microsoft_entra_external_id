@@ -1,1 +1,1 @@
-rootProject.name = 'entra_external_id'
+rootProject.name = 'microsoft_entra_external_id'

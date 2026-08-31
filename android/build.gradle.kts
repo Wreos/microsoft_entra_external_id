@@ -1,4 +1,4 @@
-group = "io.github.wreos.entra_external_id"
+group = "io.github.wreos.microsoft_entra_external_id"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -30,7 +30,7 @@ plugins {
 }
 
 android {
-    namespace = "io.github.wreos.entra_external_id"
+    namespace = "io.github.wreos.microsoft_entra_external_id"
 
     compileSdk = 36
 

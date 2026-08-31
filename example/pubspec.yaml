@@ -1,5 +1,5 @@
-name: entra_external_id_example
-description: "Demonstrates how to use the entra_external_id plugin."
+name: microsoft_entra_external_id_example
+description: "Demonstrates how to use the microsoft_entra_external_id plugin."
 version: 1.0.0+1
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -18,9 +18,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  entra_external_id:
+  microsoft_entra_external_id:
     # When depending on this package from a real application you should use:
-    #   entra_external_id: ^x.y.z
+    #   microsoft_entra_external_id: ^x.y.z
     # See https://dart.dev/tools/pub/dependencies#version-constraints
     # The example app is bundled with the plugin so we use a path dependency on
     # the parent directory to use the current plugin's version.
