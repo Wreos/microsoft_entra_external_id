@@ -11,6 +11,10 @@ updates:
     labels:
       - dependencies
       - ci
+    groups:
+      github-actions:
+        patterns:
+          - '*'
 
   - package-ecosystem: pub
     directory: /
@@ -44,6 +48,10 @@ updates:
     labels:
       - dependencies
       - android
+    groups:
+      android-toolchain:
+        patterns:
+          - '*'
 
   - package-ecosystem: swift
     directory: /ios/entra_external_id
