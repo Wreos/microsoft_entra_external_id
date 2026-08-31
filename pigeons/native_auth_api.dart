@@ -21,6 +21,7 @@ enum NativeAuthResultTypeMessage {
   initialized,
   signedOut,
   codeRequired,
+  passwordRequired,
   signedIn,
   error,
   browserRequired,
@@ -48,12 +49,38 @@ class NativeAuthConfigurationMessage {
   String tenantSubdomain;
 }
 
+class NativeAuthSignInParametersMessage {
+  NativeAuthSignInParametersMessage({
+    required this.username,
+    required this.scopes,
+    this.password,
+  });
+
+  String username;
+  String? password;
+  List<String> scopes;
+}
+
+class NativeAuthAccessTokenParametersMessage {
+  NativeAuthAccessTokenParametersMessage({
+    required this.scopes,
+    required this.forceRefresh,
+  });
+
+  List<String> scopes;
+  bool forceRefresh;
+}
+
 class NativeAuthResultMessage {
   NativeAuthResultMessage({
     required this.type,
     this.operation,
     this.continuationId,
     this.username,
+    this.idToken,
+    this.accessToken,
+    this.scopes,
+    this.expiresAtEpochMilliseconds,
     this.sentTo,
     this.codeLength,
     this.errorCode,
@@ -64,6 +91,10 @@ class NativeAuthResultMessage {
   NativeAuthOperationMessage? operation;
   String? continuationId;
   String? username;
+  String? idToken;
+  String? accessToken;
+  List<String>? scopes;
+  int? expiresAtEpochMilliseconds;
   String? sentTo;
   int? codeLength;
   String? errorCode;
@@ -83,7 +114,9 @@ abstract class NativeAuthHostApi {
   NativeAuthResultMessage getCurrentAccount();
 
   @async
-  NativeAuthResultMessage startSignIn(String username);
+  NativeAuthResultMessage startSignIn(
+    NativeAuthSignInParametersMessage parameters,
+  );
 
   @async
   NativeAuthResultMessage startSignUp(String username);
@@ -92,7 +125,18 @@ abstract class NativeAuthHostApi {
   NativeAuthResultMessage submitCode(String continuationId, String code);
 
   @async
+  NativeAuthResultMessage submitPassword(
+    String continuationId,
+    String password,
+  );
+
+  @async
   NativeAuthResultMessage resendCode(String continuationId);
+
+  @async
+  NativeAuthResultMessage getAccessToken(
+    NativeAuthAccessTokenParametersMessage parameters,
+  );
 
   @async
   NativeAuthResultMessage signOut();

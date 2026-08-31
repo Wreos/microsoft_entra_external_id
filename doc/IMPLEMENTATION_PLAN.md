@@ -35,7 +35,7 @@ substitute for deterministic unit and contract tests.
 
 - Generate Pigeon output from a checked-in schema.
 - Run Dart formatting, Flutter analysis, and Flutter tests.
-- Run Android unit and emulator integration tests.
+- Run Android unit tests in CI and device integration tests as a manual gate.
 - Run iOS tests when an iOS simulator and Xcode/SwiftPM environment are
   available.
 - Confirm the generated Android and iOS projects match Flutter 3.47.2's current
@@ -46,7 +46,7 @@ substitute for deterministic unit and contract tests.
 **Status:** complete. See `doc/VALIDATION.md`. The iOS Runner starts on an
 isolated simulator and the XCTest bundle compiles, but Xcode does not expose
 that isolated device set as a test destination. XCTest execution remains a
-required CI and release gate.
+manual release gate.
 
 ## Stage 2 — Cross-platform contract spike
 
@@ -67,7 +67,8 @@ required CI and release gate.
 - No password, one-time code, token, or continuation can be serialized by a
   public model accidentally.
 
-**Status:** Email OTP contract slice complete. Account/token, password,
+**Status:** Email OTP, password sign-in, account, ID/access-token, scopes,
+expiry, and native-cache refresh contract slices are complete. Password sign-up,
 attributes, MFA, cancellation, and correlation metadata remain in later slices.
 
 ## Stage 3 — Android initialization and sign-in slice
@@ -86,10 +87,11 @@ attributes, MFA, cancellation, and correlation metadata remain in later slices.
 - A manual external-tenant smoke test passes for password and OTP sign-in.
 - Logs contain no credentials, codes, tokens, continuation data, or PII.
 
-**Status:** Email OTP implementation, deterministic gates, and a physical-device
-live-tenant smoke test are complete with MSAL Android 8.4.2. Password/token APIs
-and complete native branch tests are still open, so the full stage is not
-complete.
+**Status:** Email OTP and password sign-in plus token APIs are implemented with
+MSAL Android 8.4.2. Deterministic gates and the physical-device Email OTP
+live-tenant smoke test are complete. Password/API-scoped-token live-tenant
+validation and complete native branch tests are still open, so the full stage
+is not complete.
 
 ## Stage 4 — iOS parity for the sign-in slice
 
@@ -106,11 +108,12 @@ complete.
 - The iOS example and integration tests pass on a simulator.
 - The same live-tenant password and OTP scenarios pass as on Android.
 
-**Status:** Email OTP implementation, SwiftPM build-for-testing, and isolated
-simulator app-launch gates complete with MSAL iOS 2.15.0. Runtime XCTest is
-blocked by local Xcode destination discovery; password/token APIs, complete
-delegate tests, and live-tenant smoke tests are still open, so the full stage
-is not complete.
+**Status:** Email OTP and password sign-in plus token APIs are implemented with
+MSAL iOS 2.15.0. SwiftPM compilation covers the new delegates and native-cache
+token adapter. Runtime XCTest is blocked locally by simulator infrastructure;
+password/API-scoped-token live-tenant validation, complete delegate tests, and
+the iOS live-tenant smoke tests are still open, so the full stage is not
+complete.
 
 ## Stage 5 — Sign-up, attributes, and password reset
 
@@ -145,24 +148,25 @@ is not complete.
 **Deliverables**
 
 - Add a threat model, `SECURITY.md`, migration policy, and full integration docs.
-- Add CI for Dart, Android, iOS, generated-code drift, and simulator integration.
+- Add package-scoped CI for Dart, Android, iOS, and generated-code drift.
 - Prepare API docs and a prerelease package.
 
 **Validation gate**
 
-- Formatting, analysis, Dart/native/integration tests, dependency review, secret
-  scanning, generated-code drift, and `flutter pub publish --dry-run` pass.
+- Formatting, analysis, Dart/native tests, dependency review, secret scanning,
+  generated-code drift, and `flutter pub publish --dry-run` pass. Device and
+  live-tenant tests pass as separate release gates.
 - At least one independent Flutter team completes integration without changing
   native bridge code.
 - Publish only as a prerelease until both platforms pass the documented matrix.
 
 **Status:** CI/CD infrastructure complete: immutable Action pins, Dart and
-Pigeon quality gates, Android unit/emulator gates, iOS XCTest/simulator
-gates, dependency review, targeted secret scanning, publish dry-run, weekly
-dependency updates, and tag-gated draft GitHub releases are configured. The
-threat model, complete API/integration documentation, independent-team trial,
-live-tenant matrix, and prerelease publication remain open, so the stage is not
-complete.
+Pigeon quality gates, Android plugin unit tests, iOS plugin-target compilation,
+dependency review, targeted secret scanning, publish dry-run, weekly dependency
+updates, and tag-gated draft GitHub releases are configured. CI does not build
+or run the example app. The threat model, complete API/integration
+documentation, independent-team trial, live-tenant matrix, and prerelease
+publication remain open, so the stage is not complete.
 
 ## Working rules
 

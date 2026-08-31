@@ -1,8 +1,9 @@
 # Validation report
 
-Validated on 2026-08-31. This report covers the repository bootstrap, the
-deterministic Email one-time-passcode implementation slice, and a live Android
-tenant test. It does not claim production readiness or iOS live-tenant parity.
+Validated on 2026-08-31. This report covers the repository bootstrap,
+deterministic Email one-time-passcode, password sign-in, and token-management
+slices, plus a live Android Email OTP tenant test. It does not claim production
+readiness, password live-tenant validation, or iOS live-tenant parity.
 
 ## Environment
 
@@ -19,9 +20,13 @@ tenant test. It does not claim production readiness or iOS live-tenant parity.
   `MSALNativeAuthPublicClientApplication` on iOS.
 - Initialization from application client ID and external-tenant subdomain.
 - Cached-account lookup.
-- Email OTP sign-in and sign-up.
+- Password and Email OTP sign-in; Email OTP sign-up.
+- Direct password submission and server-driven password continuations.
 - Verification-code submission and resend.
 - Automatic sign-in after sign-up.
+- ID token and API-scoped access-token results with scopes and expiry.
+- Silent MSAL cache retrieval, automatic expired-token refresh, and forced
+  access-token refresh without exposing refresh tokens to Dart.
 - Sign-out and typed browser-required/error states.
 - Custom Flutter example UI with no embedded WebView.
 - SwiftPM-only iOS integration and MSAL keychain entitlement in the example.
@@ -34,24 +39,23 @@ The final implementation snapshot passed:
 Pigeon regeneration + generated-output drift check   PASS
 dart format                                           PASS
 flutter analyze                                      PASS
-flutter test                                         PASS (9 tests)
-flutter test (example)                               PASS (2 widget tests)
-Android plugin testDebugUnitTest                     PASS (3 native tests)
-flutter build apk --debug (example)                  PASS
+flutter test                                        PASS (12 tests)
+flutter test (example)                              PASS (4 widget tests)
+Android plugin testDebugUnitTest                    PASS (5 native tests)
 Android device integration_test native bridge       PASS (1 test)
 Android API 35 install/start/native initialization   PASS
 Swift Package manifest resolution                    PASS
-iOS xcodebuild build-for-testing                     PASS
+iOS Swift plugin compilation                         PASS
 iOS Simulator install/start/native SDK invocation    PASS
 dart pub publish --dry-run (clean Git snapshot)      PASS
 repository secret/placeholder scan                   PASS
 ```
 
-The iOS build resolves `MSAL` `2.15.0` from the official Microsoft repository,
-then compiles the Swift plugin, Runner, and XCTest bundle for both simulator
-architectures. The check also uses a temporary checkout whose directory name
-differs from the Dart package name, guarding against SwiftPM package-identity
-coupling. CocoaPods is not part of the package or validation graph.
+The iOS build resolves `MSAL` `2.15.0` from the official Microsoft repository
+and compiles the password delegates and token-cache adapter for both simulator
+architectures. The local full Runner build currently stops later in Apple's
+asset compiler because the installed iOS 26.5 CoreSimulator cannot create its
+requested device. CocoaPods is not part of the package or validation graph.
 
 The Android aggregate `testDebugUnitTest` task also executes tests shipped
 inside Flutter's `integration_test` module. Three of those upstream Mockito
@@ -74,7 +78,7 @@ initialized, cached-account lookup returned signed-out, and the Flutter
 sign-in/sign-up screen rendered. This proves the iOS runtime bridge and native
 SDK invocation without claiming a live-tenant authentication result. Xcode does
 not discover devices from this isolated device set as test destinations, so
-XCTest execution remains a CI/release gate even though the XCTest bundle
+XCTest execution remains a manual release gate even though the XCTest bundle
 compiles for both simulator architectures.
 
 The complete Email OTP sign-up, automatic sign-in, sign-out, and subsequent
@@ -83,8 +87,10 @@ physical Android device. Tenant identifiers and the test account are not stored
 in the repository. The equivalent iOS live-tenant flow remains required before
 claiming cross-platform parity.
 
-Password authentication, required attributes, password reset, token retrieval,
-MFA/strong-auth continuations, and system-browser fallback execution remain out
-of this slice and are tracked in `doc/IMPLEMENTATION_PLAN.md`. A browser-required
-MSAL result is exposed to Dart, but the plugin does not automatically start a
-browser flow after an SDK error or fallback signal.
+Password sign-in and token retrieval are implemented but still require a real
+Email with password user flow and API scope smoke test on Android and iOS.
+Password sign-up, required attributes, password reset, MFA/strong-auth
+continuations, and system-browser fallback execution remain out of this slice
+and are tracked in `doc/IMPLEMENTATION_PLAN.md`. A browser-required MSAL result
+is exposed to Dart, but the plugin does not automatically start a browser flow
+after an SDK error or fallback signal.

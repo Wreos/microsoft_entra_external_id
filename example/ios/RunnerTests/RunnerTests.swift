@@ -19,4 +19,29 @@ class RunnerTests: XCTestCase {
     XCTAssertEqual(result.type, .error)
     XCTAssertEqual(result.errorCode, "not_initialized")
   }
+
+  func testGetAccessTokenBeforeInitializationReturnsTypedFailure() async throws {
+    let plugin = MicrosoftEntraExternalIdPlugin()
+    let parameters = NativeAuthAccessTokenParametersMessage(
+      scopes: ["api://client/read"],
+      forceRefresh: true
+    )
+
+    let result = try await plugin.getAccessToken(parameters: parameters)
+
+    XCTAssertEqual(result.type, .error)
+    XCTAssertEqual(result.errorCode, "not_initialized")
+  }
+
+  func testSubmitPasswordWithoutContinuationReturnsTypedFailure() async throws {
+    let plugin = MicrosoftEntraExternalIdPlugin()
+
+    let result = try await plugin.submitPassword(
+      continuationId: "missing",
+      password: "not-logged"
+    )
+
+    XCTAssertEqual(result.type, .error)
+    XCTAssertEqual(result.errorCode, "invalid_continuation")
+  }
 }

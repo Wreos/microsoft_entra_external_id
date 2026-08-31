@@ -34,11 +34,17 @@ Do not reintroduce the former `entra_external_id` package or class names.
 
 ## Current capabilities
 
-The implemented flow is Email OTP sign-up and sign-in, verification-code
-submission and resend, automatic sign-in after sign-up, cached-account lookup,
-and sign-out. Password authentication, required attributes, password reset,
-token retrieval, MFA, strong-auth registration, and browser fallback execution
+The implemented flow is password and Email OTP sign-in, Email OTP sign-up,
+verification-code/password submission, automatic sign-in after sign-up,
+cached-account lookup, access/ID token retrieval, silent cache refresh, forced
+access-token refresh, and sign-out. Password sign-up, required attributes,
+password reset, MFA, strong-auth registration, and browser fallback execution
 are not implemented yet.
+
+Refresh tokens stay inside the native MSAL cache and must never be added to the
+Pigeon or Dart contracts. `getAccessToken(forceRefresh: false)` uses the cache
+and refreshes expired access tokens; `forceRefresh: true` explicitly bypasses a
+still-valid cached access token.
 
 `NativeAuthFailure.browserRequired == true` is a signal to the host app. The
 plugin does not automatically open a browser, and ordinary SDK failures must
@@ -67,10 +73,12 @@ flutter test
 (cd example && flutter test)
 ```
 
-Run the relevant native and simulator tests for platform changes. CI validates
-the plugin and integration tests but does not publish example APK or iOS app
-artifacts. For release work, run `dart pub publish --dry-run` from a clean Git
-snapshot so rename/deletion state cannot hide package-layout warnings.
+Run the relevant native and device tests locally for platform changes. CI is
+deliberately package-scoped: it tests the Dart plugin contract, the Android
+plugin module, and compilation of the iOS plugin target. It does not build or
+run the example application. For release work, run
+`dart pub publish --dry-run` from a clean Git snapshot so rename/deletion state
+cannot hide package-layout warnings.
 
 ## Security and tenant configuration
 
@@ -79,9 +87,10 @@ tenant test accounts, or PII. Client ID and tenant subdomain are public mobile
 configuration and should be supplied through app configuration such as
 `--dart-define` in the example.
 
-Keep OTP and continuation state in memory, clear UI controllers after
-submission, and expose only sanitized errors. Do not log native SDK result
-objects wholesale.
+Keep passwords, OTPs, and continuation state in memory, clear UI controllers
+after submission, and expose only sanitized errors. Do not log native SDK
+result objects wholesale. Access and ID tokens may cross into Dart only as an
+explicit authentication result and must never appear in diagnostics.
 
 ## Documentation and integration
 

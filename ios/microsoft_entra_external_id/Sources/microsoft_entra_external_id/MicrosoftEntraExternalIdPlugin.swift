@@ -4,7 +4,7 @@ import MSAL
 public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuthHostApi {
   private var nativeAuth: MSALNativeAuthPublicClientApplication?
   private var accountResult: MSALNativeAuthUserAccountResult?
-  private var continuations: [String: CodeContinuation] = [:]
+  private var continuations: [String: AuthContinuation] = [:]
   private var activeDelegates: [UUID: AnyObject] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -23,7 +23,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       let config = try MSALNativeAuthPublicClientApplicationConfig(
         clientId: configuration.clientId,
         tenantSubdomain: configuration.tenantSubdomain,
-        challengeTypes: [.OOB]
+        challengeTypes: [.OOB, .password]
       )
       nativeAuth = try MSALNativeAuthPublicClientApplication(nativeAuthConfiguration: config)
       accountResult = nil
@@ -43,13 +43,17 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
     guard let accountResult else {
       return NativeAuthResultMessage(type: .signedOut)
     }
-    return signedIn(accountResult)
+    return await signedIn(accountResult)
   }
 
-  func startSignIn(username: String) async throws -> NativeAuthResultMessage {
+  func startSignIn(
+    parameters: NativeAuthSignInParametersMessage
+  ) async throws -> NativeAuthResultMessage {
     guard let nativeAuth else { return notInitialized() }
     continuations.removeAll()
-    let parameters = MSALNativeAuthSignInParameters(username: username)
+    let nativeParameters = MSALNativeAuthSignInParameters(username: parameters.username)
+    nativeParameters.password = parameters.password
+    nativeParameters.scopes = parameters.scopes.isEmpty ? nil : parameters.scopes
     let event: SignInStartEvent = await withCheckedContinuation { continuation in
       let delegateId = UUID()
       let delegate = SignInStartHandler { [weak self] event in
@@ -57,9 +61,10 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
         continuation.resume(returning: event)
       }
       activeDelegates[delegateId] = delegate
-      nativeAuth.signIn(parameters: parameters, delegate: delegate)
+      nativeAuth.signIn(parameters: nativeParameters, delegate: delegate)
     }
-    return map(event)
+    nativeParameters.password = nil
+    return await map(event, scopes: parameters.scopes)
   }
 
   func startSignUp(username: String) async throws -> NativeAuthResultMessage {
@@ -87,7 +92,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
     }
 
     switch flow {
-    case .signIn(let state):
+    case .signInCode(let state, let scopes):
       let event: SignInVerifyEvent = await withCheckedContinuation { continuation in
         let delegateId = UUID()
         let delegate = SignInVerifyHandler { [weak self] event in
@@ -100,18 +105,18 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       switch event {
       case .error(let error, let newState):
         if let newState {
-          continuations[continuationId] = .signIn(newState)
+          continuations[continuationId] = .signInCode(newState, scopes: scopes)
         }
         return failure(error)
       case .completed(let result):
         continuations.removeValue(forKey: continuationId)
         accountResult = result
-        return signedIn(result)
+        return await signedIn(result, scopes: scopes)
       case .unsupported(let code, let message):
         return failure(code: code, message: message)
       }
 
-    case .signUp(let state):
+    case .signUpCode(let state):
       let event: SignUpVerifyEvent = await withCheckedContinuation { continuation in
         let delegateId = UUID()
         let delegate = SignUpVerifyHandler { [weak self] event in
@@ -124,7 +129,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       switch event {
       case .error(let error, let newState):
         if let newState {
-          continuations[continuationId] = .signUp(newState)
+          continuations[continuationId] = .signUpCode(newState)
         }
         return failure(error)
       case .completed(let state):
@@ -133,6 +138,42 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       case .unsupported(let code, let message):
         return failure(code: code, message: message)
       }
+
+    case .signInPassword:
+      return invalidContinuation()
+    }
+  }
+
+  func submitPassword(
+    continuationId: String,
+    password: String
+  ) async throws -> NativeAuthResultMessage {
+    guard case .signInPassword(let state, let scopes) = continuations[continuationId] else {
+      return invalidContinuation()
+    }
+
+    let event: SignInPasswordEvent = await withCheckedContinuation { continuation in
+      let delegateId = UUID()
+      let delegate = SignInPasswordHandler { [weak self] event in
+        self?.activeDelegates.removeValue(forKey: delegateId)
+        continuation.resume(returning: event)
+      }
+      activeDelegates[delegateId] = delegate
+      state.submitPassword(password: password, delegate: delegate)
+    }
+
+    switch event {
+    case .error(let error, let newState):
+      if let newState {
+        continuations[continuationId] = .signInPassword(newState, scopes: scopes)
+      }
+      return failure(error)
+    case .completed(let result):
+      continuations.removeValue(forKey: continuationId)
+      accountResult = result
+      return await signedIn(result, scopes: scopes)
+    case .unsupported(let code, let message):
+      return failure(code: code, message: message)
     }
   }
 
@@ -142,7 +183,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
     }
 
     switch flow {
-    case .signIn(let state):
+    case .signInCode(let state, let scopes):
       let event: SignInResendEvent = await withCheckedContinuation { continuation in
         let delegateId = UUID()
         let delegate = SignInResendHandler { [weak self] event in
@@ -155,11 +196,11 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       switch event {
       case .error(let error, let newState):
         if let newState {
-          continuations[continuationId] = .signIn(newState)
+          continuations[continuationId] = .signInCode(newState, scopes: scopes)
         }
         return failure(error)
       case .codeRequired(let state, let sentTo, let codeLength):
-        continuations[continuationId] = .signIn(state)
+        continuations[continuationId] = .signInCode(state, scopes: scopes)
         return codeRequired(
           operation: .signIn,
           continuationId: continuationId,
@@ -168,7 +209,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
         )
       }
 
-    case .signUp(let state):
+    case .signUpCode(let state):
       let event: SignUpResendEvent = await withCheckedContinuation { continuation in
         let delegateId = UUID()
         let delegate = SignUpResendHandler { [weak self] event in
@@ -181,11 +222,11 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       switch event {
       case .error(let error, let newState):
         if let newState {
-          continuations[continuationId] = .signUp(newState)
+          continuations[continuationId] = .signUpCode(newState)
         }
         return failure(error)
       case .codeRequired(let state, let sentTo, let codeLength):
-        continuations[continuationId] = .signUp(state)
+        continuations[continuationId] = .signUpCode(state)
         return codeRequired(
           operation: .signUp,
           continuationId: continuationId,
@@ -193,7 +234,27 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
           codeLength: codeLength
         )
       }
+
+    case .signInPassword:
+      return invalidContinuation()
     }
+  }
+
+  func getAccessToken(
+    parameters: NativeAuthAccessTokenParametersMessage
+  ) async throws -> NativeAuthResultMessage {
+    guard let nativeAuth else { return notInitialized() }
+    if accountResult == nil {
+      accountResult = nativeAuth.getNativeAuthUserAccount()
+    }
+    guard let accountResult else {
+      return NativeAuthResultMessage(type: .signedOut)
+    }
+    return await signedIn(
+      accountResult,
+      scopes: parameters.scopes,
+      forceRefresh: parameters.forceRefresh
+    )
   }
 
   func signOut() async throws -> NativeAuthResultMessage {
@@ -224,28 +285,35 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       return failure(error)
     case .completed(let result):
       accountResult = result
-      return signedIn(result)
+      return await signedIn(result)
     case .unsupported(let code, let message):
       return failure(code: code, message: message)
     }
   }
 
-  private func map(_ event: SignInStartEvent) -> NativeAuthResultMessage {
+  private func map(
+    _ event: SignInStartEvent,
+    scopes: [String]
+  ) async -> NativeAuthResultMessage {
     switch event {
     case .error(let error):
       return failure(error)
     case .codeRequired(let state, let sentTo, let codeLength):
       let continuationId = UUID().uuidString
-      continuations[continuationId] = .signIn(state)
+      continuations[continuationId] = .signInCode(state, scopes: scopes)
       return codeRequired(
         operation: .signIn,
         continuationId: continuationId,
         sentTo: sentTo,
         codeLength: codeLength
       )
+    case .passwordRequired(let state):
+      let continuationId = UUID().uuidString
+      continuations[continuationId] = .signInPassword(state, scopes: scopes)
+      return passwordRequired(continuationId: continuationId)
     case .completed(let result):
       accountResult = result
-      return signedIn(result)
+      return await signedIn(result, scopes: scopes)
     case .unsupported(let code, let message):
       return failure(code: code, message: message)
     }
@@ -257,7 +325,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       return failure(error)
     case .codeRequired(let state, let sentTo, let codeLength):
       let continuationId = UUID().uuidString
-      continuations[continuationId] = .signUp(state)
+      continuations[continuationId] = .signUpCode(state)
       return codeRequired(
         operation: .signUp,
         continuationId: continuationId,
@@ -284,13 +352,50 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
     )
   }
 
-  private func signedIn(
-    _ result: MSALNativeAuthUserAccountResult
-  ) -> NativeAuthResultMessage {
+  private func passwordRequired(continuationId: String) -> NativeAuthResultMessage {
     NativeAuthResultMessage(
-      type: .signedIn,
-      username: result.account.username
+      type: .passwordRequired,
+      operation: .signIn,
+      continuationId: continuationId
     )
+  }
+
+  private func signedIn(
+    _ result: MSALNativeAuthUserAccountResult,
+    scopes: [String] = [],
+    forceRefresh: Bool = false
+  ) async -> NativeAuthResultMessage {
+    let parameters = MSALNativeAuthGetAccessTokenParameters()
+    parameters.scopes = scopes.isEmpty ? nil : scopes
+    parameters.forceRefresh = forceRefresh
+    parameters.returnRefreshToken = false
+
+    let event: CredentialsEvent = await withCheckedContinuation { continuation in
+      let delegateId = UUID()
+      let delegate = CredentialsHandler { [weak self] event in
+        self?.activeDelegates.removeValue(forKey: delegateId)
+        continuation.resume(returning: event)
+      }
+      activeDelegates[delegateId] = delegate
+      result.getAccessToken(parameters: parameters, delegate: delegate)
+    }
+
+    switch event {
+    case .error(let error):
+      return failure(error)
+    case .completed(let token):
+      let expiresAt = token.expiresOn.map {
+        Int64(($0.timeIntervalSince1970 * 1_000).rounded())
+      }
+      return NativeAuthResultMessage(
+        type: .signedIn,
+        username: result.account.username,
+        idToken: result.idToken,
+        accessToken: token.accessToken,
+        scopes: token.scopes,
+        expiresAtEpochMilliseconds: expiresAt
+      )
+    }
   }
 
   private func notInitialized() -> NativeAuthResultMessage {
@@ -315,6 +420,8 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       code = "user_not_found"
     } else if let error = error as? SignInStartError, error.isInvalidUsername {
       code = "invalid_username"
+    } else if let error = error as? PasswordRequiredError, error.isInvalidPassword {
+      code = "invalid_credentials"
     } else if let error = error as? SignUpStartError, error.isUserAlreadyExists {
       code = "user_already_exists"
     } else if let error = error as? SignUpStartError, error.isInvalidUsername {
@@ -339,15 +446,17 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
     )
   }
 
-  private enum CodeContinuation {
-    case signIn(SignInCodeRequiredState)
-    case signUp(SignUpCodeRequiredState)
+  private enum AuthContinuation {
+    case signInCode(SignInCodeRequiredState, scopes: [String])
+    case signInPassword(SignInPasswordRequiredState, scopes: [String])
+    case signUpCode(SignUpCodeRequiredState)
   }
 }
 
 private enum SignInStartEvent {
   case error(SignInStartError)
   case codeRequired(SignInCodeRequiredState, String, Int)
+  case passwordRequired(SignInPasswordRequiredState)
   case completed(MSALNativeAuthUserAccountResult)
   case unsupported(String, String)
 }
@@ -376,8 +485,8 @@ private final class SignInStartHandler: NSObject, SignInStartDelegate {
     callback(.completed(result))
   }
 
-  @MainActor func onSignInPasswordRequired(newState _: SignInPasswordRequiredState) {
-    callback(.unsupported("password_required", "The plugin currently supports email one-time passcodes only."))
+  @MainActor func onSignInPasswordRequired(newState: SignInPasswordRequiredState) {
+    callback(.passwordRequired(newState))
   }
 
   @MainActor func onSignInStrongAuthMethodRegistration(
@@ -392,6 +501,66 @@ private final class SignInStartHandler: NSObject, SignInStartDelegate {
     newState _: AwaitingMFAState
   ) {
     callback(.unsupported("mfa_required", "Multifactor authentication is not implemented."))
+  }
+}
+
+private enum SignInPasswordEvent {
+  case error(PasswordRequiredError, SignInPasswordRequiredState?)
+  case completed(MSALNativeAuthUserAccountResult)
+  case unsupported(String, String)
+}
+
+private final class SignInPasswordHandler: NSObject, SignInPasswordRequiredDelegate {
+  private let callback: (SignInPasswordEvent) -> Void
+
+  init(callback: @escaping (SignInPasswordEvent) -> Void) {
+    self.callback = callback
+  }
+
+  @MainActor func onSignInPasswordRequiredError(
+    error: PasswordRequiredError,
+    newState: SignInPasswordRequiredState?
+  ) {
+    callback(.error(error, newState))
+  }
+
+  @MainActor func onSignInCompleted(result: MSALNativeAuthUserAccountResult) {
+    callback(.completed(result))
+  }
+
+  @MainActor func onSignInStrongAuthMethodRegistration(
+    authMethods _: [MSALAuthMethod],
+    newState _: RegisterStrongAuthState
+  ) {
+    callback(.unsupported("strong_auth_registration_required", "Strong authentication registration is not implemented."))
+  }
+
+  @MainActor func onSignInAwaitingMFA(
+    authMethods _: [MSALAuthMethod],
+    newState _: AwaitingMFAState
+  ) {
+    callback(.unsupported("mfa_required", "Multifactor authentication is not implemented."))
+  }
+}
+
+private enum CredentialsEvent {
+  case error(RetrieveAccessTokenError)
+  case completed(MSALNativeAuthTokenResult)
+}
+
+private final class CredentialsHandler: NSObject, CredentialsDelegate {
+  private let callback: (CredentialsEvent) -> Void
+
+  init(callback: @escaping (CredentialsEvent) -> Void) {
+    self.callback = callback
+  }
+
+  @MainActor func onAccessTokenRetrieveError(error: RetrieveAccessTokenError) {
+    callback(.error(error))
+  }
+
+  @MainActor func onAccessTokenRetrieveCompleted(result: MSALNativeAuthTokenResult) {
+    callback(.completed(result))
   }
 }
 

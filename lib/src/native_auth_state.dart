@@ -21,6 +21,34 @@ sealed class NativeAuthState {
   const NativeAuthState();
 }
 
+/// Account information returned by the native MSAL cache.
+final class NativeAuthAccount {
+  const NativeAuthAccount({this.username, this.idToken});
+
+  final String? username;
+
+  /// Raw OpenID Connect ID token for identifying the signed-in user.
+  final String? idToken;
+}
+
+/// Access token acquired and refreshed by native MSAL.
+final class NativeAuthToken {
+  const NativeAuthToken({
+    required this.accessToken,
+    required this.scopes,
+    this.expiresAt,
+  });
+
+  /// Raw OAuth access token. Keep it in memory and never log or persist it.
+  final String accessToken;
+
+  /// Scopes granted for [accessToken].
+  final List<String> scopes;
+
+  /// Local expiration timestamp reported by MSAL, when available.
+  final DateTime? expiresAt;
+}
+
 /// The native client is initialized and ready.
 final class NativeAuthInitialized extends NativeAuthState {
   const NativeAuthInitialized();
@@ -50,11 +78,29 @@ final class NativeAuthCodeRequired extends NativeAuthState {
   final int? codeLength;
 }
 
+/// A password must be submitted to continue the native sign-in flow.
+final class NativeAuthPasswordRequired extends NativeAuthState {
+  const NativeAuthPasswordRequired({
+    required this.operation,
+    required this.continuationId,
+  });
+
+  final NativeAuthOperation operation;
+
+  /// Opaque handle to native in-memory state. It must never be persisted.
+  final String continuationId;
+}
+
 /// A cached or newly authenticated account is available.
 final class NativeAuthSignedIn extends NativeAuthState {
-  const NativeAuthSignedIn({this.username});
+  const NativeAuthSignedIn({required this.account, required this.token});
 
-  final String? username;
+  final NativeAuthAccount account;
+  final NativeAuthToken token;
+
+  String? get username => account.username;
+
+  String? get idToken => account.idToken;
 }
 
 /// The native flow could not continue.

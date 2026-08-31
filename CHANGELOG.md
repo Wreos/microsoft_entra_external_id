@@ -1,5 +1,8 @@
 ## 0.0.1
 
+- Add native password sign-in, password continuations, ID/access-token results,
+  requested scopes, expiry metadata, and MSAL cache refresh APIs.
+- Keep refresh tokens exclusively in the protected native MSAL cache.
 - Name the package and public/native plugin identifiers
   `microsoft_entra_external_id`.
 - Bootstrap Android and iOS plugin structure from Flutter's official template.
@@ -10,6 +13,5 @@
   submission/resend, automatic sign-in after sign-up, and sign-out.
 - Add a working custom-Flutter-UI example with no embedded WebView.
 - Add GitHub Actions gates for Dart, Android, iOS, generated code, package
-  publishing, and draft GitHub releases, plus weekly dependency updates. CI
-  validates native tests and simulator integration without publishing example
-  application binaries.
+  publishing, and draft GitHub releases, plus weekly dependency updates. CI is
+  scoped to the plugin and does not build or run the example application.

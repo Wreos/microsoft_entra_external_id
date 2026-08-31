@@ -41,8 +41,19 @@ final class PigeonMicrosoftEntraExternalIdPlatform
       _mapResult(await _hostApi.getCurrentAccount());
 
   @override
-  Future<NativeAuthState> signIn(String username) async =>
-      _mapResult(await _hostApi.startSignIn(username));
+  Future<NativeAuthState> signIn(
+    String username, {
+    String? password,
+    List<String> scopes = const [],
+  }) async => _mapResult(
+    await _hostApi.startSignIn(
+      pigeon.NativeAuthSignInParametersMessage(
+        username: username,
+        password: password,
+        scopes: scopes,
+      ),
+    ),
+  );
 
   @override
   Future<NativeAuthState> signUp(String username) async =>
@@ -55,8 +66,28 @@ final class PigeonMicrosoftEntraExternalIdPlatform
   ) async => _mapResult(await _hostApi.submitCode(continuationId, code));
 
   @override
+  Future<NativeAuthState> submitPassword(
+    String continuationId,
+    String password,
+  ) async =>
+      _mapResult(await _hostApi.submitPassword(continuationId, password));
+
+  @override
   Future<NativeAuthState> resendCode(String continuationId) async =>
       _mapResult(await _hostApi.resendCode(continuationId));
+
+  @override
+  Future<NativeAuthState> getAccessToken({
+    List<String> scopes = const [],
+    bool forceRefresh = false,
+  }) async => _mapResult(
+    await _hostApi.getAccessToken(
+      pigeon.NativeAuthAccessTokenParametersMessage(
+        scopes: scopes,
+        forceRefresh: forceRefresh,
+      ),
+    ),
+  );
 
   @override
   Future<NativeAuthState> signOut() async =>
@@ -69,7 +100,25 @@ final class PigeonMicrosoftEntraExternalIdPlatform
       pigeon.NativeAuthResultTypeMessage.signedOut =>
         const NativeAuthSignedOut(),
       pigeon.NativeAuthResultTypeMessage.signedIn => NativeAuthSignedIn(
-        username: message.username,
+        account: NativeAuthAccount(
+          username: message.username,
+          idToken: message.idToken,
+        ),
+        token: NativeAuthToken(
+          accessToken:
+              message.accessToken ??
+              (throw StateError(
+                'Native signed-in result has no access token.',
+              )),
+          scopes: List.unmodifiable(message.scopes ?? const []),
+          expiresAt: switch (message.expiresAtEpochMilliseconds) {
+            final milliseconds? => DateTime.fromMillisecondsSinceEpoch(
+              milliseconds,
+              isUtc: true,
+            ),
+            null => null,
+          },
+        ),
       ),
       pigeon.NativeAuthResultTypeMessage.codeRequired => NativeAuthCodeRequired(
         operation: switch (message.operation) {
@@ -89,6 +138,23 @@ final class PigeonMicrosoftEntraExternalIdPlatform
         sentTo: message.sentTo,
         codeLength: message.codeLength,
       ),
+      pigeon.NativeAuthResultTypeMessage.passwordRequired =>
+        NativeAuthPasswordRequired(
+          operation: switch (message.operation) {
+            pigeon.NativeAuthOperationMessage.signIn =>
+              NativeAuthOperation.signIn,
+            pigeon.NativeAuthOperationMessage.signUp =>
+              NativeAuthOperation.signUp,
+            null => throw StateError(
+              'Native password-required result has no operation.',
+            ),
+          },
+          continuationId:
+              message.continuationId ??
+              (throw StateError(
+                'Native password-required result has no continuation.',
+              )),
+        ),
       pigeon.NativeAuthResultTypeMessage.error => NativeAuthFailure(
         code: message.errorCode ?? 'native_auth_error',
         message: message.errorMessage ?? 'Native authentication failed.',

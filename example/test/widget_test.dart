@@ -6,8 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:microsoft_entra_external_id_example/main.dart';
 
 final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
+  FakeNativeAuthPlatform({this.requirePasswordContinuation = false});
+
+  final bool requirePasswordContinuation;
   int signInCalls = 0;
   int submitCodeCalls = 0;
+  int submitPasswordCalls = 0;
+  int refreshTokenCalls = 0;
+  String? submittedPassword;
 
   @override
   Future<NativeSdkStatus> getNativeSdkStatus() async => const NativeSdkStatus(
@@ -26,8 +32,22 @@ final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
       const NativeAuthSignedOut();
 
   @override
-  Future<NativeAuthState> signIn(String username) async {
+  Future<NativeAuthState> signIn(
+    String username, {
+    String? password,
+    List<String> scopes = const [],
+  }) async {
     signInCalls += 1;
+    if (password != null) {
+      submittedPassword = password;
+      return _signedIn();
+    }
+    if (requirePasswordContinuation) {
+      return const NativeAuthPasswordRequired(
+        operation: NativeAuthOperation.signIn,
+        continuationId: 'password-id',
+      );
+    }
     return const NativeAuthCodeRequired(
       operation: NativeAuthOperation.signIn,
       continuationId: 'sign-in-id',
@@ -47,7 +67,17 @@ final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
   @override
   Future<NativeAuthState> submitCode(String continuationId, String code) async {
     submitCodeCalls += 1;
-    return const NativeAuthSignedIn(username: 'user@example.com');
+    return _signedIn();
+  }
+
+  @override
+  Future<NativeAuthState> submitPassword(
+    String continuationId,
+    String password,
+  ) async {
+    submitPasswordCalls += 1;
+    submittedPassword = password;
+    return _signedIn();
   }
 
   @override
@@ -59,7 +89,29 @@ final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
       );
 
   @override
+  Future<NativeAuthState> getAccessToken({
+    List<String> scopes = const [],
+    bool forceRefresh = false,
+  }) async {
+    refreshTokenCalls += 1;
+    return _signedIn(scopes: scopes);
+  }
+
+  @override
   Future<NativeAuthState> signOut() async => const NativeAuthSignedOut();
+
+  NativeAuthSignedIn _signedIn({List<String> scopes = const ['openid']}) =>
+      NativeAuthSignedIn(
+        account: const NativeAuthAccount(
+          username: 'user@example.com',
+          idToken: 'id-token',
+        ),
+        token: NativeAuthToken(
+          accessToken: 'access-token',
+          scopes: scopes,
+          expiresAt: DateTime.utc(2030),
+        ),
+      );
 }
 
 void main() {
@@ -117,9 +169,64 @@ void main() {
 
     expect(find.text('Signed in successfully.'), findsOneWidget);
     expect(find.text('user@example.com'), findsOneWidget);
+    expect(find.text('ID token: available'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('refreshToken')));
+    await tester.pumpAndSettle();
+    expect(platform.refreshTokenCalls, 1);
     await tester.tap(find.byKey(const Key('signOut')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('email')), findsOneWidget);
+  });
+
+  testWidgets('runs direct password sign-in without persisting the password', (
+    tester,
+  ) async {
+    final platform = FakeNativeAuthPlatform();
+    await tester.pumpWidget(
+      NativeAuthExampleApp(
+        clientId: 'client-id',
+        tenantSubdomain: 'contoso',
+        plugin: MicrosoftEntraExternalId(platform: platform),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
+    await tester.enterText(find.byKey(const Key('password')), 'secret value');
+    await tester.tap(find.byKey(const Key('signIn')));
+    await tester.pumpAndSettle();
+
+    expect(platform.submittedPassword, 'secret value');
+    expect(find.text('Signed in successfully.'), findsOneWidget);
+    expect(find.text('secret value'), findsNothing);
+  });
+
+  testWidgets('submits a server-driven password continuation', (tester) async {
+    final platform = FakeNativeAuthPlatform(requirePasswordContinuation: true);
+    await tester.pumpWidget(
+      NativeAuthExampleApp(
+        clientId: 'client-id',
+        tenantSubdomain: 'contoso',
+        plugin: MicrosoftEntraExternalId(platform: platform),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
+    await tester.tap(find.byKey(const Key('signIn')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('requiredPassword')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('requiredPassword')),
+      'secret value',
+    );
+    await tester.tap(find.byKey(const Key('submitPassword')));
+    await tester.pumpAndSettle();
+
+    expect(platform.submitPasswordCalls, 1);
+    expect(platform.submittedPassword, 'secret value');
+    expect(find.text('Signed in successfully.'), findsOneWidget);
   });
 }

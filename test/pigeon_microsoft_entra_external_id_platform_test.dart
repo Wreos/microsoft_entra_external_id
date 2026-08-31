@@ -28,8 +28,9 @@ final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
   Future<pigeon.NativeAuthResultMessage> getCurrentAccount() async => _result;
 
   @override
-  Future<pigeon.NativeAuthResultMessage> startSignIn(String username) async =>
-      _result;
+  Future<pigeon.NativeAuthResultMessage> startSignIn(
+    pigeon.NativeAuthSignInParametersMessage parameters,
+  ) async => _result;
 
   @override
   Future<pigeon.NativeAuthResultMessage> startSignUp(String username) async =>
@@ -42,8 +43,19 @@ final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
   ) async => _result;
 
   @override
+  Future<pigeon.NativeAuthResultMessage> submitPassword(
+    String continuationId,
+    String password,
+  ) async => _result;
+
+  @override
   Future<pigeon.NativeAuthResultMessage> resendCode(
     String continuationId,
+  ) async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> getAccessToken(
+    pigeon.NativeAuthAccessTokenParametersMessage parameters,
   ) async => _result;
 
   @override
@@ -113,6 +125,63 @@ void main() {
     expect(codeRequired.continuationId, 'opaque-id');
     expect(codeRequired.sentTo, 'u***@example.com');
     expect(codeRequired.codeLength, 6);
+  });
+
+  test(
+    'maps a password continuation without exposing generated types',
+    () async {
+      final platform = PigeonMicrosoftEntraExternalIdPlatform(
+        hostApi: FakeNativeAuthHostApi(
+          status: pigeon.NativeSdkStatusMessage(
+            platform: pigeon.NativePlatformMessage.ios,
+            linked: true,
+          ),
+          result: pigeon.NativeAuthResultMessage(
+            type: pigeon.NativeAuthResultTypeMessage.passwordRequired,
+            operation: pigeon.NativeAuthOperationMessage.signIn,
+            continuationId: 'password-id',
+          ),
+        ),
+      );
+
+      final state = await platform.signIn('user@example.com');
+
+      expect(state, isA<NativeAuthPasswordRequired>());
+      final passwordRequired = state as NativeAuthPasswordRequired;
+      expect(passwordRequired.operation, NativeAuthOperation.signIn);
+      expect(passwordRequired.continuationId, 'password-id');
+    },
+  );
+
+  test('maps account, ID token, access token, scopes, and expiry', () async {
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.android,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.signedIn,
+          username: 'user@example.com',
+          idToken: 'id-token',
+          accessToken: 'access-token',
+          scopes: const ['api://client/read'],
+          expiresAtEpochMilliseconds: 1893456000000,
+        ),
+      ),
+    );
+
+    final state = await platform.getAccessToken(
+      scopes: const ['api://client/read'],
+    );
+
+    expect(state, isA<NativeAuthSignedIn>());
+    final signedIn = state as NativeAuthSignedIn;
+    expect(signedIn.username, 'user@example.com');
+    expect(signedIn.idToken, 'id-token');
+    expect(signedIn.token.accessToken, 'access-token');
+    expect(signedIn.token.scopes, const ['api://client/read']);
+    expect(signedIn.token.expiresAt, DateTime.utc(2030));
   });
 
   test('maps browser-required as a typed failure', () async {

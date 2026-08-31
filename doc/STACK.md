@@ -55,8 +55,8 @@ and creating dependency debt before the first native flow exists.
   compiled into each platform implementation.
 - Add automated dependency-update pull requests with CI before the first
   prerelease.
-- A native version bump must pass Dart contracts, native unit tests, both
-  example builds, and live External ID smoke tests.
+- A native version bump must pass package CI, followed by separate device and
+  live External ID smoke tests before release.
 
 [flutter-built-in-kotlin]: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
 [flutter-plugin-guide]: https://docs.flutter.dev/packages-and-plugins/developing-packages

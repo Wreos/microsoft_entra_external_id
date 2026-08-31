@@ -105,6 +105,7 @@ enum NativeAuthResultTypeMessage {
   initialized,
   signedOut,
   codeRequired,
+  passwordRequired,
   signedIn,
   error,
   browserRequired,
@@ -214,12 +215,121 @@ class NativeAuthConfigurationMessage {
   }
 }
 
+class NativeAuthSignInParametersMessage {
+  NativeAuthSignInParametersMessage({
+    required this.username,
+    this.password,
+    required this.scopes,
+  });
+
+  String username;
+
+  String? password;
+
+  List<String> scopes;
+
+  List<Object?> _toList() {
+    return <Object?>[username, password, scopes];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthSignInParametersMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthSignInParametersMessage(
+      username: result[0]! as String,
+      password: result[1] as String?,
+      scopes: (result[2]! as List<Object?>).cast<String>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthSignInParametersMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(username, other.username) &&
+        _deepEquals(password, other.password) &&
+        _deepEquals(scopes, other.scopes);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthSignInParametersMessage(username: $username, password: $password, scopes: $scopes)';
+  }
+}
+
+class NativeAuthAccessTokenParametersMessage {
+  NativeAuthAccessTokenParametersMessage({
+    required this.scopes,
+    required this.forceRefresh,
+  });
+
+  List<String> scopes;
+
+  bool forceRefresh;
+
+  List<Object?> _toList() {
+    return <Object?>[scopes, forceRefresh];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthAccessTokenParametersMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthAccessTokenParametersMessage(
+      scopes: (result[0]! as List<Object?>).cast<String>(),
+      forceRefresh: result[1]! as bool,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthAccessTokenParametersMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(scopes, other.scopes) &&
+        _deepEquals(forceRefresh, other.forceRefresh);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthAccessTokenParametersMessage(scopes: $scopes, forceRefresh: $forceRefresh)';
+  }
+}
+
 class NativeAuthResultMessage {
   NativeAuthResultMessage({
     required this.type,
     this.operation,
     this.continuationId,
     this.username,
+    this.idToken,
+    this.accessToken,
+    this.scopes,
+    this.expiresAtEpochMilliseconds,
     this.sentTo,
     this.codeLength,
     this.errorCode,
@@ -233,6 +343,14 @@ class NativeAuthResultMessage {
   String? continuationId;
 
   String? username;
+
+  String? idToken;
+
+  String? accessToken;
+
+  List<String>? scopes;
+
+  int? expiresAtEpochMilliseconds;
 
   String? sentTo;
 
@@ -248,6 +366,10 @@ class NativeAuthResultMessage {
       operation,
       continuationId,
       username,
+      idToken,
+      accessToken,
+      scopes,
+      expiresAtEpochMilliseconds,
       sentTo,
       codeLength,
       errorCode,
@@ -266,10 +388,14 @@ class NativeAuthResultMessage {
       operation: result[1] as NativeAuthOperationMessage?,
       continuationId: result[2] as String?,
       username: result[3] as String?,
-      sentTo: result[4] as String?,
-      codeLength: result[5] as int?,
-      errorCode: result[6] as String?,
-      errorMessage: result[7] as String?,
+      idToken: result[4] as String?,
+      accessToken: result[5] as String?,
+      scopes: (result[6] as List<Object?>?)?.cast<String>(),
+      expiresAtEpochMilliseconds: result[7] as int?,
+      sentTo: result[8] as String?,
+      codeLength: result[9] as int?,
+      errorCode: result[10] as String?,
+      errorMessage: result[11] as String?,
     );
   }
 
@@ -286,6 +412,13 @@ class NativeAuthResultMessage {
         _deepEquals(operation, other.operation) &&
         _deepEquals(continuationId, other.continuationId) &&
         _deepEquals(username, other.username) &&
+        _deepEquals(idToken, other.idToken) &&
+        _deepEquals(accessToken, other.accessToken) &&
+        _deepEquals(scopes, other.scopes) &&
+        _deepEquals(
+          expiresAtEpochMilliseconds,
+          other.expiresAtEpochMilliseconds,
+        ) &&
         _deepEquals(sentTo, other.sentTo) &&
         _deepEquals(codeLength, other.codeLength) &&
         _deepEquals(errorCode, other.errorCode) &&
@@ -298,7 +431,7 @@ class NativeAuthResultMessage {
 
   @override
   String toString() {
-    return 'NativeAuthResultMessage(type: $type, operation: $operation, continuationId: $continuationId, username: $username, sentTo: $sentTo, codeLength: $codeLength, errorCode: $errorCode, errorMessage: $errorMessage)';
+    return 'NativeAuthResultMessage(type: $type, operation: $operation, continuationId: $continuationId, username: $username, idToken: $idToken, accessToken: $accessToken, scopes: $scopes, expiresAtEpochMilliseconds: $expiresAtEpochMilliseconds, sentTo: $sentTo, codeLength: $codeLength, errorCode: $errorCode, errorMessage: $errorMessage)';
   }
 }
 
@@ -324,8 +457,14 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NativeAuthConfigurationMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthResultMessage) {
+    } else if (value is NativeAuthSignInParametersMessage) {
       buffer.putUint8(134);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthAccessTokenParametersMessage) {
+      buffer.putUint8(135);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthResultMessage) {
+      buffer.putUint8(136);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -349,6 +488,12 @@ class _PigeonCodec extends StandardMessageCodec {
       case 133:
         return NativeAuthConfigurationMessage.decode(readValue(buffer)!);
       case 134:
+        return NativeAuthSignInParametersMessage.decode(readValue(buffer)!);
+      case 135:
+        return NativeAuthAccessTokenParametersMessage.decode(
+          readValue(buffer)!,
+        );
+      case 136:
         return NativeAuthResultMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -434,7 +579,9 @@ class NativeAuthHostApi {
     return pigeonVar_replyValue! as NativeAuthResultMessage;
   }
 
-  Future<NativeAuthResultMessage> startSignIn(String username) async {
+  Future<NativeAuthResultMessage> startSignIn(
+    NativeAuthSignInParametersMessage parameters,
+  ) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignIn$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -443,7 +590,7 @@ class NativeAuthHostApi {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[username],
+      <Object?>[parameters],
     );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
@@ -500,6 +647,30 @@ class NativeAuthHostApi {
     return pigeonVar_replyValue! as NativeAuthResultMessage;
   }
 
+  Future<NativeAuthResultMessage> submitPassword(
+    String continuationId,
+    String password,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitPassword$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[continuationId, password],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
   Future<NativeAuthResultMessage> resendCode(String continuationId) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.resendCode$pigeonVar_messageChannelSuffix';
@@ -510,6 +681,29 @@ class NativeAuthHostApi {
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
       <Object?>[continuationId],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> getAccessToken(
+    NativeAuthAccessTokenParametersMessage parameters,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.getAccessToken$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[parameters],
     );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 

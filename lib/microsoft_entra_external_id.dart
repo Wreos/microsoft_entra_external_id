@@ -44,8 +44,27 @@ class MicrosoftEntraExternalId {
 
   Future<NativeAuthState> getCurrentAccount() => _platform.getCurrentAccount();
 
-  Future<NativeAuthState> signIn(String username) =>
-      _platform.signIn(_validateUsername(username));
+  /// Starts native sign-in and requests tokens for [scopes].
+  ///
+  /// Pass [password] when the UI already collected it. If it is omitted and
+  /// the tenant requires a password, MSAL returns [NativeAuthPasswordRequired]
+  /// and the app can continue with [submitPassword].
+  Future<NativeAuthState> signIn(
+    String username, {
+    String? password,
+    List<String> scopes = const [],
+  }) => _platform.signIn(
+    _validateUsername(username),
+    password: password == null ? null : _validatePassword(password),
+    scopes: _normalizeScopes(scopes),
+  );
+
+  /// Convenience API for a custom email/username and password form.
+  Future<NativeAuthState> signInWithPassword(
+    String username,
+    String password, {
+    List<String> scopes = const [],
+  }) => signIn(username, password: password, scopes: scopes);
 
   Future<NativeAuthState> signUp(String username) =>
       _platform.signUp(_validateUsername(username));
@@ -61,8 +80,30 @@ class MicrosoftEntraExternalId {
     return _platform.submitCode(state.continuationId, normalizedCode);
   }
 
+  /// Submits a password to an in-progress native sign-in continuation.
+  Future<NativeAuthState> submitPassword(
+    NativeAuthPasswordRequired state,
+    String password,
+  ) => _platform.submitPassword(
+    state.continuationId,
+    _validatePassword(password),
+  );
+
   Future<NativeAuthState> resendCode(NativeAuthCodeRequired state) =>
       _platform.resendCode(state.continuationId);
+
+  /// Acquires an access token silently through the native MSAL cache.
+  ///
+  /// MSAL refreshes an expired token automatically. Set [forceRefresh] to
+  /// bypass a valid cached access token and request a new one. Refresh tokens
+  /// never cross the native boundary into Dart.
+  Future<NativeAuthState> getAccessToken({
+    List<String> scopes = const [],
+    bool forceRefresh = false,
+  }) => _platform.getAccessToken(
+    scopes: _normalizeScopes(scopes),
+    forceRefresh: forceRefresh,
+  );
 
   Future<NativeAuthState> signOut() => _platform.signOut();
 
@@ -72,5 +113,24 @@ class MicrosoftEntraExternalId {
       throw ArgumentError.value(username, 'username', 'Must not be empty.');
     }
     return normalized;
+  }
+
+  static String _validatePassword(String password) {
+    if (password.isEmpty) {
+      throw ArgumentError.value('', 'password', 'Must not be empty.');
+    }
+    return password;
+  }
+
+  static List<String> _normalizeScopes(List<String> scopes) {
+    final normalized = <String>{};
+    for (final scope in scopes) {
+      final value = scope.trim();
+      if (value.isEmpty) {
+        throw ArgumentError.value(scopes, 'scopes', 'Must not contain blanks.');
+      }
+      normalized.add(value);
+    }
+    return List.unmodifiable(normalized);
   }
 }

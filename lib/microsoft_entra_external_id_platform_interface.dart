@@ -38,7 +38,11 @@ abstract class MicrosoftEntraExternalIdPlatform extends PlatformInterface {
     throw UnimplementedError('getCurrentAccount() has not been implemented.');
   }
 
-  Future<NativeAuthState> signIn(String username) {
+  Future<NativeAuthState> signIn(
+    String username, {
+    String? password,
+    List<String> scopes = const [],
+  }) {
     throw UnimplementedError('signIn() has not been implemented.');
   }
 
@@ -50,8 +54,22 @@ abstract class MicrosoftEntraExternalIdPlatform extends PlatformInterface {
     throw UnimplementedError('submitCode() has not been implemented.');
   }
 
+  Future<NativeAuthState> submitPassword(
+    String continuationId,
+    String password,
+  ) {
+    throw UnimplementedError('submitPassword() has not been implemented.');
+  }
+
   Future<NativeAuthState> resendCode(String continuationId) {
     throw UnimplementedError('resendCode() has not been implemented.');
+  }
+
+  Future<NativeAuthState> getAccessToken({
+    List<String> scopes = const [],
+    bool forceRefresh = false,
+  }) {
+    throw UnimplementedError('getAccessToken() has not been implemented.');
   }
 
   Future<NativeAuthState> signOut() {

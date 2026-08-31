@@ -12,11 +12,7 @@ WebView.
 
 ## Custom Flutter UI, native authentication
 
-<img
-  src="doc/assets/android-authenticated.png"
-  alt="Successful Microsoft Entra External ID native sign-in on Android"
-  width="320"
->
+![Successful Microsoft Entra External ID native sign-in on Android](https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/android-authenticated.png)
 
 The screenshot shows a real Email OTP sign-in against an External ID tenant on
 an Android device. The account identifier is redacted.
@@ -27,8 +23,9 @@ an Android device. The account identifier is redacted.
 - a typed Pigeon channel shared by Dart and the native platforms;
 - exact native SDK pins: MSAL Android `8.4.2` and MSAL iOS `2.15.0`;
 - Swift Package Manager as the only iOS dependency integration path;
-- native initialization, cached-account lookup, Email OTP sign-in/sign-up,
-  code submission/resend, automatic sign-in after sign-up, and sign-out;
+- native initialization, cached-account lookup, password and Email OTP sign-in,
+  Email OTP sign-up, code/password submission, token acquisition/refresh,
+  automatic sign-in after sign-up, and sign-out;
 - an example whose Flutter widgets own the complete authentication UI, with no
   embedded WebView.
 
@@ -75,16 +72,31 @@ await entra.initialize(
   ),
 );
 
-final state = await entra.signIn('user@example.com');
-if (state case final NativeAuthCodeRequired codeRequired) {
-  final result = await entra.submitCode(codeRequired, '123456');
-  // Handle NativeAuthSignedIn or NativeAuthFailure.
+final state = await entra.signInWithPassword(
+  'user@example.com',
+  password,
+  scopes: const ['api://your-api-client-id/access_as_user'],
+);
+if (state case final NativeAuthSignedIn signedIn) {
+  final accessToken = signedIn.token.accessToken;
+  final idToken = signedIn.idToken;
+  // Send the access token only to its intended HTTPS API.
 }
 ```
 
+For a username-first UI, call `signIn(username)` without a password and handle
+`NativeAuthPasswordRequired` with `submitPassword(...)`. Email OTP continues to
+use `NativeAuthCodeRequired` and `submitCode(...)`.
+
+MSAL owns the refresh token in its protected native cache. The plugin never
+returns it to Dart. Acquire a cached token or let MSAL refresh an expired token
+with `getAccessToken(scopes: ...)`; set `forceRefresh: true` only when the host
+application explicitly needs to bypass a still-valid cached access token.
+
 See the [working example][example] for tenant prerequisites and run commands.
 Client ID and tenant subdomain are public configuration values; never put
-client secrets in a mobile application.
+client secrets in a mobile application. Passwords and returned tokens must not
+be logged or persisted by the host application.
 
 ## Browser fallback
 
@@ -102,11 +114,12 @@ Embedded WebViews are never used as a fallback.
 Before implementing a new flow, update its contract tests and pass the
 validation gate defined in the implementation plan.
 
-Pull requests run Dart formatting, analysis, unit and widget tests, generated
-Pigeon drift detection, Android native and emulator tests, iOS XCTest and
-simulator tests, dependency review, and a pub.dev dry run. CI does not publish
-example application binaries. All third-party GitHub Actions are pinned to
-immutable commit SHAs and updated through Dependabot.
+Pull requests run package-scoped Dart formatting, analysis and unit tests,
+generated Pigeon drift detection, Android plugin unit tests, iOS plugin-target
+compilation, dependency review, and a pub.dev dry run. CI deliberately does not
+build or run the example application. Device and live-tenant scenarios remain
+manual release gates. All third-party GitHub Actions are pinned to immutable
+commit SHAs and updated through Dependabot.
 
 Pushing a version tag that exactly matches `version` in `pubspec.yaml` (for
 example, `v0.1.0`) reruns the complete CI workflow and creates a draft GitHub

@@ -25,6 +25,30 @@ internal class MicrosoftEntraExternalIdPluginTest {
     }
 
     @Test
+    fun getAccessToken_beforeInitialization_returnsTypedFailure() = runBlocking {
+        val result = MicrosoftEntraExternalIdPlugin().getAccessToken(
+            NativeAuthAccessTokenParametersMessage(
+                scopes = listOf("api://client/read"),
+                forceRefresh = true,
+            ),
+        )
+
+        assertEquals(NativeAuthResultTypeMessage.ERROR, result.type)
+        assertEquals("not_initialized", result.errorCode)
+    }
+
+    @Test
+    fun submitPassword_withoutContinuation_returnsTypedFailure() = runBlocking {
+        val result = MicrosoftEntraExternalIdPlugin().submitPassword(
+            continuationId = "missing",
+            password = "not-logged",
+        )
+
+        assertEquals(NativeAuthResultTypeMessage.ERROR, result.type)
+        assertEquals("invalid_continuation", result.errorCode)
+    }
+
+    @Test
     fun initialize_beforeEngineAttachment_returnsTypedFailure() = runBlocking {
         val result = MicrosoftEntraExternalIdPlugin().initialize(
             NativeAuthConfigurationMessage(

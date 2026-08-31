@@ -4,25 +4,31 @@ import android.content.Context
 import com.microsoft.identity.client.PublicClientApplication
 import com.microsoft.identity.nativeauth.INativeAuthPublicClientApplication
 import com.microsoft.identity.nativeauth.NativeAuthPublicClientApplicationParameters
+import com.microsoft.identity.nativeauth.parameters.NativeAuthGetAccessTokenParameters
 import com.microsoft.identity.nativeauth.parameters.NativeAuthSignInContinuationParameters
 import com.microsoft.identity.nativeauth.parameters.NativeAuthSignInParameters
 import com.microsoft.identity.nativeauth.parameters.NativeAuthSignUpParameters
 import com.microsoft.identity.nativeauth.statemachine.errors.BrowserRequiredError
 import com.microsoft.identity.nativeauth.statemachine.errors.Error as MsalNativeAuthError
 import com.microsoft.identity.nativeauth.statemachine.errors.GetAccountError
+import com.microsoft.identity.nativeauth.statemachine.errors.GetAccessTokenError
 import com.microsoft.identity.nativeauth.statemachine.errors.ResendCodeError
 import com.microsoft.identity.nativeauth.statemachine.errors.SignInContinuationError
 import com.microsoft.identity.nativeauth.statemachine.errors.SignInError
+import com.microsoft.identity.nativeauth.statemachine.errors.SignInSubmitPasswordError
 import com.microsoft.identity.nativeauth.statemachine.errors.SignOutError
 import com.microsoft.identity.nativeauth.statemachine.errors.SignUpError
 import com.microsoft.identity.nativeauth.statemachine.errors.SubmitCodeError
 import com.microsoft.identity.nativeauth.statemachine.results.GetAccountResult
+import com.microsoft.identity.nativeauth.statemachine.results.GetAccessTokenResult
 import com.microsoft.identity.nativeauth.statemachine.results.SignInResendCodeResult
 import com.microsoft.identity.nativeauth.statemachine.results.SignInResult
 import com.microsoft.identity.nativeauth.statemachine.results.SignOutResult
 import com.microsoft.identity.nativeauth.statemachine.results.SignUpResendCodeResult
 import com.microsoft.identity.nativeauth.statemachine.results.SignUpResult
 import com.microsoft.identity.nativeauth.statemachine.states.SignInCodeRequiredState
+import com.microsoft.identity.nativeauth.statemachine.states.AccountState
+import com.microsoft.identity.nativeauth.statemachine.states.SignInPasswordRequiredState
 import com.microsoft.identity.nativeauth.statemachine.states.SignUpCodeRequiredState
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.util.UUID
@@ -31,7 +37,7 @@ import java.util.UUID
 class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
     private var applicationContext: Context? = null
     private var authClient: INativeAuthPublicClientApplication? = null
-    private val continuations = mutableMapOf<String, CodeContinuation>()
+    private val continuations = mutableMapOf<String, AuthContinuation>()
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         applicationContext = flutterPluginBinding.applicationContext
@@ -54,7 +60,7 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
             val parameters = NativeAuthPublicClientApplicationParameters(
                 clientId = configuration.clientId,
                 authorityUrl = "https://$tenant.ciamlogin.com/$tenant.onmicrosoft.com/",
-                challengeTypes = listOf("oob"),
+                challengeTypes = listOf("oob", "password"),
             )
             authClient = PublicClientApplication.createNativeAuthPublicClientApplication(context, parameters)
             continuations.clear()
@@ -67,20 +73,27 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
     override suspend fun getCurrentAccount(): NativeAuthResultMessage {
         val client = authClient ?: return notInitialized()
         return when (val result = client.getCurrentAccount()) {
-            is GetAccountResult.AccountFound -> signedIn(result.resultValue.getAccount().username)
+            is GetAccountResult.AccountFound -> signedIn(result.resultValue)
             is GetAccountResult.NoAccountFound -> signedOut()
             is GetAccountError -> failure(result)
             else -> unsupported(result)
         }
     }
 
-    override suspend fun startSignIn(username: String): NativeAuthResultMessage {
+    override suspend fun startSignIn(parameters: NativeAuthSignInParametersMessage): NativeAuthResultMessage {
         val client = authClient ?: return notInitialized()
         continuations.clear()
+        val password = parameters.password?.toCharArray()
         return try {
-            mapSignInResult(client.signIn(NativeAuthSignInParameters(username = username)))
+            val nativeParameters = NativeAuthSignInParameters(username = parameters.username).apply {
+                this.password = password
+                scopes = parameters.scopes.ifEmpty { null }
+            }
+            mapSignInResult(client.signIn(nativeParameters), parameters.scopes)
         } catch (error: Exception) {
             failure("sign_in_failed", error.localizedMessage ?: "Unable to start sign in.")
+        } finally {
+            password?.fill('\u0000')
         }
     }
 
@@ -96,17 +109,17 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
 
     override suspend fun submitCode(continuationId: String, code: String): NativeAuthResultMessage {
         return when (val continuation = continuations[continuationId]) {
-            is CodeContinuation.SignIn -> {
+            is AuthContinuation.SignInCode -> {
                 when (val result = continuation.state.submitCode(code)) {
                     is SignInResult.Complete -> {
                         continuations.remove(continuationId)
-                        signedIn(result.resultValue.getAccount().username)
+                        signedIn(result.resultValue, continuation.scopes)
                     }
                     is SubmitCodeError -> failure(result)
                     else -> unsupported(result)
                 }
             }
-            is CodeContinuation.SignUp -> {
+            is AuthContinuation.SignUpCode -> {
                 when (val result = continuation.state.submitCode(code)) {
                     is SignUpResult.Complete -> {
                         continuations.remove(continuationId)
@@ -118,6 +131,7 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
                     else -> unsupported(result)
                 }
             }
+            is AuthContinuation.SignInPassword -> invalidContinuation()
             null -> failure(
                 "invalid_continuation",
                 "The native authentication continuation is missing or expired. Restart the flow.",
@@ -125,9 +139,52 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         }
     }
 
+    override suspend fun submitPassword(continuationId: String, password: String): NativeAuthResultMessage {
+        val continuation = continuations[continuationId]
+        if (continuation !is AuthContinuation.SignInPassword) {
+            return invalidContinuation()
+        }
+
+        val passwordCharacters = password.toCharArray()
+        return try {
+            when (val result = continuation.state.submitPassword(passwordCharacters)) {
+                is SignInResult.Complete -> {
+                    continuations.remove(continuationId)
+                    signedIn(result.resultValue, continuation.scopes)
+                }
+                is SignInResult.CodeRequired -> {
+                    continuations[continuationId] = AuthContinuation.SignInCode(
+                        state = result.nextState,
+                        scopes = continuation.scopes,
+                    )
+                    codeRequired(
+                        operation = NativeAuthOperationMessage.SIGN_IN,
+                        continuationId = continuationId,
+                        sentTo = result.sentTo,
+                        codeLength = result.codeLength,
+                    )
+                }
+                is SignInSubmitPasswordError -> failure(result)
+                is SignInResult.MFARequired -> failure(
+                    "mfa_required",
+                    "The plugin does not yet implement multifactor authentication.",
+                )
+                is SignInResult.StrongAuthMethodRegistrationRequired -> failure(
+                    "strong_auth_registration_required",
+                    "The plugin does not yet implement strong authentication registration.",
+                )
+                else -> unsupported(result)
+            }
+        } catch (error: Exception) {
+            failure("password_submission_failed", error.localizedMessage ?: "Unable to submit password.")
+        } finally {
+            passwordCharacters.fill('\u0000')
+        }
+    }
+
     override suspend fun resendCode(continuationId: String): NativeAuthResultMessage {
         return when (val continuation = continuations[continuationId]) {
-            is CodeContinuation.SignIn -> {
+            is AuthContinuation.SignInCode -> {
                 when (val result = continuation.state.resendCode()) {
                     is SignInResendCodeResult.Success -> {
                         continuation.state = result.nextState
@@ -142,7 +199,7 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
                     else -> unsupported(result)
                 }
             }
-            is CodeContinuation.SignUp -> {
+            is AuthContinuation.SignUpCode -> {
                 when (val result = continuation.state.resendCode()) {
                     is SignUpResendCodeResult.Success -> {
                         continuation.state = result.nextState
@@ -157,10 +214,27 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
                     else -> unsupported(result)
                 }
             }
+            is AuthContinuation.SignInPassword -> invalidContinuation()
             null -> failure(
                 "invalid_continuation",
                 "The native authentication continuation is missing or expired. Restart the flow.",
             )
+        }
+    }
+
+    override suspend fun getAccessToken(
+        parameters: NativeAuthAccessTokenParametersMessage,
+    ): NativeAuthResultMessage {
+        val client = authClient ?: return notInitialized()
+        return when (val account = client.getCurrentAccount()) {
+            is GetAccountResult.AccountFound -> signedIn(
+                account = account.resultValue,
+                scopes = parameters.scopes,
+                forceRefresh = parameters.forceRefresh,
+            )
+            is GetAccountResult.NoAccountFound -> signedOut()
+            is GetAccountError -> failure(account)
+            else -> unsupported(account)
         }
     }
 
@@ -190,11 +264,14 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         applicationContext = null
     }
 
-    private fun mapSignInResult(result: SignInResult): NativeAuthResultMessage = when (result) {
-        is SignInResult.Complete -> signedIn(result.resultValue.getAccount().username)
+    private suspend fun mapSignInResult(
+        result: SignInResult,
+        scopes: List<String> = emptyList(),
+    ): NativeAuthResultMessage = when (result) {
+        is SignInResult.Complete -> signedIn(result.resultValue, scopes)
         is SignInResult.CodeRequired -> {
             val continuationId = UUID.randomUUID().toString()
-            continuations[continuationId] = CodeContinuation.SignIn(result.nextState)
+            continuations[continuationId] = AuthContinuation.SignInCode(result.nextState, scopes)
             codeRequired(
                 operation = NativeAuthOperationMessage.SIGN_IN,
                 continuationId = continuationId,
@@ -204,10 +281,11 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         }
         is SignInError -> failure(result)
         is SignInContinuationError -> failure(result)
-        is SignInResult.PasswordRequired -> failure(
-            "password_required",
-            "The plugin currently supports email one-time passcodes only.",
-        )
+        is SignInResult.PasswordRequired -> {
+            val continuationId = UUID.randomUUID().toString()
+            continuations[continuationId] = AuthContinuation.SignInPassword(result.nextState, scopes)
+            passwordRequired(continuationId)
+        }
         is SignInResult.MFARequired -> failure(
             "mfa_required",
             "The plugin does not yet implement multifactor authentication.",
@@ -219,10 +297,10 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         else -> unsupported(result)
     }
 
-    private fun mapSignUpResult(result: SignUpResult): NativeAuthResultMessage = when (result) {
+    private suspend fun mapSignUpResult(result: SignUpResult): NativeAuthResultMessage = when (result) {
         is SignUpResult.CodeRequired -> {
             val continuationId = UUID.randomUUID().toString()
-            continuations[continuationId] = CodeContinuation.SignUp(result.nextState)
+            continuations[continuationId] = AuthContinuation.SignUpCode(result.nextState)
             codeRequired(
                 operation = NativeAuthOperationMessage.SIGN_UP,
                 continuationId = continuationId,
@@ -259,16 +337,45 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         codeLength = codeLength?.toLong(),
     )
 
-    private fun signedIn(username: String?) = NativeAuthResultMessage(
-        type = NativeAuthResultTypeMessage.SIGNED_IN,
-        username = username,
+    private fun passwordRequired(continuationId: String) = NativeAuthResultMessage(
+        type = NativeAuthResultTypeMessage.PASSWORD_REQUIRED,
+        operation = NativeAuthOperationMessage.SIGN_IN,
+        continuationId = continuationId,
     )
+
+    private suspend fun signedIn(
+        account: AccountState,
+        scopes: List<String> = emptyList(),
+        forceRefresh: Boolean = false,
+    ): NativeAuthResultMessage {
+        val parameters = NativeAuthGetAccessTokenParameters().apply {
+            this.forceRefresh = forceRefresh
+            this.scopes = scopes.ifEmpty { null }
+        }
+        return when (val result = account.getAccessToken(parameters)) {
+            is GetAccessTokenResult.Complete -> NativeAuthResultMessage(
+                type = NativeAuthResultTypeMessage.SIGNED_IN,
+                username = account.getAccount().username,
+                idToken = account.getIdToken(),
+                accessToken = result.resultValue.accessToken,
+                scopes = result.resultValue.scope.toList(),
+                expiresAtEpochMilliseconds = result.resultValue.expiresOn.time,
+            )
+            is GetAccessTokenError -> failure(result)
+            else -> unsupported(result)
+        }
+    }
 
     private fun signedOut() = NativeAuthResultMessage(type = NativeAuthResultTypeMessage.SIGNED_OUT)
 
     private fun notInitialized() = failure(
         "not_initialized",
         "Call initialize before using Microsoft Entra External ID native authentication.",
+    )
+
+    private fun invalidContinuation() = failure(
+        "invalid_continuation",
+        "The native authentication continuation is missing or expired. Restart the flow.",
     )
 
     private fun failure(error: MsalNativeAuthError): NativeAuthResultMessage {
@@ -299,10 +406,18 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         "Unsupported MSAL result: ${result.javaClass.simpleName}.",
     )
 
-    private sealed interface CodeContinuation {
-        data class SignIn(var state: SignInCodeRequiredState) : CodeContinuation
+    private sealed interface AuthContinuation {
+        data class SignInCode(
+            var state: SignInCodeRequiredState,
+            val scopes: List<String>,
+        ) : AuthContinuation
 
-        data class SignUp(var state: SignUpCodeRequiredState) : CodeContinuation
+        data class SignInPassword(
+            var state: SignInPasswordRequiredState,
+            val scopes: List<String>,
+        ) : AuthContinuation
+
+        data class SignUpCode(var state: SignUpCodeRequiredState) : AuthContinuation
     }
 
     private companion object {
