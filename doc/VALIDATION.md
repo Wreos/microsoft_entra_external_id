@@ -68,14 +68,15 @@ claim.
 
 ## Environment and live-test boundaries
 
-The iOS app was installed and started on an isolated iPhone 17 Pro simulator.
-The Flutter UI rendered and the official MSAL native client returned the
-expected configuration failure for the deliberately non-production identifiers.
-This proves the iOS runtime bridge and native SDK invocation without claiming a
-live-tenant authentication result. Xcode does not discover devices from this
-isolated device set as test destinations, so XCTest execution remains a
-CI/release gate even though the XCTest bundle compiles for both simulator
-architectures.
+The iOS app was ad-hoc signed with the example's MSAL keychain entitlement,
+installed, and started on an isolated iPhone 17 Pro simulator. With
+syntactically valid non-production identifiers, the official MSAL native client
+initialized, cached-account lookup returned signed-out, and the Flutter
+sign-in/sign-up screen rendered. This proves the iOS runtime bridge and native
+SDK invocation without claiming a live-tenant authentication result. Xcode does
+not discover devices from this isolated device set as test destinations, so
+XCTest execution remains a CI/release gate even though the XCTest bundle
+compiles for both simulator architectures.
 
 No external-tenant client ID, tenant subdomain, or test mailbox was supplied.
 Therefore the end-to-end Email OTP flow has not yet been run against Microsoft
