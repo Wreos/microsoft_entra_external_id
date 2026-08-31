@@ -31,21 +31,23 @@ Expose the native authentication flow as a typed Dart state machine. The host ap
 
 The plugin must never claim that every flow is browserless. It must surface browser fallback explicitly when Entra or a federated identity provider requires it.
 
-## Initial release scope
+## First development release scope
 
-The first usable release targets Android and iOS and includes:
+The first public prerelease targets Android and iOS and includes:
 
-1. Native Auth client initialization with client ID, tenant subdomain, challenge types, capabilities, and optional redirect URI.
-2. Sign-up with email/password and email one-time passcode.
-3. Sign-in with email/password and email one-time passcode.
-4. Verification-code submission and resend.
-5. Required built-in and custom user attributes.
-6. Self-service password reset.
-7. Sign-in continuation after sign-up and password reset.
-8. Current-account lookup, ID token access, access-token retrieval, refresh, and sign-out.
-9. Typed errors with correlation IDs and safe diagnostic metadata.
-10. Explicit MFA, strong-auth registration, and browser-fallback states, even if some continuations land after the first release.
-11. A custom Flutter example application and platform integration tests.
+1. Native Auth client initialization with client ID and external-tenant subdomain.
+2. Sign-in with email/password and Email one-time passcode.
+3. Sign-up with Email one-time passcode and automatic sign-in.
+4. Verification-code and password continuation submission plus code resend.
+5. Current-account lookup, ID token access, API-scoped access-token retrieval,
+   silent cache refresh, forced refresh, and sign-out.
+6. Typed failures, including an explicit signal when the host must continue in
+   a system browser.
+7. A custom Flutter example application and package/native tests.
+
+Password sign-up, required attributes, password reset, MFA, strong-auth
+registration, correlation metadata, and browser-fallback execution remain
+roadmap work and are not claimed by the first development release.
 
 ## Public API direction
 
@@ -126,18 +128,25 @@ Every implementation stage must pass its gate before the next stage starts:
 - The initial implementation plan is checked into the repository.
 - No package is published and no API is presented as stable.
 
-## Initial release success criteria
+## First development release success criteria
 
-- One example External ID tenant completes password and email-OTP sign-up/sign-in on both Android and iOS.
-- Password reset and token retrieval work on both platforms.
-- At least one independent Flutter team can integrate the plugin without modifying native bridge code.
+- Password and Email OTP sign-in contracts, token retrieval, refresh, and
+  sign-out compile and pass deterministic tests on Android and iOS.
+- One real External ID tenant completes Email OTP sign-up/sign-in on Android;
+  remaining live scenarios are documented without implying parity.
+- A Flutter application can integrate the plugin without modifying native
+  bridge code.
 - No secret, credential, continuation token, or access token appears in logs or persisted plugin state.
+
+Stable-release criteria remain stricter: password/OTP parity on both platforms,
+password reset and required attributes, an independent integration trial, and
+the complete live-tenant matrix.
 
 ## Open questions
 
 - Which MFA and strong-auth registration states have stable parity across the current Android and iOS SDKs.
 - Whether the first public release should expose browser fallback or return a typed unsupported result until the fallback bridge is implemented.
-- Final package publisher and GitHub organization.
+- Which flows belong in the first stable release versus later `0.x` releases.
 
 The bootstrap deployment floors are resolved as Android API 24 and iOS 17.
 See `doc/STACK.md` for the selected toolchain and the reason for each floor.

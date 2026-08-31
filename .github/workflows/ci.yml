@@ -152,23 +152,29 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      - name: Resolve dependencies
+      - name: Prepare Flutter iOS SDK
+        run: flutter precache --ios
+
+      - name: Resolve plugin host dependencies
         working-directory: example
         run: flutter pub get
 
-      - name: Generate iOS plugin host metadata
-        working-directory: example
-        run: flutter build ios --config-only --no-codesign --no-pub
-
       - name: Compile plugin target
         working-directory: example/ios
-        run: >-
-          xcodebuild
-          -workspace Runner.xcworkspace
-          -scheme microsoft-entra-external-id
-          -configuration Debug
-          -sdk iphonesimulator
-          -destination 'generic/platform=iOS Simulator'
-          build
-          CODE_SIGNING_ALLOWED=NO
-          IPHONEOS_DEPLOYMENT_TARGET=17.0
+        run: |
+          flutter_bin_path="$(realpath "$(command -v flutter)")"
+          flutter_root_path="$(cd "$(dirname "$flutter_bin_path")/.." && pwd)"
+          flutter_framework_dir="$flutter_root_path/bin/cache/artifacts/engine/ios/Flutter.xcframework/ios-arm64_x86_64-simulator"
+
+          test -d "$flutter_framework_dir/Flutter.framework"
+
+          xcodebuild \
+            -workspace Runner.xcworkspace \
+            -scheme microsoft-entra-external-id \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            build \
+            CODE_SIGNING_ALLOWED=NO \
+            IPHONEOS_DEPLOYMENT_TARGET=17.0 \
+            FRAMEWORK_SEARCH_PATHS="$flutter_framework_dir"

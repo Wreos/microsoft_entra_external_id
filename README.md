@@ -96,6 +96,19 @@ Client ID and tenant subdomain are public configuration values; never put
 client secrets in a mobile application. Passwords and returned tokens must not
 be logged or persisted by the host application.
 
+## Development status
+
+The current release is a development preview. Password and Email OTP sign-in,
+Email OTP sign-up, token retrieval/refresh, cached-account lookup, and sign-out
+are implemented on Android and iOS. Password sign-up, required attributes,
+password reset, MFA, strong-auth registration, and browser-fallback execution
+are not implemented yet.
+
+The Email OTP flow has passed a live-tenant test on Android. The iOS bridge has
+passed SwiftPM compilation and native-SDK initialization, but iOS live-tenant
+parity and password/API-scope live tests remain open. See the exact
+[validation matrix][validation] before adopting the preview in production.
+
 ## Browser fallback
 
 The plugin does not open a browser automatically. When MSAL determines that a
@@ -120,9 +133,14 @@ manual release gates. All third-party GitHub Actions are pinned to immutable
 commit SHAs and updated through Dependabot.
 
 Pushing a version tag that exactly matches `version` in `pubspec.yaml` (for
-example, `v0.1.0`) reruns the complete CI workflow and creates a draft GitHub
-release. Publishing the draft or publishing to pub.dev remains a deliberate
-manual release decision until the live-tenant validation matrix is complete.
+example, `v0.1.0-dev.1`) reruns the complete CI workflow and creates a draft
+GitHub prerelease. Publishing the draft or publishing to pub.dev remains a
+deliberate manual release decision until the live-tenant validation matrix is
+complete.
+
+Security reports and the custom-UI trust boundary are documented in
+[SECURITY.md][security] and the [security model][security-model]. API changes
+before `1.0.0` follow the [migration policy][migration].
 
 [native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
 [native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in
@@ -131,3 +149,6 @@ manual release decision until the live-tenant validation matrix is complete.
 [plan]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/IMPLEMENTATION_PLAN.md
 [stack]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/STACK.md
 [validation]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/VALIDATION.md
+[security]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/SECURITY.md
+[security-model]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/SECURITY_MODEL.md
+[migration]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/MIGRATION.md

@@ -1,4 +1,4 @@
-## 0.0.1
+## 0.1.0-dev.1
 
 - Add native password sign-in, password continuations, ID/access-token results,
   requested scopes, expiry metadata, and MSAL cache refresh APIs.
