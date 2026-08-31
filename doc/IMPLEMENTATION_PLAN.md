@@ -155,6 +155,14 @@ is not complete.
   native bridge code.
 - Publish only as a prerelease until both platforms pass the documented matrix.
 
+**Status:** CI/CD infrastructure complete: immutable Action pins, Dart and
+Pigeon quality gates, Android unit/build/emulator gates, iOS XCTest/simulator
+gates, dependency review, targeted secret scanning, publish dry-run, weekly
+dependency updates, and tag-gated draft GitHub releases are configured. The
+threat model, complete API/integration documentation, independent-team trial,
+live-tenant matrix, and prerelease publication remain open, so the stage is not
+complete.
+
 ## Working rules
 
 - Use official Flutter and Microsoft documentation as the baseline.

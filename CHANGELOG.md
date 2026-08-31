@@ -7,3 +7,5 @@
 - Implement cached-account lookup, Email OTP sign-in/sign-up, code
   submission/resend, automatic sign-in after sign-up, and sign-out.
 - Add a working custom-Flutter-UI example with no embedded WebView.
+- Add GitHub Actions gates for Dart, Android, iOS, generated code, package
+  publishing, and draft GitHub releases, plus weekly dependency updates.

@@ -1,5 +1,7 @@
 # Entra External ID for Flutter
 
+[![CI](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml/badge.svg)](https://github.com/Wreos/microsoft_entra_external_id/actions/workflows/ci.yml)
+
 An experimental, unofficial Flutter bridge for Microsoft Entra External ID
 Native Authentication through the official MSAL Android and iOS SDKs.
 
@@ -82,6 +84,17 @@ put client secrets in a mobile application.
 
 The public API is not stable. Before implementing a new flow, update its
 contract tests and pass the validation gate defined in the implementation plan.
+
+Pull requests run Dart formatting, analysis, unit and widget tests, generated
+Pigeon drift detection, Android native and emulator tests, iOS XCTest and
+simulator tests, dependency review, an example APK build, and a pub.dev dry run.
+All third-party GitHub Actions are pinned to immutable commit SHAs and updated
+through Dependabot.
+
+Pushing a version tag that exactly matches `version` in `pubspec.yaml` (for
+example, `v0.1.0`) reruns the complete CI workflow and creates a draft GitHub
+release. Publishing the draft or publishing to pub.dev remains a deliberate
+manual release decision until the live-tenant validation matrix is complete.
 
 [native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
 [native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in
