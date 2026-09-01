@@ -140,8 +140,10 @@ An SDK initialization or runtime error is returned as a normal
 
 ## Contributing
 
-Before implementing a new flow, update its contract tests and pass the
-validation gate defined in the implementation plan.
+Please read [CONTRIBUTING.md][contributing] before opening an issue or pull
+request. It covers the native-authentication boundary, local setup, Pigeon
+regeneration, and required validation. All project spaces follow the
+[Code of Conduct][code-of-conduct].
 
 Pull requests run package-scoped Dart formatting, analysis and unit tests,
 generated Pigeon drift detection, Android plugin unit tests, iOS plugin-target
@@ -171,3 +173,5 @@ before `1.0.0` follow the [migration policy][migration].
 [security]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/SECURITY.md
 [security-model]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/SECURITY_MODEL.md
 [migration]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/MIGRATION.md
+[contributing]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/CONTRIBUTING.md
+[code-of-conduct]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/CODE_OF_CONDUCT.md
