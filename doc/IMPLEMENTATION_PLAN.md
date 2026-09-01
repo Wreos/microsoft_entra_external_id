@@ -185,6 +185,115 @@ remain open, so the full stage is not complete. Those open parity gates block a
 stable release; they are documented limitations rather than hidden blockers
 for the published development preview.
 
+## Stage 8 — Native SDK parity roadmap
+
+The Flutter API targets flow-level parity, not a one-to-one copy of every MSAL
+class and delegate. Native clients, delegate objects, refresh tokens, and
+continuation data remain private to the platform implementation. Experimental
+native APIs are not adopted until Microsoft marks them production-ready.
+
+### Milestone 8.1 — Validate the implemented core
+
+**Deliverables**
+
+- Complete live-tenant password sign-in, password sign-up, required/custom
+  attributes, password reset, API scopes, cache refresh, and sign-out on
+  Android and iOS.
+- Complete live system-browser redirect, callback, cancellation, and cache
+  hand-off tests on both platforms.
+- Add native iOS tests for every stable delegate branch already bridged by the
+  plugin.
+
+**Validation gate**
+
+- The same account-flow matrix passes on a physical Android device and an iOS
+  simulator or device.
+- Tokens, credentials, one-time codes, and continuation data do not appear in
+  logs, fixtures, screenshots, or persisted test output.
+
+### Milestone 8.2 — Harden the cross-platform contract
+
+**Deliverables**
+
+- Add a typed cancellation result and normalize native error categories without
+  exposing raw native result objects.
+- Propagate safe correlation metadata for diagnostics without including PII or
+  tokens.
+- Define and test duplicate submission, stale continuation, overlapping flow,
+  reinitialization, engine-detach, multiple-engine, app-background, and process
+  recreation behavior.
+- Remove the temporary Android Gradle old-DSL compatibility switch before its
+  removal in Android Gradle Plugin 10.
+
+**Validation gate**
+
+- Shared Dart contract tests and native branch tests cover every documented
+  terminal and continuation state.
+- Lifecycle and concurrency tests cannot reuse a completed, detached, or
+  otherwise stale continuation.
+
+### Milestone 8.3 — Multi-factor authentication
+
+**Deliverables**
+
+- Add an explicit native-auth capability configuration for MFA only when the
+  corresponding Flutter states are implemented.
+- Model available email/SMS authentication methods, method selection,
+  challenge request/resend, code submission, cancellation, and completion.
+- Preserve requested API scopes through the MFA continuation and final token
+  result.
+
+**Validation gate**
+
+- Android and iOS tests replay equivalent MFA-required flows into the same Dart
+  states.
+- Live-tenant email and SMS MFA scenarios pass on both platforms.
+
+### Milestone 8.4 — Strong-auth method registration
+
+**Deliverables**
+
+- Add typed just-in-time registration states for the email/SMS methods exposed
+  by the stable native SDKs.
+- Implement method selection, challenge, resend, verification, cancellation,
+  and post-registration continuation.
+- Enable the native registration capability only after the complete flow is
+  bridged on both platforms.
+
+**Validation gate**
+
+- Android and iOS produce the same Flutter-visible registration flow.
+- New-account and policy-triggered live-tenant registration scenarios pass.
+
+### Milestone 8.5 — Advanced authorization requests
+
+**Deliverables**
+
+- Bridge claims requests/authentication context through sign-in, automatic
+  sign-in, and access-token acquisition without exposing platform SDK types.
+- Add browser-fallback options required for federated identity providers,
+  starting with domain hint and a deliberately small prompt policy.
+- Document which options apply to native authentication and which restart the
+  flow through the system browser.
+
+**Validation gate**
+
+- Claims challenges and federated browser hand-off pass deterministic contract
+  tests and live-tenant tests on both platforms.
+- Ordinary native SDK failures never trigger an implicit browser switch.
+
+### Intentionally not bridged
+
+- Refresh tokens, native cache objects, native client/delegate instances, and
+  raw continuation objects.
+- Client secrets, arbitrary authorities outside an External ID tenant, embedded
+  WebViews, and a Dart OAuth implementation.
+- Tenant administration and profile editing through Microsoft Graph; those are
+  separate server/admin responsibilities rather than Native Authentication SDK
+  flows.
+- Experimental iOS server-driven APIs until Microsoft documents them as stable
+  for production use.
+
 ## Working rules
 
 - Use official Flutter and Microsoft documentation as the baseline.

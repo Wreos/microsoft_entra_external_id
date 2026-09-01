@@ -11,6 +11,31 @@ void main() {
   runApp(const NativeAuthExampleApp());
 }
 
+enum _AuthScenario { emailOtp, emailPassword, attributes, passwordReset, more }
+
+extension on _AuthScenario {
+  String get title => switch (this) {
+    _AuthScenario.emailOtp => 'Email OTP',
+    _AuthScenario.emailPassword => 'Email + Password',
+    _AuthScenario.attributes => 'Attributes',
+    _AuthScenario.passwordReset => 'Password Reset',
+    _AuthScenario.more => 'More',
+  };
+
+  String get prompt => switch (this) {
+    _AuthScenario.emailOtp =>
+      'Sign in or create an account with an email verification code.',
+    _AuthScenario.emailPassword =>
+      'Sign in or create an account with an email and password.',
+    _AuthScenario.attributes =>
+      'Create an account and collect attributes required by the tenant.',
+    _AuthScenario.passwordReset =>
+      'Reset a password with an email verification code.',
+    _AuthScenario.more =>
+      'Test explicit system-browser fallback and account utilities.',
+  };
+}
+
 class NativeAuthExampleApp extends StatelessWidget {
   const NativeAuthExampleApp({
     super.key,
@@ -67,6 +92,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  _AuthScenario _scenario = _AuthScenario.emailOtp;
   bool _busy = false;
   String _status = 'Initializing native authentication...';
   NativeAuthCodeRequired? _codeRequired;
@@ -118,32 +144,40 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     });
   }
 
-  Future<void> _signIn() async {
+  Future<void> _signIn({required bool withPassword}) async {
     final email = _emailController.text.trim();
     if (!_isValidEmail(email)) {
       setState(() => _status = 'Enter a valid email address.');
       return;
     }
-    final password = _passwordController.text;
+    final password = withPassword ? _passwordController.text : null;
+    if (withPassword && password!.isEmpty) {
+      setState(() => _status = 'Enter your password.');
+      return;
+    }
     _passwordController.clear();
     await _perform(
-      () => password.isEmpty
+      () => password == null
           ? _plugin.signIn(email, scopes: _scopes)
           : _plugin.signInWithPassword(email, password, scopes: _scopes),
       progress: 'Starting sign in...',
     );
   }
 
-  Future<void> _signUp() async {
+  Future<void> _signUp({required bool withPassword}) async {
     final email = _emailController.text.trim();
     if (!_isValidEmail(email)) {
       setState(() => _status = 'Enter a valid email address.');
       return;
     }
-    final password = _passwordController.text;
+    final password = withPassword ? _passwordController.text : null;
+    if (withPassword && password!.isEmpty) {
+      setState(() => _status = 'Enter a password for the new account.');
+      return;
+    }
     _passwordController.clear();
     await _perform(
-      () => password.isEmpty
+      () => password == null
           ? _plugin.signUp(email)
           : _plugin.signUpWithPassword(email, password),
       progress: 'Starting sign up...',
@@ -247,14 +281,29 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   void _useAnotherEmail() {
     if (_busy) return;
     setState(() {
-      _codeRequired = null;
-      _passwordRequired = null;
-      _attributesRequired = null;
-      _clearAttributeControllers();
-      _codeController.clear();
-      _passwordController.clear();
-      _status = 'Enter an email to sign in or create an account.';
+      _clearInteractiveUi();
+      _status = _scenario.prompt;
     });
+  }
+
+  void _selectScenario(int index) {
+    if (_busy || index == _scenario.index) return;
+    setState(() {
+      _scenario = _AuthScenario.values[index];
+      _emailController.clear();
+      _clearInteractiveUi();
+      _browserFailure = null;
+      _status = _scenario.prompt;
+    });
+  }
+
+  void _clearInteractiveUi() {
+    _codeRequired = null;
+    _passwordRequired = null;
+    _attributesRequired = null;
+    _clearAttributeControllers();
+    _codeController.clear();
+    _passwordController.clear();
   }
 
   Future<void> _perform(
@@ -293,7 +342,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
         _clearAttributeControllers();
         _codeController.clear();
         _passwordController.clear();
-        _status = 'Enter an email to sign in or create an account.';
+        _status = _scenario.prompt;
       case final NativeAuthCodeRequired state:
         _browserFailure = null;
         _codeRequired = state;
@@ -351,10 +400,44 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   static bool _isValidEmail(String value) =>
       RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
 
+  Widget _buildScenario() => switch (_scenario) {
+    _AuthScenario.emailOtp => _EmailOtpScenario(
+      controller: _emailController,
+      busy: _busy,
+      onSignIn: () => _signIn(withPassword: false),
+      onSignUp: () => _signUp(withPassword: false),
+    ),
+    _AuthScenario.emailPassword => _EmailPasswordScenario(
+      emailController: _emailController,
+      passwordController: _passwordController,
+      busy: _busy,
+      onSignIn: () => _signIn(withPassword: true),
+      onSignUp: () => _signUp(withPassword: true),
+    ),
+    _AuthScenario.attributes => _AttributesScenario(
+      controller: _emailController,
+      busy: _busy,
+      onSignUp: () => _signUp(withPassword: false),
+    ),
+    _AuthScenario.passwordReset => _PasswordResetScenario(
+      controller: _emailController,
+      busy: _busy,
+      onResetPassword: _resetPassword,
+    ),
+    _AuthScenario.more => _MoreScenario(
+      controller: _emailController,
+      busy: _busy,
+      browserConfigured: widget.redirectUri.trim().isNotEmpty,
+      apiScopeConfigured: _apiScope.isNotEmpty,
+      onContinueInBrowser: _continueInBrowser,
+    ),
+  };
+
   @override
   Widget build(BuildContext context) {
+    final showStatus = _status != _scenario.prompt;
     return Scaffold(
-      appBar: AppBar(title: const Text('Microsoft Entra External ID')),
+      appBar: AppBar(title: Text(_scenario.title)),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -362,25 +445,16 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                Text(
-                  'Native Authentication',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Custom Flutter UI backed directly by the official MSAL '
-                  'Android and iOS SDKs. No embedded WebView.',
-                ),
-                const SizedBox(height: 24),
-                if (!_configured)
-                  const _ConfigurationCard()
-                else ...[
+                if (!_configured) const _ConfigurationCard(),
+                if (_configured) ...[
                   if (_busy) const LinearProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Semantics(
-                    liveRegion: true,
-                    child: Text(_status, key: const Key('status')),
-                  ),
+                  if (showStatus) ...[
+                    const SizedBox(height: 16),
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(_status, key: const Key('status')),
+                    ),
+                  ],
                   if (_browserFailure != null) ...[
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
@@ -390,7 +464,8 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
                       label: const Text('Continue in system browser'),
                     ),
                   ],
-                  const SizedBox(height: 24),
+                  if (showStatus || _browserFailure != null)
+                    const SizedBox(height: 24),
                   if (_signedIn case final account?)
                     _SignedInCard(
                       username: account.username,
@@ -427,20 +502,50 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
                       onUseAnotherEmail: _useAnotherEmail,
                     )
                   else
-                    _EmailForm(
-                      controller: _emailController,
-                      passwordController: _passwordController,
-                      busy: _busy,
-                      onSignIn: _signIn,
-                      onSignUp: _signUp,
-                      onResetPassword: _resetPassword,
-                    ),
+                    _buildScenario(),
                 ],
               ],
             ),
           ),
         ),
       ),
+      bottomNavigationBar: _configured
+          ? NavigationBar(
+              selectedIndex: _scenario.index,
+              onDestinationSelected: _selectScenario,
+              destinations: const [
+                NavigationDestination(
+                  key: Key('scenarioEmailOtp'),
+                  icon: Icon(Icons.email_outlined),
+                  selectedIcon: Icon(Icons.email),
+                  label: 'Email OTP',
+                ),
+                NavigationDestination(
+                  key: Key('scenarioPassword'),
+                  icon: Icon(Icons.password_outlined),
+                  selectedIcon: Icon(Icons.password),
+                  label: 'Password',
+                ),
+                NavigationDestination(
+                  key: Key('scenarioAttributes'),
+                  icon: Icon(Icons.badge_outlined),
+                  selectedIcon: Icon(Icons.badge),
+                  label: 'Attributes',
+                ),
+                NavigationDestination(
+                  key: Key('scenarioReset'),
+                  icon: Icon(Icons.lock_reset_outlined),
+                  selectedIcon: Icon(Icons.lock_reset),
+                  label: 'Reset',
+                ),
+                NavigationDestination(
+                  key: Key('scenarioMore'),
+                  icon: Icon(Icons.more_horiz),
+                  label: 'More',
+                ),
+              ],
+            )
+          : null,
     );
   }
 }
@@ -473,40 +578,65 @@ class _ConfigurationCard extends StatelessWidget {
   }
 }
 
-class _EmailForm extends StatelessWidget {
-  const _EmailForm({
+class _EmailOtpScenario extends StatelessWidget {
+  const _EmailOtpScenario({
     required this.controller,
-    required this.passwordController,
     required this.busy,
     required this.onSignIn,
     required this.onSignUp,
-    required this.onResetPassword,
   });
 
   final TextEditingController controller;
-  final TextEditingController passwordController;
   final bool busy;
   final VoidCallback onSignIn;
   final VoidCallback onSignUp;
-  final VoidCallback onResetPassword;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          key: const Key('email'),
-          controller: controller,
-          enabled: !busy,
-          keyboardType: TextInputType.emailAddress,
-          textCapitalization: TextCapitalization.none,
-          autocorrect: false,
-          autofillHints: const [AutofillHints.email],
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: 'Email',
+        _EmailField(controller: controller, busy: busy),
+        const SizedBox(height: 16),
+        _FullWidthButton(
+          key: const Key('signIn'),
+          busy: busy,
+          onPressed: onSignIn,
+          label: 'Sign in with email code',
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            key: const Key('signUp'),
+            onPressed: busy ? null : onSignUp,
+            child: const Text('Sign up with email code'),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _EmailPasswordScenario extends StatelessWidget {
+  const _EmailPasswordScenario({
+    required this.emailController,
+    required this.passwordController,
+    required this.busy,
+    required this.onSignIn,
+    required this.onSignUp,
+  });
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool busy;
+  final VoidCallback onSignIn;
+  final VoidCallback onSignUp;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _EmailField(controller: emailController, busy: busy),
         const SizedBox(height: 16),
         TextField(
           key: const Key('password'),
@@ -514,39 +644,212 @@ class _EmailForm extends StatelessWidget {
           enabled: !busy,
           obscureText: true,
           autofillHints: const [AutofillHints.password],
+          textInputAction: TextInputAction.done,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            labelText: 'Password (leave empty for email OTP)',
+            labelText: 'Password',
           ),
         ),
         const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: FilledButton(
-                key: const Key('signIn'),
-                onPressed: busy ? null : onSignIn,
-                child: const Text('Sign in'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton(
-                key: const Key('signUp'),
-                onPressed: busy ? null : onSignUp,
-                child: const Text('Sign up'),
-              ),
-            ),
-          ],
+        _FullWidthButton(
+          key: const Key('signIn'),
+          busy: busy,
+          onPressed: onSignIn,
+          label: 'Sign in',
         ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            key: const Key('resetPassword'),
-            onPressed: busy ? null : onResetPassword,
-            child: const Text('Forgot password?'),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            key: const Key('signUp'),
+            onPressed: busy ? null : onSignUp,
+            child: const Text('Create password account'),
           ),
         ),
+      ],
+    );
+  }
+}
+
+class _AttributesScenario extends StatelessWidget {
+  const _AttributesScenario({
+    required this.controller,
+    required this.busy,
+    required this.onSignUp,
+  });
+
+  final TextEditingController controller;
+  final bool busy;
+  final VoidCallback onSignUp;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _EmailField(controller: controller, busy: busy),
+        const SizedBox(height: 16),
+        _FullWidthButton(
+          key: const Key('signUp'),
+          busy: busy,
+          onPressed: onSignUp,
+          label: 'Start attribute sign-up',
+        ),
+      ],
+    );
+  }
+}
+
+class _PasswordResetScenario extends StatelessWidget {
+  const _PasswordResetScenario({
+    required this.controller,
+    required this.busy,
+    required this.onResetPassword,
+  });
+
+  final TextEditingController controller;
+  final bool busy;
+  final VoidCallback onResetPassword;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _EmailField(controller: controller, busy: busy),
+        const SizedBox(height: 16),
+        _FullWidthButton(
+          key: const Key('resetPassword'),
+          busy: busy,
+          onPressed: onResetPassword,
+          label: 'Reset password',
+        ),
+      ],
+    );
+  }
+}
+
+class _MoreScenario extends StatelessWidget {
+  const _MoreScenario({
+    required this.controller,
+    required this.busy,
+    required this.browserConfigured,
+    required this.apiScopeConfigured,
+    required this.onContinueInBrowser,
+  });
+
+  final TextEditingController controller;
+  final bool busy;
+  final bool browserConfigured;
+  final bool apiScopeConfigured;
+  final VoidCallback onContinueInBrowser;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _EmailField(
+          controller: controller,
+          busy: busy,
+          label: 'Login hint (optional)',
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.tonalIcon(
+            key: const Key('browserFallbackDirect'),
+            onPressed: busy || !browserConfigured ? null : onContinueInBrowser,
+            icon: const Icon(Icons.open_in_browser),
+            label: const Text('Sign in with system browser'),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _ConfigurationStatus(
+          icon: Icons.link,
+          label: 'Redirect URI',
+          configured: browserConfigured,
+        ),
+        const SizedBox(height: 8),
+        _ConfigurationStatus(
+          icon: Icons.api,
+          label: 'Protected API scope',
+          configured: apiScopeConfigured,
+        ),
+      ],
+    );
+  }
+}
+
+class _EmailField extends StatelessWidget {
+  const _EmailField({
+    required this.controller,
+    required this.busy,
+    this.label = 'Email',
+  });
+
+  final TextEditingController controller;
+  final bool busy;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      key: const Key('email'),
+      controller: controller,
+      enabled: !busy,
+      keyboardType: TextInputType.emailAddress,
+      textCapitalization: TextCapitalization.none,
+      autocorrect: false,
+      autofillHints: const [AutofillHints.email],
+      decoration: InputDecoration(
+        border: const OutlineInputBorder(),
+        labelText: label,
+      ),
+    );
+  }
+}
+
+class _FullWidthButton extends StatelessWidget {
+  const _FullWidthButton({
+    required super.key,
+    required this.busy,
+    required this.onPressed,
+    required this.label,
+  });
+
+  final bool busy;
+  final VoidCallback onPressed;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(
+        onPressed: busy ? null : onPressed,
+        child: Text(label),
+      ),
+    );
+  }
+}
+
+class _ConfigurationStatus extends StatelessWidget {
+  const _ConfigurationStatus({
+    required this.icon,
+    required this.label,
+    required this.configured,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool configured;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 8),
+        Expanded(child: Text(label)),
+        Text(configured ? 'Configured' : 'Not configured'),
       ],
     );
   }

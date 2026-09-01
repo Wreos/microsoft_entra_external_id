@@ -306,4 +306,79 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('rejects blank configuration and interactive values', () {
+    final plugin = MicrosoftEntraExternalId(
+      platform: MockMicrosoftEntraExternalIdPlatform(),
+    );
+    const codeState = NativeAuthCodeRequired(
+      operation: NativeAuthOperation.signIn,
+      continuationId: 'continuation-id',
+    );
+
+    expect(
+      () => plugin.initialize(
+        const NativeAuthConfiguration(
+          clientId: ' ',
+          tenantSubdomain: 'contoso',
+        ),
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => plugin.initialize(
+        const NativeAuthConfiguration(
+          clientId: 'client-id',
+          tenantSubdomain: ' ',
+        ),
+      ),
+      throwsArgumentError,
+    );
+    expect(() => plugin.signIn(' '), throwsArgumentError);
+    expect(() => plugin.signUp(' '), throwsArgumentError);
+    expect(() => plugin.resetPassword(' '), throwsArgumentError);
+    expect(() => plugin.submitCode(codeState, ' '), throwsArgumentError);
+  });
+
+  test('rejects attribute names that collide after trimming', () {
+    final plugin = MicrosoftEntraExternalId(
+      platform: MockMicrosoftEntraExternalIdPlatform(),
+    );
+
+    expect(
+      () => plugin.signUp(
+        'user@example.com',
+        attributes: const {
+          'displayName': 'First value',
+          ' displayName ': 'Second value',
+        },
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('delegates immutable normalized collections', () async {
+    final fakePlatform = MockMicrosoftEntraExternalIdPlatform();
+    final plugin = MicrosoftEntraExternalId(platform: fakePlatform);
+
+    await plugin.signIn(
+      'user@example.com',
+      scopes: const [' openid ', 'openid', ' profile '],
+    );
+    await plugin.signUp(
+      'user@example.com',
+      attributes: const {' displayName ': 'Aleksandr'},
+    );
+
+    expect(fakePlatform.signedInScopes, const ['openid', 'profile']);
+    expect(
+      () => fakePlatform.signedInScopes!.add('email'),
+      throwsUnsupportedError,
+    );
+    expect(fakePlatform.signedUpAttributes, const {'displayName': 'Aleksandr'});
+    expect(
+      () => fakePlatform.signedUpAttributes!['city'] = 'Berlin',
+      throwsUnsupportedError,
+    );
+  });
 }

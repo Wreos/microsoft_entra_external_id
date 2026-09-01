@@ -5,15 +5,17 @@ Authentication, backed by the official MSAL Android and iOS SDKs.
 
 It lets Flutter applications build fully custom sign-up and sign-in experiences
 while MSAL handles the authentication protocol, native token cache, and
-platform-specific behavior. Native-supported flows do not use an embedded
-WebView.
+platform-specific behavior.
 
-## Custom Flutter UI, native authentication
+## Example
 
-![Successful Microsoft Entra External ID native sign-in on Android](https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/android-authenticated.png)
-
-The screenshot shows a real Email OTP sign-in against an External ID tenant on
-an Android device. The account identifier is redacted.
+<p>
+  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-email-otp.png" width="155" alt="Email OTP">
+  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-password.png" width="155" alt="Email and password">
+  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-attributes.png" width="155" alt="Sign-up attributes">
+  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-password-reset.png" width="155" alt="Password reset">
+  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-more.png" width="155" alt="Browser fallback and API setup">
+</p>
 
 ## What the plugin enables
 
@@ -25,8 +27,7 @@ an Android device. The account identifier is redacted.
   password and Email OTP sign-up, tenant-defined required/custom attributes,
   self-service password reset, code/password/attribute submission, token
   acquisition/refresh, automatic sign-in after sign-up/reset, and sign-out;
-- an example whose Flutter widgets own the complete authentication UI, with no
-  embedded WebView.
+- an example whose Flutter widgets own the complete authentication UI.
 
 Read [INTENT.md][intent] for product scope and [the implementation plan][plan]
 for the execution sequence. The verified toolchain and deployment floors are

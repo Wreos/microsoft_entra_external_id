@@ -1,3 +1,12 @@
+## 0.2.0-dev.2
+
+- Add explicit system-browser fallback through the native MSAL clients.
+- Split the Flutter example into Email OTP, Password, Attributes, Password
+  Reset, and More scenarios for easier testing and issue reproduction.
+- Harden public input normalization and malformed native-result handling.
+- Add live Android validation for password sign-in, token acquisition and
+  refresh, sign-out, and cache state after process restart.
+
 ## 0.2.0-dev.1
 
 - Add native password sign-up and tenant-defined required/custom attributes.

@@ -1,7 +1,15 @@
 # Microsoft Entra External ID native-authentication example
 
 This app mirrors Microsoft's native-authentication samples while keeping the UI
-in Flutter:
+in Flutter. Its Material navigation separates five reproducible scenarios:
+
+- **Email OTP** for passwordless sign-in and sign-up;
+- **Password** for direct password sign-in and sign-up;
+- **Attributes** for Email OTP sign-up with tenant-required profile data;
+- **Password Reset** for the complete recovery continuation;
+- **More** for explicit system-browser fallback and API configuration status.
+
+Together, those scenarios demonstrate how to:
 
 - restore a cached account;
 - sign in with email/username and password or Email OTP;
@@ -15,8 +23,8 @@ in Flutter:
 - automatically sign in after sign-up;
 - sign out.
 
-There is no embedded WebView. Android calls MSAL Native Auth directly and iOS
-calls `MSALNativeAuthPublicClientApplication` through Swift Package Manager.
+Android calls MSAL Native Auth directly. iOS uses
+`MSALNativeAuthPublicClientApplication` through Swift Package Manager.
 
 ## External tenant setup
 
@@ -58,11 +66,10 @@ flutter run \
 
 `ENTRA_API_SCOPE` is optional. Without it, MSAL requests its default OIDC
 scopes. `ENTRA_REDIRECT_URI` is required when the example displays the
-system-browser fallback action. Enter a password to use password sign-in or
-password sign-up. Leave it empty to let the tenant select Email OTP or return a
-password continuation.
-The example renders required attributes dynamically and uses the same code and
-password screens for password reset.
+system-browser fallback action. Select **Email OTP** or **Password** explicitly
+instead of using an empty password to choose an authentication mechanism. The
+example renders required attributes dynamically and uses the same code and
+password continuation screens for password reset.
 
 The client ID, tenant prefix, and scope are public client configuration, not
 secrets. Do not add a client secret to this example or any mobile application.

@@ -169,12 +169,53 @@ final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
       );
 }
 
+Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+}
+
 void main() {
   testWidgets('explains how to configure the example', (tester) async {
     await tester.pumpWidget(const NativeAuthExampleApp());
 
     expect(find.text('Configuration required'), findsOneWidget);
     expect(find.byKey(const Key('signIn')), findsNothing);
+  });
+
+  testWidgets('exposes each native authentication scenario independently', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      NativeAuthExampleApp(
+        clientId: 'client-id',
+        tenantSubdomain: 'contoso',
+        redirectUri: 'msauth.example://auth',
+        plugin: MicrosoftEntraExternalId(platform: FakeNativeAuthPlatform()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('scenarioEmailOtp')), findsOneWidget);
+    expect(find.byKey(const Key('scenarioPassword')), findsOneWidget);
+    expect(find.byKey(const Key('scenarioAttributes')), findsOneWidget);
+    expect(find.byKey(const Key('scenarioReset')), findsOneWidget);
+    expect(find.byKey(const Key('scenarioMore')), findsOneWidget);
+    expect(find.byKey(const Key('password')), findsNothing);
+
+    await _tapVisible(tester, find.byKey(const Key('scenarioPassword')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('password')), findsOneWidget);
+
+    await _tapVisible(tester, find.byKey(const Key('scenarioReset')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('resetPassword')), findsOneWidget);
+    expect(find.byKey(const Key('signIn')), findsNothing);
+
+    await _tapVisible(tester, find.byKey(const Key('scenarioMore')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('browserFallbackDirect')), findsOneWidget);
+    expect(find.text('Protected API scope'), findsOneWidget);
   });
 
   testWidgets('runs the email OTP sign-in UI flow', (tester) async {
@@ -190,13 +231,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('email')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('signIn')));
+    await _tapVisible(tester, find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
     expect(find.text('Enter a valid email address.'), findsOneWidget);
     expect(platform.signInCalls, 0);
 
     await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
-    await tester.tap(find.byKey(const Key('signIn')));
+    await _tapVisible(tester, find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('code')), findsOneWidget);
@@ -204,31 +245,31 @@ void main() {
       find.text('Verification code sent to u***@example.com.'),
       findsOneWidget,
     );
-    await tester.tap(find.byKey(const Key('useAnotherEmail')));
+    await _tapVisible(tester, find.byKey(const Key('useAnotherEmail')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('email')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('signIn')));
+    await _tapVisible(tester, find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
     expect(platform.signInCalls, 2);
 
-    await tester.tap(find.byKey(const Key('verifyCode')));
+    await _tapVisible(tester, find.byKey(const Key('verifyCode')));
     await tester.pumpAndSettle();
     expect(find.text('Enter the 6-digit verification code.'), findsOneWidget);
     expect(platform.submitCodeCalls, 0);
 
     await tester.enterText(find.byKey(const Key('code')), '123456');
-    await tester.tap(find.byKey(const Key('verifyCode')));
+    await _tapVisible(tester, find.byKey(const Key('verifyCode')));
     await tester.pumpAndSettle();
     expect(platform.submitCodeCalls, 1);
 
     expect(find.text('Signed in successfully.'), findsOneWidget);
     expect(find.text('user@example.com'), findsOneWidget);
     expect(find.text('ID token: available'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('refreshToken')));
+    await _tapVisible(tester, find.byKey(const Key('refreshToken')));
     await tester.pumpAndSettle();
     expect(platform.refreshTokenCalls, 1);
-    await tester.tap(find.byKey(const Key('signOut')));
+    await _tapVisible(tester, find.byKey(const Key('signOut')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('email')), findsOneWidget);
@@ -247,9 +288,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _tapVisible(tester, find.byKey(const Key('scenarioPassword')));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
     await tester.enterText(find.byKey(const Key('password')), 'secret value');
-    await tester.tap(find.byKey(const Key('signIn')));
+    await _tapVisible(tester, find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
 
     expect(platform.submittedPassword, 'secret value');
@@ -269,7 +312,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
-    await tester.tap(find.byKey(const Key('signIn')));
+    await _tapVisible(tester, find.byKey(const Key('signIn')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('requiredPassword')), findsOneWidget);
 
@@ -277,7 +320,7 @@ void main() {
       find.byKey(const Key('requiredPassword')),
       'secret value',
     );
-    await tester.tap(find.byKey(const Key('submitPassword')));
+    await _tapVisible(tester, find.byKey(const Key('submitPassword')));
     await tester.pumpAndSettle();
 
     expect(platform.submitPasswordCalls, 1);
@@ -296,9 +339,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _tapVisible(tester, find.byKey(const Key('scenarioPassword')));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('email')), 'new@example.com');
     await tester.enterText(find.byKey(const Key('password')), 'new secret');
-    await tester.tap(find.byKey(const Key('signUp')));
+    await _tapVisible(tester, find.byKey(const Key('signUp')));
     await tester.pumpAndSettle();
 
     expect(platform.signUpCalls, 1);
@@ -317,8 +362,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _tapVisible(tester, find.byKey(const Key('scenarioReset')));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
-    await tester.tap(find.byKey(const Key('resetPassword')));
+    await _tapVisible(tester, find.byKey(const Key('resetPassword')));
     await tester.pumpAndSettle();
 
     expect(platform.resetPasswordCalls, 1);
@@ -342,11 +389,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await _tapVisible(tester, find.byKey(const Key('scenarioAttributes')));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('email')), 'new@example.com');
-    await tester.tap(find.byKey(const Key('signUp')));
+    await _tapVisible(tester, find.byKey(const Key('signUp')));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('code')), '123456');
-    await tester.tap(find.byKey(const Key('verifyCode')));
+    await _tapVisible(tester, find.byKey(const Key('verifyCode')));
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('attribute_displayName')), findsOneWidget);
@@ -354,7 +403,7 @@ void main() {
       find.byKey(const Key('attribute_displayName')),
       'Aleksandr',
     );
-    await tester.tap(find.byKey(const Key('submitAttributes')));
+    await _tapVisible(tester, find.byKey(const Key('submitAttributes')));
     await tester.pumpAndSettle();
 
     expect(platform.submitAttributesCalls, 1);

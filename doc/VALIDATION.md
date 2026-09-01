@@ -47,8 +47,8 @@ The final implementation snapshot passed:
 Pigeon regeneration + generated-output drift check   PASS
 dart format                                           PASS
 flutter analyze                                      PASS
-flutter test                                        PASS (14 tests)
-flutter test (example)                              PASS (7 widget tests)
+flutter test                                        PASS (21 tests)
+flutter test (example)                              PASS (8 widget tests)
 Android plugin testDebugUnitTest                    PASS (8 native tests)
 Android device integration_test native bridge       PASS (1 test)
 Android API 35 install/start/native initialization   PASS
@@ -94,6 +94,12 @@ MSAL native client initialized, cached-account lookup returned signed-out, and
 the custom Flutter sign-in/sign-up screen rendered without an embedded WebView.
 This proves device-level bridge wiring independently of tenant configuration.
 
+The scenario-catalog example was installed on a physical Motorola device with
+the live tenant configuration. Its Email OTP, Password, Attributes, Password
+Reset, and More destinations all rendered and switched independently through
+Material navigation. Widget tests exercise every destination without displaying
+raw access-token or ID-token values.
+
 ## Environment and live-test boundaries
 
 The iOS app was ad-hoc signed with the example's MSAL keychain entitlement,
@@ -112,12 +118,18 @@ physical Android device. Tenant identifiers and the test account are not stored
 in the repository. The equivalent iOS live-tenant flow remains required before
 claiming cross-platform parity.
 
-Password sign-in and token retrieval are implemented but still require a real
-Email with password user flow and API scope smoke test on Android and iOS.
+Password sign-in also passed on the physical Android device. The live flow
+returned an ID token and an access token, completed an explicit forced access
+token acquisition, signed out, and remained signed out after the app process
+was restarted. The run used the SDK's default OpenID scopes; a custom API scope
+was not configured and remains an Android/iOS live-test gate. Password sign-in
+and token retrieval still require the equivalent iOS live-tenant test.
+
 The deterministic gates cover password sign-up, required attributes, password
-reset, MFA/strong-auth continuations, and browser-required result mapping. The
-new password/attribute/reset flows still need live-tenant checks on a physical
-Android device and iOS before a stable release. The browser fallback bridge is
+reset, explicit unsupported MFA/strong-auth mapping, and browser-required
+result mapping. The new password/attribute/reset flows still need live-tenant
+checks on a physical Android device and iOS before a stable release. The
+browser fallback bridge is
 compile-tested on both platforms but still needs a live tenant with a
 registered redirect URI and callback configuration. A browser-required MSAL
 result is exposed to Dart; the host must explicitly call

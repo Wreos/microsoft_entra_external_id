@@ -285,4 +285,79 @@ void main() {
     expect(failure.code, 'browser_required');
     expect(failure.message, 'Continue in browser.');
   });
+
+  test('uses safe defaults for incomplete native failures', () async {
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.android,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.error,
+        ),
+      ),
+    );
+
+    final state = await platform.signIn('user@example.com');
+
+    expect(state, isA<NativeAuthFailure>());
+    final failure = state as NativeAuthFailure;
+    expect(failure.code, 'native_auth_error');
+    expect(failure.message, 'Native authentication failed.');
+    expect(failure.browserRequired, isFalse);
+  });
+
+  test('rejects a malformed signed-in native result', () async {
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.ios,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.signedIn,
+          username: 'user@example.com',
+        ),
+      ),
+    );
+
+    expect(() => platform.getCurrentAccount(), throwsA(isA<StateError>()));
+  });
+
+  test('rejects native continuations without required metadata', () async {
+    final missingOperation = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.android,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.codeRequired,
+          continuationId: 'opaque-id',
+        ),
+      ),
+    );
+    final missingContinuation = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.ios,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.passwordRequired,
+          operation: pigeon.NativeAuthOperationMessage.signIn,
+        ),
+      ),
+    );
+
+    expect(
+      () => missingOperation.signIn('user@example.com'),
+      throwsA(isA<StateError>()),
+    );
+    expect(
+      () => missingContinuation.signIn('user@example.com'),
+      throwsA(isA<StateError>()),
+    );
+  });
 }
