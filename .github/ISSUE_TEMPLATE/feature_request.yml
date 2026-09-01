@@ -1,0 +1,39 @@
+name: Feature request
+description: Propose an improvement to the plugin or its documentation.
+title: "feature: "
+labels:
+  - enhancement
+body:
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find the same proposal.
+          required: true
+        - label: This request does not contain credentials, tokens, tenant data, or personal data.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What user or maintainer problem would this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, behaviour, or documentation change you would like.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Include relevant Microsoft documentation or small, safe examples where available.
+

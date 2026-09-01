@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/Wreos/microsoft_entra_external_id/security/advisories/new
+    about: Use private vulnerability reporting. Do not disclose security details in a public issue.
+  - name: Read the contributing guide
+    url: https://github.com/Wreos/microsoft_entra_external_id/blob/main/CONTRIBUTING.md
+    about: Read the project boundaries, setup steps, and validation requirements before contributing.
+

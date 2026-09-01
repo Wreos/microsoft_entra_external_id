@@ -1,0 +1,82 @@
+name: Bug report
+description: Report reproducible behaviour that differs from the documented plugin contract.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem. Do not include passwords, OTPs, access or ID tokens, client secrets, tenant data, continuation identifiers, or personal data. For a security vulnerability, use the private reporting process in SECURITY.md instead.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I removed secrets, tokens, tenant data, and personally identifiable information from this report.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: For example, the version from pubspec.lock or pubspec.yaml.
+      placeholder: 0.2.0-dev.1
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Affected platform
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - Dart API
+        - Example application
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Flutter, Dart, OS, device or simulator, Android API level or iOS version, and native MSAL version if known.
+      placeholder: |
+        Flutter:
+        Dart:
+        OS and device/simulator:
+        Android API level or iOS version:
+        MSAL version:
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction steps
+      description: Provide the smallest safe sequence that reproduces the issue. Use synthetic values only.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour and safe logs
+      description: Redact sensitive values. Do not paste full native SDK result objects.
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add links, screenshots, or a minimal repository if useful. Remove sensitive information first.
+
