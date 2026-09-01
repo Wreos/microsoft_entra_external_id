@@ -211,7 +211,8 @@ enum class NativePlatformMessage(val raw: Int) {
 
 enum class NativeAuthOperationMessage(val raw: Int) {
   SIGN_IN(0),
-  SIGN_UP(1);
+  SIGN_UP(1),
+  PASSWORD_RESET(2);
 
   companion object {
     fun ofRaw(raw: Int): NativeAuthOperationMessage? {
@@ -225,9 +226,10 @@ enum class NativeAuthResultTypeMessage(val raw: Int) {
   SIGNED_OUT(1),
   CODE_REQUIRED(2),
   PASSWORD_REQUIRED(3),
-  SIGNED_IN(4),
-  ERROR(5),
-  BROWSER_REQUIRED(6);
+  ATTRIBUTES_REQUIRED(4),
+  SIGNED_IN(5),
+  ERROR(6),
+  BROWSER_REQUIRED(7);
 
   companion object {
     fun ofRaw(raw: Int): NativeAuthResultTypeMessage? {
@@ -368,6 +370,182 @@ data class NativeAuthSignInParametersMessage (
 }
 
 /** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAuthAttributeMessage (
+  val name: String,
+  val value: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeAuthAttributeMessage {
+      val name = pigeonVar_list[0] as String
+      val value = pigeonVar_list[1] as String
+      return NativeAuthAttributeMessage(name, value)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      name,
+      value,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeAuthAttributeMessage
+    return NativeAuthApiPigeonUtils.deepEquals(this.name, other.name) && NativeAuthApiPigeonUtils.deepEquals(this.value, other.value)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.name)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.value)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeAuthAttributeMessage(name=$name, value=$value)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAuthRequiredAttributeMessage (
+  val name: String,
+  val type: String,
+  val required: Boolean,
+  val regex: String? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeAuthRequiredAttributeMessage {
+      val name = pigeonVar_list[0] as String
+      val type = pigeonVar_list[1] as String
+      val required = pigeonVar_list[2] as Boolean
+      val regex = pigeonVar_list[3] as String?
+      return NativeAuthRequiredAttributeMessage(name, type, required, regex)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      name,
+      type,
+      required,
+      regex,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeAuthRequiredAttributeMessage
+    return NativeAuthApiPigeonUtils.deepEquals(this.name, other.name) && NativeAuthApiPigeonUtils.deepEquals(this.type, other.type) && NativeAuthApiPigeonUtils.deepEquals(this.required, other.required) && NativeAuthApiPigeonUtils.deepEquals(this.regex, other.regex)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.name)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.type)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.required)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.regex)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeAuthRequiredAttributeMessage(name=$name, type=$type, required=$required, regex=$regex)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAuthSignUpParametersMessage (
+  val username: String,
+  val password: String? = null,
+  val attributes: List<NativeAuthAttributeMessage>
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeAuthSignUpParametersMessage {
+      val username = pigeonVar_list[0] as String
+      val password = pigeonVar_list[1] as String?
+      val attributes = pigeonVar_list[2] as List<NativeAuthAttributeMessage>
+      return NativeAuthSignUpParametersMessage(username, password, attributes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      username,
+      password,
+      attributes,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeAuthSignUpParametersMessage
+    return NativeAuthApiPigeonUtils.deepEquals(this.username, other.username) && NativeAuthApiPigeonUtils.deepEquals(this.password, other.password) && NativeAuthApiPigeonUtils.deepEquals(this.attributes, other.attributes)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.username)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.password)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.attributes)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeAuthSignUpParametersMessage(username=$username, password=$password, attributes=$attributes)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeAuthResetPasswordParametersMessage (
+  val username: String,
+  val scopes: List<String>
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeAuthResetPasswordParametersMessage {
+      val username = pigeonVar_list[0] as String
+      val scopes = pigeonVar_list[1] as List<String>
+      return NativeAuthResetPasswordParametersMessage(username, scopes)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      username,
+      scopes,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeAuthResetPasswordParametersMessage
+    return NativeAuthApiPigeonUtils.deepEquals(this.username, other.username) && NativeAuthApiPigeonUtils.deepEquals(this.scopes, other.scopes)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.username)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.scopes)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeAuthResetPasswordParametersMessage(username=$username, scopes=$scopes)"
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
 data class NativeAuthAccessTokenParametersMessage (
   val scopes: List<String>,
   val forceRefresh: Boolean
@@ -420,6 +598,8 @@ data class NativeAuthResultMessage (
   val expiresAtEpochMilliseconds: Long? = null,
   val sentTo: String? = null,
   val codeLength: Long? = null,
+  val requiredAttributes: List<NativeAuthRequiredAttributeMessage>? = null,
+  val invalidAttributeNames: List<String>? = null,
   val errorCode: String? = null,
   val errorMessage: String? = null
 )
@@ -436,9 +616,11 @@ data class NativeAuthResultMessage (
       val expiresAtEpochMilliseconds = pigeonVar_list[7] as Long?
       val sentTo = pigeonVar_list[8] as String?
       val codeLength = pigeonVar_list[9] as Long?
-      val errorCode = pigeonVar_list[10] as String?
-      val errorMessage = pigeonVar_list[11] as String?
-      return NativeAuthResultMessage(type, operation, continuationId, username, idToken, accessToken, scopes, expiresAtEpochMilliseconds, sentTo, codeLength, errorCode, errorMessage)
+      val requiredAttributes = pigeonVar_list[10] as List<NativeAuthRequiredAttributeMessage>?
+      val invalidAttributeNames = pigeonVar_list[11] as List<String>?
+      val errorCode = pigeonVar_list[12] as String?
+      val errorMessage = pigeonVar_list[13] as String?
+      return NativeAuthResultMessage(type, operation, continuationId, username, idToken, accessToken, scopes, expiresAtEpochMilliseconds, sentTo, codeLength, requiredAttributes, invalidAttributeNames, errorCode, errorMessage)
     }
   }
   fun toList(): List<Any?> {
@@ -453,6 +635,8 @@ data class NativeAuthResultMessage (
       expiresAtEpochMilliseconds,
       sentTo,
       codeLength,
+      requiredAttributes,
+      invalidAttributeNames,
       errorCode,
       errorMessage,
     )
@@ -465,7 +649,7 @@ data class NativeAuthResultMessage (
       return true
     }
     val other = other as NativeAuthResultMessage
-    return NativeAuthApiPigeonUtils.deepEquals(this.type, other.type) && NativeAuthApiPigeonUtils.deepEquals(this.operation, other.operation) && NativeAuthApiPigeonUtils.deepEquals(this.continuationId, other.continuationId) && NativeAuthApiPigeonUtils.deepEquals(this.username, other.username) && NativeAuthApiPigeonUtils.deepEquals(this.idToken, other.idToken) && NativeAuthApiPigeonUtils.deepEquals(this.accessToken, other.accessToken) && NativeAuthApiPigeonUtils.deepEquals(this.scopes, other.scopes) && NativeAuthApiPigeonUtils.deepEquals(this.expiresAtEpochMilliseconds, other.expiresAtEpochMilliseconds) && NativeAuthApiPigeonUtils.deepEquals(this.sentTo, other.sentTo) && NativeAuthApiPigeonUtils.deepEquals(this.codeLength, other.codeLength) && NativeAuthApiPigeonUtils.deepEquals(this.errorCode, other.errorCode) && NativeAuthApiPigeonUtils.deepEquals(this.errorMessage, other.errorMessage)
+    return NativeAuthApiPigeonUtils.deepEquals(this.type, other.type) && NativeAuthApiPigeonUtils.deepEquals(this.operation, other.operation) && NativeAuthApiPigeonUtils.deepEquals(this.continuationId, other.continuationId) && NativeAuthApiPigeonUtils.deepEquals(this.username, other.username) && NativeAuthApiPigeonUtils.deepEquals(this.idToken, other.idToken) && NativeAuthApiPigeonUtils.deepEquals(this.accessToken, other.accessToken) && NativeAuthApiPigeonUtils.deepEquals(this.scopes, other.scopes) && NativeAuthApiPigeonUtils.deepEquals(this.expiresAtEpochMilliseconds, other.expiresAtEpochMilliseconds) && NativeAuthApiPigeonUtils.deepEquals(this.sentTo, other.sentTo) && NativeAuthApiPigeonUtils.deepEquals(this.codeLength, other.codeLength) && NativeAuthApiPigeonUtils.deepEquals(this.requiredAttributes, other.requiredAttributes) && NativeAuthApiPigeonUtils.deepEquals(this.invalidAttributeNames, other.invalidAttributeNames) && NativeAuthApiPigeonUtils.deepEquals(this.errorCode, other.errorCode) && NativeAuthApiPigeonUtils.deepEquals(this.errorMessage, other.errorMessage)
   }
 
   override fun hashCode(): Int {
@@ -480,12 +664,14 @@ data class NativeAuthResultMessage (
     result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.expiresAtEpochMilliseconds)
     result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.sentTo)
     result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.codeLength)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.requiredAttributes)
+    result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.invalidAttributeNames)
     result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.errorCode)
     result = 31 * result + NativeAuthApiPigeonUtils.deepHash(this.errorMessage)
     return result
   }
   override fun toString(): String {
-    return "NativeAuthResultMessage(type=$type, operation=$operation, continuationId=$continuationId, username=$username, idToken=$idToken, accessToken=$accessToken, scopes=$scopes, expiresAtEpochMilliseconds=$expiresAtEpochMilliseconds, sentTo=$sentTo, codeLength=$codeLength, errorCode=$errorCode, errorMessage=$errorMessage)"
+    return "NativeAuthResultMessage(type=$type, operation=$operation, continuationId=$continuationId, username=$username, idToken=$idToken, accessToken=$accessToken, scopes=$scopes, expiresAtEpochMilliseconds=$expiresAtEpochMilliseconds, sentTo=$sentTo, codeLength=$codeLength, requiredAttributes=$requiredAttributes, invalidAttributeNames=$invalidAttributeNames, errorCode=$errorCode, errorMessage=$errorMessage)"
   }
 }
 private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
@@ -523,10 +709,30 @@ private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
       }
       135.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativeAuthAccessTokenParametersMessage.fromList(it)
+          NativeAuthAttributeMessage.fromList(it)
         }
       }
       136.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeAuthRequiredAttributeMessage.fromList(it)
+        }
+      }
+      137.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeAuthSignUpParametersMessage.fromList(it)
+        }
+      }
+      138.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeAuthResetPasswordParametersMessage.fromList(it)
+        }
+      }
+      139.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativeAuthAccessTokenParametersMessage.fromList(it)
+        }
+      }
+      140.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeAuthResultMessage.fromList(it)
         }
@@ -560,12 +766,28 @@ private open class NativeAuthApiPigeonCodec : StandardMessageCodec() {
         stream.write(134)
         writeValue(stream, value.toList())
       }
-      is NativeAuthAccessTokenParametersMessage -> {
+      is NativeAuthAttributeMessage -> {
         stream.write(135)
         writeValue(stream, value.toList())
       }
-      is NativeAuthResultMessage -> {
+      is NativeAuthRequiredAttributeMessage -> {
         stream.write(136)
+        writeValue(stream, value.toList())
+      }
+      is NativeAuthSignUpParametersMessage -> {
+        stream.write(137)
+        writeValue(stream, value.toList())
+      }
+      is NativeAuthResetPasswordParametersMessage -> {
+        stream.write(138)
+        writeValue(stream, value.toList())
+      }
+      is NativeAuthAccessTokenParametersMessage -> {
+        stream.write(139)
+        writeValue(stream, value.toList())
+      }
+      is NativeAuthResultMessage -> {
+        stream.write(140)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -580,9 +802,11 @@ interface NativeAuthHostApi {
   suspend fun initialize(configuration: NativeAuthConfigurationMessage): NativeAuthResultMessage
   suspend fun getCurrentAccount(): NativeAuthResultMessage
   suspend fun startSignIn(parameters: NativeAuthSignInParametersMessage): NativeAuthResultMessage
-  suspend fun startSignUp(username: String): NativeAuthResultMessage
+  suspend fun startSignUp(parameters: NativeAuthSignUpParametersMessage): NativeAuthResultMessage
+  suspend fun startResetPassword(parameters: NativeAuthResetPasswordParametersMessage): NativeAuthResultMessage
   suspend fun submitCode(continuationId: String, code: String): NativeAuthResultMessage
   suspend fun submitPassword(continuationId: String, password: String): NativeAuthResultMessage
+  suspend fun submitAttributes(continuationId: String, attributes: List<NativeAuthAttributeMessage>): NativeAuthResultMessage
   suspend fun resendCode(continuationId: String): NativeAuthResultMessage
   suspend fun getAccessToken(parameters: NativeAuthAccessTokenParametersMessage): NativeAuthResultMessage
   suspend fun signOut(): NativeAuthResultMessage
@@ -671,10 +895,29 @@ interface NativeAuthHostApi {
         if (api != null) {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
-            val usernameArg = args[0] as String
+            val parametersArg = args[0] as NativeAuthSignUpParametersMessage
             CoroutineScope(Dispatchers.Main).launch {
               val wrapped: List<Any?> = try {
-                listOf(api.startSignUp(usernameArg))
+                listOf(api.startSignUp(parametersArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startResetPassword$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val parametersArg = args[0] as NativeAuthResetPasswordParametersMessage
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.startResetPassword(parametersArg))
               } catch (exception: Throwable) {
                 NativeAuthApiPigeonUtils.wrapError(exception)
               }
@@ -715,6 +958,26 @@ interface NativeAuthHostApi {
             CoroutineScope(Dispatchers.Main).launch {
               val wrapped: List<Any?> = try {
                 listOf(api.submitPassword(continuationIdArg, passwordArg))
+              } catch (exception: Throwable) {
+                NativeAuthApiPigeonUtils.wrapError(exception)
+              }
+              reply.reply(wrapped)
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitAttributes$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val continuationIdArg = args[0] as String
+            val attributesArg = args[1] as List<NativeAuthAttributeMessage>
+            CoroutineScope(Dispatchers.Main).launch {
+              val wrapped: List<Any?> = try {
+                listOf(api.submitAttributes(continuationIdArg, attributesArg))
               } catch (exception: Throwable) {
                 NativeAuthApiPigeonUtils.wrapError(exception)
               }

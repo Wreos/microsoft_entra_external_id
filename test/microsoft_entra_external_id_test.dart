@@ -12,9 +12,14 @@ class MockMicrosoftEntraExternalIdPlatform
   String? signedInPassword;
   List<String>? signedInScopes;
   String? signedUpUsername;
+  String? signedUpPassword;
+  Map<String, String>? signedUpAttributes;
+  String? resetPasswordUsername;
+  List<String>? resetPasswordScopes;
   String? submittedContinuationId;
   String? submittedCode;
   String? submittedPassword;
+  Map<String, String>? submittedAttributes;
   String? resentContinuationId;
   List<String>? requestedTokenScopes;
   bool? requestedForceRefresh;
@@ -51,8 +56,24 @@ class MockMicrosoftEntraExternalIdPlatform
   }
 
   @override
-  Future<NativeAuthState> signUp(String username) async {
+  Future<NativeAuthState> signUp(
+    String username, {
+    String? password,
+    Map<String, String> attributes = const {},
+  }) async {
     signedUpUsername = username;
+    signedUpPassword = password;
+    signedUpAttributes = attributes;
+    return const NativeAuthSignedOut();
+  }
+
+  @override
+  Future<NativeAuthState> resetPassword(
+    String username, {
+    List<String> scopes = const [],
+  }) async {
+    resetPasswordUsername = username;
+    resetPasswordScopes = scopes;
     return const NativeAuthSignedOut();
   }
 
@@ -70,6 +91,16 @@ class MockMicrosoftEntraExternalIdPlatform
   ) async {
     submittedContinuationId = continuationId;
     submittedPassword = password;
+    return const NativeAuthSignedOut();
+  }
+
+  @override
+  Future<NativeAuthState> submitAttributes(
+    String continuationId,
+    Map<String, String> attributes,
+  ) async {
+    submittedContinuationId = continuationId;
+    submittedAttributes = attributes;
     return const NativeAuthSignedOut();
   }
 
@@ -161,15 +192,36 @@ void main() {
         operation: NativeAuthOperation.signIn,
         continuationId: 'password-continuation-id',
       );
+      const attributesState = NativeAuthAttributesRequired(
+        continuationId: 'attributes-continuation-id',
+        requiredAttributes: [
+          NativeAuthRequiredAttribute(
+            name: 'displayName',
+            type: 'string',
+            required: true,
+          ),
+        ],
+      );
 
       await plugin.signInWithPassword(
         ' user@example.com ',
         ' secret password ',
         scopes: const [' api://client/read ', 'api://client/read'],
       );
-      await plugin.signUp(' new@example.com ');
+      await plugin.signUpWithPassword(
+        ' new@example.com ',
+        ' new secret ',
+        attributes: const {' displayName ': 'Aleksandr'},
+      );
+      await plugin.resetPassword(
+        ' recover@example.com ',
+        scopes: const [' api://client/read ', 'api://client/read'],
+      );
       await plugin.submitCode(state, ' 123456 ');
       await plugin.submitPassword(passwordState, 'secret password');
+      await plugin.submitAttributes(attributesState, const {
+        ' displayName ': 'Aleksandr',
+      });
       await plugin.resendCode(state);
       await plugin.getAccessToken(
         scopes: const [' api://client/write '],
@@ -180,9 +232,21 @@ void main() {
       expect(fakePlatform.signedInPassword, ' secret password ');
       expect(fakePlatform.signedInScopes, const ['api://client/read']);
       expect(fakePlatform.signedUpUsername, 'new@example.com');
-      expect(fakePlatform.submittedContinuationId, 'password-continuation-id');
+      expect(fakePlatform.signedUpPassword, ' new secret ');
+      expect(fakePlatform.signedUpAttributes, const {
+        'displayName': 'Aleksandr',
+      });
+      expect(fakePlatform.resetPasswordUsername, 'recover@example.com');
+      expect(fakePlatform.resetPasswordScopes, const ['api://client/read']);
+      expect(
+        fakePlatform.submittedContinuationId,
+        'attributes-continuation-id',
+      );
       expect(fakePlatform.submittedCode, '123456');
       expect(fakePlatform.submittedPassword, 'secret password');
+      expect(fakePlatform.submittedAttributes, const {
+        'displayName': 'Aleksandr',
+      });
       expect(fakePlatform.resentContinuationId, 'continuation-id');
       expect(fakePlatform.requestedTokenScopes, const ['api://client/write']);
       expect(fakePlatform.requestedForceRefresh, isTrue);
@@ -200,6 +264,20 @@ void main() {
     );
     expect(
       () => plugin.getAccessToken(scopes: const [' ']),
+      throwsArgumentError,
+    );
+    expect(
+      () => plugin.signUp('user@example.com', attributes: const {' ': 'value'}),
+      throwsArgumentError,
+    );
+    expect(
+      () => plugin.submitAttributes(
+        const NativeAuthAttributesRequired(
+          continuationId: 'continuation-id',
+          requiredAttributes: [],
+        ),
+        const {},
+      ),
       throwsArgumentError,
     );
   });

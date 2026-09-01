@@ -14,7 +14,7 @@ final class NativeAuthConfiguration {
 }
 
 /// Authentication operation associated with an interactive state.
-enum NativeAuthOperation { signIn, signUp }
+enum NativeAuthOperation { signIn, signUp, passwordReset }
 
 /// Result of a native-authentication action.
 sealed class NativeAuthState {
@@ -78,7 +78,7 @@ final class NativeAuthCodeRequired extends NativeAuthState {
   final int? codeLength;
 }
 
-/// A password must be submitted to continue the native sign-in flow.
+/// A password must be submitted to continue a native authentication flow.
 final class NativeAuthPasswordRequired extends NativeAuthState {
   const NativeAuthPasswordRequired({
     required this.operation,
@@ -89,6 +89,44 @@ final class NativeAuthPasswordRequired extends NativeAuthState {
 
   /// Opaque handle to native in-memory state. It must never be persisted.
   final String continuationId;
+}
+
+/// Metadata for an attribute requested by the external tenant.
+final class NativeAuthRequiredAttribute {
+  const NativeAuthRequiredAttribute({
+    required this.name,
+    required this.type,
+    required this.required,
+    this.regex,
+  });
+
+  /// Attribute key accepted by MSAL, including custom extension attributes.
+  final String name;
+
+  /// Native data type reported by MSAL, such as `string`.
+  final String type;
+
+  final bool required;
+
+  /// Optional validation expression supplied by the tenant.
+  final String? regex;
+}
+
+/// Tenant-defined attributes must be submitted to continue sign-up.
+final class NativeAuthAttributesRequired extends NativeAuthState {
+  const NativeAuthAttributesRequired({
+    required this.continuationId,
+    required this.requiredAttributes,
+    this.invalidAttributeNames = const [],
+  });
+
+  /// Opaque handle to native in-memory state. It must never be persisted.
+  final String continuationId;
+
+  final List<NativeAuthRequiredAttribute> requiredAttributes;
+
+  /// Attribute keys rejected by the previous submission, when available.
+  final List<String> invalidAttributeNames;
 }
 
 /// A cached or newly authenticated account is available.

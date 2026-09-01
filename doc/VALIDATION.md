@@ -1,9 +1,10 @@
 # Validation report
 
-Validated on 2026-08-31. This report covers the repository bootstrap,
-deterministic Email one-time-passcode, password sign-in, and token-management
-slices, plus a live Android Email OTP tenant test. It does not claim production
-readiness, password live-tenant validation, or iOS live-tenant parity.
+Validated on 2026-09-01. This report covers the repository bootstrap,
+deterministic native password/Email OTP sign-in and sign-up, required
+attributes, password reset, and token-management slices, plus the existing live
+Android Email OTP tenant test. It does not claim production readiness or live
+tenant validation of the new password/attribute/reset flows.
 
 ## Environment
 
@@ -20,8 +21,13 @@ readiness, password live-tenant validation, or iOS live-tenant parity.
   `MSALNativeAuthPublicClientApplication` on iOS.
 - Initialization from application client ID and external-tenant subdomain.
 - Cached-account lookup.
-- Password and Email OTP sign-in; Email OTP sign-up.
-- Direct password submission and server-driven password continuations.
+- Password and Email OTP sign-in and sign-up.
+- Direct password submission and server-driven password continuations for
+  sign-in, sign-up, and password reset.
+- Required/custom sign-up attributes with native metadata and invalid-value
+  feedback.
+- Self-service password reset with Email OTP, new password, and automatic
+  native sign-in.
 - Verification-code submission and resend.
 - Automatic sign-in after sign-up.
 - ID token and API-scoped access-token results with scopes and expiry.
@@ -39,9 +45,9 @@ The final implementation snapshot passed:
 Pigeon regeneration + generated-output drift check   PASS
 dart format                                           PASS
 flutter analyze                                      PASS
-flutter test                                        PASS (12 tests)
-flutter test (example)                              PASS (4 widget tests)
-Android plugin testDebugUnitTest                    PASS (5 native tests)
+flutter test                                        PASS (14 tests)
+flutter test (example)                              PASS (7 widget tests)
+Android plugin testDebugUnitTest                    PASS (8 native tests)
 Android device integration_test native bridge       PASS (1 test)
 Android API 35 install/start/native initialization   PASS
 Swift Package manifest resolution                    PASS
@@ -97,8 +103,9 @@ claiming cross-platform parity.
 
 Password sign-in and token retrieval are implemented but still require a real
 Email with password user flow and API scope smoke test on Android and iOS.
-Password sign-up, required attributes, password reset, MFA/strong-auth
-continuations, and system-browser fallback execution remain out of this slice
-and are tracked in `doc/IMPLEMENTATION_PLAN.md`. A browser-required MSAL result
+The deterministic gates cover password sign-up, required attributes, password
+reset, MFA/strong-auth continuations, and browser-required result mapping. The
+new password/attribute/reset flows still need live-tenant checks on a physical
+Android device and iOS before a stable release. A browser-required MSAL result
 is exposed to Dart, but the plugin does not automatically start a browser flow
 after an SDK error or fallback signal.

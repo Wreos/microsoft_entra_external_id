@@ -67,9 +67,10 @@ manual release gate.
 - No password, one-time code, token, or continuation can be serialized by a
   public model accidentally.
 
-**Status:** Email OTP, password sign-in, account, ID/access-token, scopes,
-expiry, and native-cache refresh contract slices are complete. Password sign-up,
-attributes, MFA, cancellation, and correlation metadata remain in later slices.
+**Status:** Email OTP and password sign-in, sign-up attributes, password reset,
+account, ID/access-token, scopes, expiry, and native-cache refresh contract
+slices are complete. MFA, cancellation, and correlation metadata remain in
+later slices.
 
 ## Stage 3 — Android initialization and sign-in slice
 
@@ -128,6 +129,12 @@ complete.
 - Shared Dart scenario tests pass on Android and iOS.
 - Native tests cover every new result/delegate branch.
 - Live-tenant tests cover sign-up, attribute collection, and password reset.
+
+**Status:** Password and Email OTP sign-up, required/custom attribute
+continuations, self-service password reset, automatic sign-in after both
+flows, and deterministic Dart/Android/iOS compilation gates are complete. The
+physical-device and iOS live-tenant scenarios remain open and are tracked in
+`doc/VALIDATION.md`.
 
 ## Stage 6 — Advanced states and fallback
 

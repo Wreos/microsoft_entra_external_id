@@ -66,8 +66,32 @@ class MicrosoftEntraExternalId {
     List<String> scopes = const [],
   }) => signIn(username, password: password, scopes: scopes);
 
-  Future<NativeAuthState> signUp(String username) =>
-      _platform.signUp(_validateUsername(username));
+  /// Starts native sign-up with optional [password] and tenant [attributes].
+  Future<NativeAuthState> signUp(
+    String username, {
+    String? password,
+    Map<String, String> attributes = const {},
+  }) => _platform.signUp(
+    _validateUsername(username),
+    password: password == null ? null : _validatePassword(password),
+    attributes: _normalizeAttributes(attributes),
+  );
+
+  /// Convenience API for a customized email/password sign-up form.
+  Future<NativeAuthState> signUpWithPassword(
+    String username,
+    String password, {
+    Map<String, String> attributes = const {},
+  }) => signUp(username, password: password, attributes: attributes);
+
+  /// Starts self-service password reset and signs in after completion.
+  Future<NativeAuthState> resetPassword(
+    String username, {
+    List<String> scopes = const [],
+  }) => _platform.resetPassword(
+    _validateUsername(username),
+    scopes: _normalizeScopes(scopes),
+  );
 
   Future<NativeAuthState> submitCode(
     NativeAuthCodeRequired state,
@@ -87,6 +111,15 @@ class MicrosoftEntraExternalId {
   ) => _platform.submitPassword(
     state.continuationId,
     _validatePassword(password),
+  );
+
+  /// Submits tenant-defined string attributes to an in-progress sign-up.
+  Future<NativeAuthState> submitAttributes(
+    NativeAuthAttributesRequired state,
+    Map<String, String> attributes,
+  ) => _platform.submitAttributes(
+    state.continuationId,
+    _normalizeAttributes(attributes, allowEmpty: false),
   );
 
   Future<NativeAuthState> resendCode(NativeAuthCodeRequired state) =>
@@ -132,5 +165,34 @@ class MicrosoftEntraExternalId {
       normalized.add(value);
     }
     return List.unmodifiable(normalized);
+  }
+
+  static Map<String, String> _normalizeAttributes(
+    Map<String, String> attributes, {
+    bool allowEmpty = true,
+  }) {
+    if (!allowEmpty && attributes.isEmpty) {
+      throw ArgumentError.value(attributes, 'attributes', 'Must not be empty.');
+    }
+    final normalized = <String, String>{};
+    for (final MapEntry(:key, :value) in attributes.entries) {
+      final name = key.trim();
+      if (name.isEmpty) {
+        throw ArgumentError.value(
+          attributes,
+          'attributes',
+          'Attribute names must not be blank.',
+        );
+      }
+      if (normalized.containsKey(name)) {
+        throw ArgumentError.value(
+          attributes,
+          'attributes',
+          'Attribute names must be unique after trimming.',
+        );
+      }
+      normalized[name] = value;
+    }
+    return Map.unmodifiable(normalized);
   }
 }

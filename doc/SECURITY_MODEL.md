@@ -52,8 +52,9 @@ changing the authentication surface.
 
 ## Known gaps
 
-Password sign-up, required attributes, password reset, MFA, strong-auth
-registration, browser-fallback execution, and process-recreation recovery are
-not implemented in the first development release. See `doc/VALIDATION.md` for
-the live-test matrix and do not infer production readiness from compilation or
-deterministic tests alone.
+MFA, strong-auth registration, browser-fallback execution, and
+process-recreation recovery are not implemented yet. Password sign-up,
+required attributes, and password reset are implemented but still require
+live-tenant validation on both platforms. See `doc/VALIDATION.md` for the
+matrix; do not infer production readiness from compilation or deterministic
+tests alone.

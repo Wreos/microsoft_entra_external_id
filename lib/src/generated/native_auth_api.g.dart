@@ -99,13 +99,14 @@ int _deepHash(Object? value) {
 
 enum NativePlatformMessage { android, ios }
 
-enum NativeAuthOperationMessage { signIn, signUp }
+enum NativeAuthOperationMessage { signIn, signUp, passwordReset }
 
 enum NativeAuthResultTypeMessage {
   initialized,
   signedOut,
   codeRequired,
   passwordRequired,
+  attributesRequired,
   signedIn,
   error,
   browserRequired,
@@ -270,6 +271,218 @@ class NativeAuthSignInParametersMessage {
   }
 }
 
+class NativeAuthAttributeMessage {
+  NativeAuthAttributeMessage({required this.name, required this.value});
+
+  String name;
+
+  String value;
+
+  List<Object?> _toList() {
+    return <Object?>[name, value];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthAttributeMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthAttributeMessage(
+      name: result[0]! as String,
+      value: result[1]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthAttributeMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(name, other.name) && _deepEquals(value, other.value);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthAttributeMessage(name: $name, value: $value)';
+  }
+}
+
+class NativeAuthRequiredAttributeMessage {
+  NativeAuthRequiredAttributeMessage({
+    required this.name,
+    required this.type,
+    required this.required,
+    this.regex,
+  });
+
+  String name;
+
+  String type;
+
+  bool required;
+
+  String? regex;
+
+  List<Object?> _toList() {
+    return <Object?>[name, type, required, regex];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthRequiredAttributeMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthRequiredAttributeMessage(
+      name: result[0]! as String,
+      type: result[1]! as String,
+      required: result[2]! as bool,
+      regex: result[3] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthRequiredAttributeMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(name, other.name) &&
+        _deepEquals(type, other.type) &&
+        _deepEquals(required, other.required) &&
+        _deepEquals(regex, other.regex);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthRequiredAttributeMessage(name: $name, type: $type, required: $required, regex: $regex)';
+  }
+}
+
+class NativeAuthSignUpParametersMessage {
+  NativeAuthSignUpParametersMessage({
+    required this.username,
+    this.password,
+    required this.attributes,
+  });
+
+  String username;
+
+  String? password;
+
+  List<NativeAuthAttributeMessage> attributes;
+
+  List<Object?> _toList() {
+    return <Object?>[username, password, attributes];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthSignUpParametersMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthSignUpParametersMessage(
+      username: result[0]! as String,
+      password: result[1] as String?,
+      attributes: (result[2]! as List<Object?>)
+          .cast<NativeAuthAttributeMessage>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthSignUpParametersMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(username, other.username) &&
+        _deepEquals(password, other.password) &&
+        _deepEquals(attributes, other.attributes);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthSignUpParametersMessage(username: $username, password: $password, attributes: $attributes)';
+  }
+}
+
+class NativeAuthResetPasswordParametersMessage {
+  NativeAuthResetPasswordParametersMessage({
+    required this.username,
+    required this.scopes,
+  });
+
+  String username;
+
+  List<String> scopes;
+
+  List<Object?> _toList() {
+    return <Object?>[username, scopes];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthResetPasswordParametersMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthResetPasswordParametersMessage(
+      username: result[0]! as String,
+      scopes: (result[1]! as List<Object?>).cast<String>(),
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthResetPasswordParametersMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(username, other.username) &&
+        _deepEquals(scopes, other.scopes);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthResetPasswordParametersMessage(username: $username, scopes: $scopes)';
+  }
+}
+
 class NativeAuthAccessTokenParametersMessage {
   NativeAuthAccessTokenParametersMessage({
     required this.scopes,
@@ -332,6 +545,8 @@ class NativeAuthResultMessage {
     this.expiresAtEpochMilliseconds,
     this.sentTo,
     this.codeLength,
+    this.requiredAttributes,
+    this.invalidAttributeNames,
     this.errorCode,
     this.errorMessage,
   });
@@ -356,6 +571,10 @@ class NativeAuthResultMessage {
 
   int? codeLength;
 
+  List<NativeAuthRequiredAttributeMessage>? requiredAttributes;
+
+  List<String>? invalidAttributeNames;
+
   String? errorCode;
 
   String? errorMessage;
@@ -372,6 +591,8 @@ class NativeAuthResultMessage {
       expiresAtEpochMilliseconds,
       sentTo,
       codeLength,
+      requiredAttributes,
+      invalidAttributeNames,
       errorCode,
       errorMessage,
     ];
@@ -394,8 +615,11 @@ class NativeAuthResultMessage {
       expiresAtEpochMilliseconds: result[7] as int?,
       sentTo: result[8] as String?,
       codeLength: result[9] as int?,
-      errorCode: result[10] as String?,
-      errorMessage: result[11] as String?,
+      requiredAttributes: (result[10] as List<Object?>?)
+          ?.cast<NativeAuthRequiredAttributeMessage>(),
+      invalidAttributeNames: (result[11] as List<Object?>?)?.cast<String>(),
+      errorCode: result[12] as String?,
+      errorMessage: result[13] as String?,
     );
   }
 
@@ -421,6 +645,8 @@ class NativeAuthResultMessage {
         ) &&
         _deepEquals(sentTo, other.sentTo) &&
         _deepEquals(codeLength, other.codeLength) &&
+        _deepEquals(requiredAttributes, other.requiredAttributes) &&
+        _deepEquals(invalidAttributeNames, other.invalidAttributeNames) &&
         _deepEquals(errorCode, other.errorCode) &&
         _deepEquals(errorMessage, other.errorMessage);
   }
@@ -431,7 +657,7 @@ class NativeAuthResultMessage {
 
   @override
   String toString() {
-    return 'NativeAuthResultMessage(type: $type, operation: $operation, continuationId: $continuationId, username: $username, idToken: $idToken, accessToken: $accessToken, scopes: $scopes, expiresAtEpochMilliseconds: $expiresAtEpochMilliseconds, sentTo: $sentTo, codeLength: $codeLength, errorCode: $errorCode, errorMessage: $errorMessage)';
+    return 'NativeAuthResultMessage(type: $type, operation: $operation, continuationId: $continuationId, username: $username, idToken: $idToken, accessToken: $accessToken, scopes: $scopes, expiresAtEpochMilliseconds: $expiresAtEpochMilliseconds, sentTo: $sentTo, codeLength: $codeLength, requiredAttributes: $requiredAttributes, invalidAttributeNames: $invalidAttributeNames, errorCode: $errorCode, errorMessage: $errorMessage)';
   }
 }
 
@@ -460,11 +686,23 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NativeAuthSignInParametersMessage) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthAccessTokenParametersMessage) {
+    } else if (value is NativeAuthAttributeMessage) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthResultMessage) {
+    } else if (value is NativeAuthRequiredAttributeMessage) {
       buffer.putUint8(136);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthSignUpParametersMessage) {
+      buffer.putUint8(137);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthResetPasswordParametersMessage) {
+      buffer.putUint8(138);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthAccessTokenParametersMessage) {
+      buffer.putUint8(139);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthResultMessage) {
+      buffer.putUint8(140);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -490,10 +728,20 @@ class _PigeonCodec extends StandardMessageCodec {
       case 134:
         return NativeAuthSignInParametersMessage.decode(readValue(buffer)!);
       case 135:
+        return NativeAuthAttributeMessage.decode(readValue(buffer)!);
+      case 136:
+        return NativeAuthRequiredAttributeMessage.decode(readValue(buffer)!);
+      case 137:
+        return NativeAuthSignUpParametersMessage.decode(readValue(buffer)!);
+      case 138:
+        return NativeAuthResetPasswordParametersMessage.decode(
+          readValue(buffer)!,
+        );
+      case 139:
         return NativeAuthAccessTokenParametersMessage.decode(
           readValue(buffer)!,
         );
-      case 136:
+      case 140:
         return NativeAuthResultMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -602,7 +850,9 @@ class NativeAuthHostApi {
     return pigeonVar_replyValue! as NativeAuthResultMessage;
   }
 
-  Future<NativeAuthResultMessage> startSignUp(String username) async {
+  Future<NativeAuthResultMessage> startSignUp(
+    NativeAuthSignUpParametersMessage parameters,
+  ) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startSignUp$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -611,7 +861,30 @@ class NativeAuthHostApi {
       binaryMessenger: pigeonVar_binaryMessenger,
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
-      <Object?>[username],
+      <Object?>[parameters],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> startResetPassword(
+    NativeAuthResetPasswordParametersMessage parameters,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startResetPassword$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[parameters],
     );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
@@ -660,6 +933,30 @@ class NativeAuthHostApi {
     );
     final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
       <Object?>[continuationId, password],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> submitAttributes(
+    String continuationId,
+    List<NativeAuthAttributeMessage> attributes,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitAttributes$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[continuationId, attributes],
     );
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 

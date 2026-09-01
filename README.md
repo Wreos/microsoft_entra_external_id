@@ -22,8 +22,9 @@ an Android device. The account identifier is redacted.
 - exact native SDK pins: MSAL Android `8.4.2` and MSAL iOS `2.15.0`;
 - Swift Package Manager as the only iOS dependency integration path;
 - native initialization, cached-account lookup, password and Email OTP sign-in,
-  Email OTP sign-up, code/password submission, token acquisition/refresh,
-  automatic sign-in after sign-up, and sign-out;
+  password and Email OTP sign-up, tenant-defined required/custom attributes,
+  self-service password reset, code/password/attribute submission, token
+  acquisition/refresh, automatic sign-in after sign-up/reset, and sign-out;
 - an example whose Flutter widgets own the complete authentication UI, with no
   embedded WebView.
 
@@ -84,7 +85,11 @@ if (state case final NativeAuthSignedIn signedIn) {
 
 For a username-first UI, call `signIn(username)` without a password and handle
 `NativeAuthPasswordRequired` with `submitPassword(...)`. Email OTP continues to
-use `NativeAuthCodeRequired` and `submitCode(...)`.
+use `NativeAuthCodeRequired` and `submitCode(...)`. Password sign-up uses
+`signUpWithPassword(...)`; if the tenant requests profile data, render the
+returned `NativeAuthAttributesRequired` fields and call `submitAttributes(...)`.
+Password recovery starts with `resetPassword(...)` and uses the same typed code
+and password states, with `operation == NativeAuthOperation.passwordReset`.
 
 MSAL owns the refresh token in its protected native cache. The plugin never
 returns it to Dart. Acquire a cached token or let MSAL refresh an expired token
@@ -99,14 +104,15 @@ be logged or persisted by the host application.
 ## Development status
 
 The current release is a development preview. Password and Email OTP sign-in,
-Email OTP sign-up, token retrieval/refresh, cached-account lookup, and sign-out
-are implemented on Android and iOS. Password sign-up, required attributes,
-password reset, MFA, strong-auth registration, and browser-fallback execution
-are not implemented yet.
+password and Email OTP sign-up, required/custom attributes, password reset,
+token retrieval/refresh, cached-account lookup, and sign-out are implemented on
+Android and iOS. MFA, strong-auth registration, and browser-fallback execution
+remain explicit follow-up work.
 
 The Email OTP flow has passed a live-tenant test on Android. The iOS bridge has
 passed SwiftPM compilation and native-SDK initialization, but iOS live-tenant
-parity and password/API-scope live tests remain open. See the exact
+cross-platform live-tenant tests for password sign-up, attributes, reset, and
+API scopes remain open. See the exact
 [validation matrix][validation] before adopting the preview in production.
 
 ## Browser fallback

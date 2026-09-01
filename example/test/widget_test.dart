@@ -6,14 +6,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:microsoft_entra_external_id_example/main.dart';
 
 final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
-  FakeNativeAuthPlatform({this.requirePasswordContinuation = false});
+  FakeNativeAuthPlatform({
+    this.requirePasswordContinuation = false,
+    this.requireAttributesOnSignUpCode = false,
+  });
 
   final bool requirePasswordContinuation;
+  final bool requireAttributesOnSignUpCode;
   int signInCalls = 0;
   int submitCodeCalls = 0;
   int submitPasswordCalls = 0;
   int refreshTokenCalls = 0;
+  int signUpCalls = 0;
+  int resetPasswordCalls = 0;
+  int submitAttributesCalls = 0;
   String? submittedPassword;
+  String? signUpPassword;
+  Map<String, String>? signUpAttributes;
+  List<String>? resetScopes;
+  Map<String, String>? submittedAttributes;
 
   @override
   Future<NativeSdkStatus> getNativeSdkStatus() async => const NativeSdkStatus(
@@ -57,16 +68,50 @@ final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
   }
 
   @override
-  Future<NativeAuthState> signUp(String username) async =>
-      const NativeAuthCodeRequired(
-        operation: NativeAuthOperation.signUp,
-        continuationId: 'sign-up-id',
-        codeLength: 6,
-      );
+  Future<NativeAuthState> signUp(
+    String username, {
+    String? password,
+    Map<String, String> attributes = const {},
+  }) async {
+    signUpCalls += 1;
+    signUpPassword = password;
+    signUpAttributes = attributes;
+    return const NativeAuthCodeRequired(
+      operation: NativeAuthOperation.signUp,
+      continuationId: 'sign-up-id',
+      codeLength: 6,
+    );
+  }
+
+  @override
+  Future<NativeAuthState> resetPassword(
+    String username, {
+    List<String> scopes = const [],
+  }) async {
+    resetPasswordCalls += 1;
+    resetScopes = scopes;
+    return const NativeAuthCodeRequired(
+      operation: NativeAuthOperation.passwordReset,
+      continuationId: 'reset-id',
+      codeLength: 6,
+    );
+  }
 
   @override
   Future<NativeAuthState> submitCode(String continuationId, String code) async {
     submitCodeCalls += 1;
+    if (requireAttributesOnSignUpCode && continuationId == 'sign-up-id') {
+      return const NativeAuthAttributesRequired(
+        continuationId: 'attributes-id',
+        requiredAttributes: [
+          NativeAuthRequiredAttribute(
+            name: 'displayName',
+            type: 'string',
+            required: true,
+          ),
+        ],
+      );
+    }
     return _signedIn();
   }
 
@@ -77,6 +122,16 @@ final class FakeNativeAuthPlatform extends MicrosoftEntraExternalIdPlatform {
   ) async {
     submitPasswordCalls += 1;
     submittedPassword = password;
+    return _signedIn();
+  }
+
+  @override
+  Future<NativeAuthState> submitAttributes(
+    String continuationId,
+    Map<String, String> attributes,
+  ) async {
+    submitAttributesCalls += 1;
+    submittedAttributes = attributes;
     return _signedIn();
   }
 
@@ -227,6 +282,83 @@ void main() {
 
     expect(platform.submitPasswordCalls, 1);
     expect(platform.submittedPassword, 'secret value');
+    expect(find.text('Signed in successfully.'), findsOneWidget);
+  });
+
+  testWidgets('starts password sign-up from the custom form', (tester) async {
+    final platform = FakeNativeAuthPlatform();
+    await tester.pumpWidget(
+      NativeAuthExampleApp(
+        clientId: 'client-id',
+        tenantSubdomain: 'contoso',
+        plugin: MicrosoftEntraExternalId(platform: platform),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('email')), 'new@example.com');
+    await tester.enterText(find.byKey(const Key('password')), 'new secret');
+    await tester.tap(find.byKey(const Key('signUp')));
+    await tester.pumpAndSettle();
+
+    expect(platform.signUpCalls, 1);
+    expect(platform.signUpPassword, 'new secret');
+    expect(find.byKey(const Key('code')), findsOneWidget);
+  });
+
+  testWidgets('starts password reset from the custom form', (tester) async {
+    final platform = FakeNativeAuthPlatform();
+    await tester.pumpWidget(
+      NativeAuthExampleApp(
+        clientId: 'client-id',
+        tenantSubdomain: 'contoso',
+        plugin: MicrosoftEntraExternalId(platform: platform),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('email')), 'user@example.com');
+    await tester.tap(find.byKey(const Key('resetPassword')));
+    await tester.pumpAndSettle();
+
+    expect(platform.resetPasswordCalls, 1);
+    expect(platform.resetScopes, isEmpty);
+    expect(find.byKey(const Key('code')), findsOneWidget);
+    expect(find.text('Verification code sent to'), findsNothing);
+  });
+
+  testWidgets('collects required sign-up attributes in Flutter UI', (
+    tester,
+  ) async {
+    final platform = FakeNativeAuthPlatform(
+      requireAttributesOnSignUpCode: true,
+    );
+    await tester.pumpWidget(
+      NativeAuthExampleApp(
+        clientId: 'client-id',
+        tenantSubdomain: 'contoso',
+        plugin: MicrosoftEntraExternalId(platform: platform),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('email')), 'new@example.com');
+    await tester.tap(find.byKey(const Key('signUp')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('code')), '123456');
+    await tester.tap(find.byKey(const Key('verifyCode')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('attribute_displayName')), findsOneWidget);
+    await tester.enterText(
+      find.byKey(const Key('attribute_displayName')),
+      'Aleksandr',
+    );
+    await tester.tap(find.byKey(const Key('submitAttributes')));
+    await tester.pumpAndSettle();
+
+    expect(platform.submitAttributesCalls, 1);
+    expect(platform.submittedAttributes, const {'displayName': 'Aleksandr'});
     expect(find.text('Signed in successfully.'), findsOneWidget);
   });
 }

@@ -5,7 +5,9 @@ in Flutter:
 
 - restore a cached account;
 - sign in with email/username and password or Email OTP;
-- sign up with Email OTP;
+- sign up with a password or Email OTP;
+- collect tenant-defined required/custom attributes;
+- reset a password with Email OTP and set a new password;
 - submit or resend the verification code;
 - acquire an API-scoped access token and force an MSAL cache refresh;
 - automatically sign in after sign-up;
@@ -23,7 +25,8 @@ tenant**:
 2. Under **Authentication > Advanced settings**, enable both mobile/desktop
    public client flows and native authentication.
 3. Create an Email one-time passcode or Email with password sign-up/sign-in user
-   flow and associate the application with it.
+   flow and associate the application with it. Enable self-service password
+   reset for customer users when recovery is required.
 4. Grant the API permissions required by your scenario.
 
 Use only the tenant prefix. For `contoso.onmicrosoft.com`, pass `contoso`.
@@ -38,8 +41,10 @@ flutter run \
 ```
 
 `ENTRA_API_SCOPE` is optional. Without it, MSAL requests its default OIDC
-scopes. Enter a password to use password sign-in, or leave the password field
+scopes. Enter a password to use password sign-in or password sign-up. Leave it
 empty to let the tenant select Email OTP or return a password continuation.
+The example renders required attributes dynamically and uses the same code and
+password screens for password reset.
 
 The client ID, tenant prefix, and scope are public client configuration, not
 secrets. Do not add a client secret to this example or any mobile application.

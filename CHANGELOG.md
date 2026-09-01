@@ -1,3 +1,13 @@
+## 0.2.0-dev.1
+
+- Add native password sign-up and tenant-defined required/custom attributes.
+- Add self-service password reset with Email OTP, new password submission, and
+  automatic sign-in through the native MSAL continuation.
+- Expose typed `NativeAuthAttributesRequired` state and
+  `NativeAuthOperation.passwordReset`.
+- Extend the Flutter example and deterministic Android/iOS/Dart validation for
+  the new flows.
+
 ## 0.1.0-dev.1
 
 - Add native password sign-in, password continuations, ID/access-token results,

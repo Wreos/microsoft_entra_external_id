@@ -15,13 +15,14 @@ import 'package:pigeon/pigeon.dart';
 )
 enum NativePlatformMessage { android, ios }
 
-enum NativeAuthOperationMessage { signIn, signUp }
+enum NativeAuthOperationMessage { signIn, signUp, passwordReset }
 
 enum NativeAuthResultTypeMessage {
   initialized,
   signedOut,
   codeRequired,
   passwordRequired,
+  attributesRequired,
   signedIn,
   error,
   browserRequired,
@@ -61,6 +62,49 @@ class NativeAuthSignInParametersMessage {
   List<String> scopes;
 }
 
+class NativeAuthAttributeMessage {
+  NativeAuthAttributeMessage({required this.name, required this.value});
+
+  String name;
+  String value;
+}
+
+class NativeAuthRequiredAttributeMessage {
+  NativeAuthRequiredAttributeMessage({
+    required this.name,
+    required this.type,
+    required this.required,
+    this.regex,
+  });
+
+  String name;
+  String type;
+  bool required;
+  String? regex;
+}
+
+class NativeAuthSignUpParametersMessage {
+  NativeAuthSignUpParametersMessage({
+    required this.username,
+    required this.attributes,
+    this.password,
+  });
+
+  String username;
+  String? password;
+  List<NativeAuthAttributeMessage> attributes;
+}
+
+class NativeAuthResetPasswordParametersMessage {
+  NativeAuthResetPasswordParametersMessage({
+    required this.username,
+    required this.scopes,
+  });
+
+  String username;
+  List<String> scopes;
+}
+
 class NativeAuthAccessTokenParametersMessage {
   NativeAuthAccessTokenParametersMessage({
     required this.scopes,
@@ -83,6 +127,8 @@ class NativeAuthResultMessage {
     this.expiresAtEpochMilliseconds,
     this.sentTo,
     this.codeLength,
+    this.requiredAttributes,
+    this.invalidAttributeNames,
     this.errorCode,
     this.errorMessage,
   });
@@ -97,6 +143,8 @@ class NativeAuthResultMessage {
   int? expiresAtEpochMilliseconds;
   String? sentTo;
   int? codeLength;
+  List<NativeAuthRequiredAttributeMessage>? requiredAttributes;
+  List<String>? invalidAttributeNames;
   String? errorCode;
   String? errorMessage;
 }
@@ -119,7 +167,14 @@ abstract class NativeAuthHostApi {
   );
 
   @async
-  NativeAuthResultMessage startSignUp(String username);
+  NativeAuthResultMessage startSignUp(
+    NativeAuthSignUpParametersMessage parameters,
+  );
+
+  @async
+  NativeAuthResultMessage startResetPassword(
+    NativeAuthResetPasswordParametersMessage parameters,
+  );
 
   @async
   NativeAuthResultMessage submitCode(String continuationId, String code);
@@ -128,6 +183,12 @@ abstract class NativeAuthHostApi {
   NativeAuthResultMessage submitPassword(
     String continuationId,
     String password,
+  );
+
+  @async
+  NativeAuthResultMessage submitAttributes(
+    String continuationId,
+    List<NativeAuthAttributeMessage> attributes,
   );
 
   @async

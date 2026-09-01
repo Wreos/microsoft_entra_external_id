@@ -33,8 +33,14 @@ final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
   ) async => _result;
 
   @override
-  Future<pigeon.NativeAuthResultMessage> startSignUp(String username) async =>
-      _result;
+  Future<pigeon.NativeAuthResultMessage> startSignUp(
+    pigeon.NativeAuthSignUpParametersMessage parameters,
+  ) async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> startResetPassword(
+    pigeon.NativeAuthResetPasswordParametersMessage parameters,
+  ) async => _result;
 
   @override
   Future<pigeon.NativeAuthResultMessage> submitCode(
@@ -46,6 +52,12 @@ final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
   Future<pigeon.NativeAuthResultMessage> submitPassword(
     String continuationId,
     String password,
+  ) async => _result;
+
+  @override
+  Future<pigeon.NativeAuthResultMessage> submitAttributes(
+    String continuationId,
+    List<pigeon.NativeAuthAttributeMessage> attributes,
   ) async => _result;
 
   @override
@@ -152,6 +164,67 @@ void main() {
       expect(passwordRequired.continuationId, 'password-id');
     },
   );
+
+  test('maps required and invalid sign-up attributes', () async {
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.android,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.attributesRequired,
+          operation: pigeon.NativeAuthOperationMessage.signUp,
+          continuationId: 'attributes-id',
+          requiredAttributes: [
+            pigeon.NativeAuthRequiredAttributeMessage(
+              name: 'displayName',
+              type: 'string',
+              required: true,
+              regex: r'^.{1,256}$',
+            ),
+          ],
+          invalidAttributeNames: const ['displayName'],
+        ),
+      ),
+    );
+
+    final state = await platform.signUp('user@example.com');
+
+    expect(state, isA<NativeAuthAttributesRequired>());
+    final attributesRequired = state as NativeAuthAttributesRequired;
+    expect(attributesRequired.continuationId, 'attributes-id');
+    expect(attributesRequired.requiredAttributes, hasLength(1));
+    expect(attributesRequired.requiredAttributes.single.name, 'displayName');
+    expect(attributesRequired.requiredAttributes.single.type, 'string');
+    expect(attributesRequired.requiredAttributes.single.required, isTrue);
+    expect(attributesRequired.requiredAttributes.single.regex, r'^.{1,256}$');
+    expect(attributesRequired.invalidAttributeNames, const ['displayName']);
+  });
+
+  test('maps password-reset continuations with their operation', () async {
+    final platform = PigeonMicrosoftEntraExternalIdPlatform(
+      hostApi: FakeNativeAuthHostApi(
+        status: pigeon.NativeSdkStatusMessage(
+          platform: pigeon.NativePlatformMessage.ios,
+          linked: true,
+        ),
+        result: pigeon.NativeAuthResultMessage(
+          type: pigeon.NativeAuthResultTypeMessage.codeRequired,
+          operation: pigeon.NativeAuthOperationMessage.passwordReset,
+          continuationId: 'reset-id',
+        ),
+      ),
+    );
+
+    final state = await platform.resetPassword('user@example.com');
+
+    expect(state, isA<NativeAuthCodeRequired>());
+    expect(
+      (state as NativeAuthCodeRequired).operation,
+      NativeAuthOperation.passwordReset,
+    );
+  });
 
   test('maps account, ID token, access token, scopes, and expiry', () async {
     final platform = PigeonMicrosoftEntraExternalIdPlatform(

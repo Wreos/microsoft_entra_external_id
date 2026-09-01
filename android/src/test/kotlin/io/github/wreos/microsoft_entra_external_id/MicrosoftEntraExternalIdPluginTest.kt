@@ -49,6 +49,46 @@ internal class MicrosoftEntraExternalIdPluginTest {
     }
 
     @Test
+    fun submitAttributes_withoutContinuation_returnsTypedFailure() = runBlocking {
+        val result = MicrosoftEntraExternalIdPlugin().submitAttributes(
+            continuationId = "missing",
+            attributes = listOf(
+                NativeAuthAttributeMessage(name = "displayName", value = "not-logged"),
+            ),
+        )
+
+        assertEquals(NativeAuthResultTypeMessage.ERROR, result.type)
+        assertEquals("invalid_continuation", result.errorCode)
+    }
+
+    @Test
+    fun startSignUp_beforeInitialization_returnsTypedFailure() = runBlocking {
+        val result = MicrosoftEntraExternalIdPlugin().startSignUp(
+            NativeAuthSignUpParametersMessage(
+                username = "user@example.com",
+                password = "not-logged",
+                attributes = emptyList(),
+            ),
+        )
+
+        assertEquals(NativeAuthResultTypeMessage.ERROR, result.type)
+        assertEquals("not_initialized", result.errorCode)
+    }
+
+    @Test
+    fun startResetPassword_beforeInitialization_returnsTypedFailure() = runBlocking {
+        val result = MicrosoftEntraExternalIdPlugin().startResetPassword(
+            NativeAuthResetPasswordParametersMessage(
+                username = "user@example.com",
+                scopes = emptyList(),
+            ),
+        )
+
+        assertEquals(NativeAuthResultTypeMessage.ERROR, result.type)
+        assertEquals("not_initialized", result.errorCode)
+    }
+
+    @Test
     fun initialize_beforeEngineAttachment_returnsTypedFailure() = runBlocking {
         val result = MicrosoftEntraExternalIdPlugin().initialize(
             NativeAuthConfigurationMessage(

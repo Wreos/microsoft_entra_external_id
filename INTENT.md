@@ -33,21 +33,25 @@ The plugin must never claim that every flow is browserless. It must surface brow
 
 ## First development release scope
 
-The first public prerelease targets Android and iOS and includes:
+The current public development prerelease targets Android and iOS and includes:
 
 1. Native Auth client initialization with client ID and external-tenant subdomain.
 2. Sign-in with email/password and Email one-time passcode.
-3. Sign-up with Email one-time passcode and automatic sign-in.
-4. Verification-code and password continuation submission plus code resend.
-5. Current-account lookup, ID token access, API-scoped access-token retrieval,
+3. Sign-up with password or Email one-time passcode, tenant-defined required
+   and custom attributes, and automatic sign-in.
+4. Self-service password reset with Email one-time passcode, new password, and
+   automatic sign-in.
+5. Verification-code, password, and attribute continuation submission plus
+   code resend.
+6. Current-account lookup, ID token access, API-scoped access-token retrieval,
    silent cache refresh, forced refresh, and sign-out.
-6. Typed failures, including an explicit signal when the host must continue in
+7. Typed failures, including an explicit signal when the host must continue in
    a system browser.
-7. A custom Flutter example application and package/native tests.
+8. A custom Flutter example application and package/native tests.
 
-Password sign-up, required attributes, password reset, MFA, strong-auth
-registration, correlation metadata, and browser-fallback execution remain
-roadmap work and are not claimed by the first development release.
+MFA, strong-auth registration, correlation metadata, and browser-fallback
+execution remain roadmap work. Live-tenant validation for password sign-up,
+attributes, reset, and API scopes is still a release gate.
 
 ## Public API direction
 

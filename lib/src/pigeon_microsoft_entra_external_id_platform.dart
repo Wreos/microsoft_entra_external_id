@@ -56,8 +56,32 @@ final class PigeonMicrosoftEntraExternalIdPlatform
   );
 
   @override
-  Future<NativeAuthState> signUp(String username) async =>
-      _mapResult(await _hostApi.startSignUp(username));
+  Future<NativeAuthState> signUp(
+    String username, {
+    String? password,
+    Map<String, String> attributes = const {},
+  }) async => _mapResult(
+    await _hostApi.startSignUp(
+      pigeon.NativeAuthSignUpParametersMessage(
+        username: username,
+        password: password,
+        attributes: _mapAttributes(attributes),
+      ),
+    ),
+  );
+
+  @override
+  Future<NativeAuthState> resetPassword(
+    String username, {
+    List<String> scopes = const [],
+  }) async => _mapResult(
+    await _hostApi.startResetPassword(
+      pigeon.NativeAuthResetPasswordParametersMessage(
+        username: username,
+        scopes: scopes,
+      ),
+    ),
+  );
 
   @override
   Future<NativeAuthState> submitCode(
@@ -71,6 +95,14 @@ final class PigeonMicrosoftEntraExternalIdPlatform
     String password,
   ) async =>
       _mapResult(await _hostApi.submitPassword(continuationId, password));
+
+  @override
+  Future<NativeAuthState> submitAttributes(
+    String continuationId,
+    Map<String, String> attributes,
+  ) async => _mapResult(
+    await _hostApi.submitAttributes(continuationId, _mapAttributes(attributes)),
+  );
 
   @override
   Future<NativeAuthState> resendCode(String continuationId) async =>
@@ -126,6 +158,8 @@ final class PigeonMicrosoftEntraExternalIdPlatform
             NativeAuthOperation.signIn,
           pigeon.NativeAuthOperationMessage.signUp =>
             NativeAuthOperation.signUp,
+          pigeon.NativeAuthOperationMessage.passwordReset =>
+            NativeAuthOperation.passwordReset,
           null => throw StateError(
             'Native code-required result has no operation.',
           ),
@@ -145,6 +179,8 @@ final class PigeonMicrosoftEntraExternalIdPlatform
               NativeAuthOperation.signIn,
             pigeon.NativeAuthOperationMessage.signUp =>
               NativeAuthOperation.signUp,
+            pigeon.NativeAuthOperationMessage.passwordReset =>
+              NativeAuthOperation.passwordReset,
             null => throw StateError(
               'Native password-required result has no operation.',
             ),
@@ -154,6 +190,27 @@ final class PigeonMicrosoftEntraExternalIdPlatform
               (throw StateError(
                 'Native password-required result has no continuation.',
               )),
+        ),
+      pigeon.NativeAuthResultTypeMessage.attributesRequired =>
+        NativeAuthAttributesRequired(
+          continuationId:
+              message.continuationId ??
+              (throw StateError(
+                'Native attributes-required result has no continuation.',
+              )),
+          requiredAttributes: List.unmodifiable(
+            (message.requiredAttributes ?? const []).map(
+              (attribute) => NativeAuthRequiredAttribute(
+                name: attribute.name,
+                type: attribute.type,
+                required: attribute.required,
+                regex: attribute.regex,
+              ),
+            ),
+          ),
+          invalidAttributeNames: List.unmodifiable(
+            message.invalidAttributeNames ?? const [],
+          ),
         ),
       pigeon.NativeAuthResultTypeMessage.error => NativeAuthFailure(
         code: message.errorCode ?? 'native_auth_error',
@@ -169,4 +226,11 @@ final class PigeonMicrosoftEntraExternalIdPlatform
       ),
     };
   }
+
+  static List<pigeon.NativeAuthAttributeMessage> _mapAttributes(
+    Map<String, String> attributes,
+  ) => [
+    for (final MapEntry(:key, :value) in attributes.entries)
+      pigeon.NativeAuthAttributeMessage(name: key, value: value),
+  ];
 }

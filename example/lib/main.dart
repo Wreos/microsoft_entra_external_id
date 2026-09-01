@@ -65,7 +65,9 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   String _status = 'Initializing native authentication...';
   NativeAuthCodeRequired? _codeRequired;
   NativeAuthPasswordRequired? _passwordRequired;
+  NativeAuthAttributesRequired? _attributesRequired;
   NativeAuthSignedIn? _signedIn;
+  final _attributeControllers = <String, TextEditingController>{};
 
   List<String> get _scopes => _apiScope.isEmpty ? const [] : [_apiScope];
 
@@ -89,6 +91,9 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     _emailController.dispose();
     _codeController.dispose();
     _passwordController.dispose();
+    for (final controller in _attributeControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -121,19 +126,33 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     );
   }
 
-  Future<void> _signUp() =>
-      _startEmailFlow(_plugin.signUp, progress: 'Starting sign up...');
-
-  Future<void> _startEmailFlow(
-    Future<NativeAuthState> Function(String username) action, {
-    required String progress,
-  }) async {
+  Future<void> _signUp() async {
     final email = _emailController.text.trim();
     if (!_isValidEmail(email)) {
       setState(() => _status = 'Enter a valid email address.');
       return;
     }
-    await _perform(() => action(email), progress: progress);
+    final password = _passwordController.text;
+    _passwordController.clear();
+    await _perform(
+      () => password.isEmpty
+          ? _plugin.signUp(email)
+          : _plugin.signUpWithPassword(email, password),
+      progress: 'Starting sign up...',
+    );
+  }
+
+  Future<void> _resetPassword() async {
+    final email = _emailController.text.trim();
+    if (!_isValidEmail(email)) {
+      setState(() => _status = 'Enter a valid email address.');
+      return;
+    }
+    _passwordController.clear();
+    await _perform(
+      () => _plugin.resetPassword(email, scopes: _scopes),
+      progress: 'Starting password reset...',
+    );
   }
 
   Future<void> _submitCode() async {
@@ -172,6 +191,22 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     );
   }
 
+  Future<void> _submitAttributes() async {
+    final state = _attributesRequired;
+    if (state == null) return;
+    final attributes = <String, String>{
+      for (final entry in _attributeControllers.entries)
+        entry.key: entry.value.text,
+    };
+    for (final controller in _attributeControllers.values) {
+      controller.clear();
+    }
+    await _perform(
+      () => _plugin.submitAttributes(state, attributes),
+      progress: 'Submitting account details...',
+    );
+  }
+
   Future<void> _resendCode() async {
     final continuation = _codeRequired;
     if (continuation == null) return;
@@ -195,6 +230,8 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     setState(() {
       _codeRequired = null;
       _passwordRequired = null;
+      _attributesRequired = null;
+      _clearAttributeControllers();
       _codeController.clear();
       _passwordController.clear();
       _status = 'Enter an email to sign in or create an account.';
@@ -231,23 +268,43 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
         _signedIn = null;
         _codeRequired = null;
         _passwordRequired = null;
+        _attributesRequired = null;
+        _clearAttributeControllers();
         _codeController.clear();
         _passwordController.clear();
         _status = 'Enter an email to sign in or create an account.';
       case final NativeAuthCodeRequired state:
         _codeRequired = state;
         _passwordRequired = null;
+        _attributesRequired = null;
+        _clearAttributeControllers();
         _status = state.sentTo == null
             ? 'Enter the verification code.'
             : 'Verification code sent to ${state.sentTo}.';
       case final NativeAuthPasswordRequired state:
         _passwordRequired = state;
         _codeRequired = null;
+        _attributesRequired = null;
+        _clearAttributeControllers();
         _status = 'Enter the password for this account.';
+      case final NativeAuthAttributesRequired state:
+        _attributesRequired = state;
+        _codeRequired = null;
+        _passwordRequired = null;
+        _signedIn = null;
+        _clearAttributeControllers();
+        for (final attribute in state.requiredAttributes) {
+          _attributeControllers[attribute.name] = TextEditingController();
+        }
+        _status = state.invalidAttributeNames.isEmpty
+            ? 'Enter the required account details.'
+            : 'Some account details were rejected. Check the highlighted fields.';
       case final NativeAuthSignedIn state:
         _signedIn = state;
         _codeRequired = null;
         _passwordRequired = null;
+        _attributesRequired = null;
+        _clearAttributeControllers();
         _codeController.clear();
         _passwordController.clear();
         _status = 'Signed in successfully.';
@@ -256,6 +313,13 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
             ? '${state.message} System-browser fallback is required.'
             : state.message;
     }
+  }
+
+  void _clearAttributeControllers() {
+    for (final controller in _attributeControllers.values) {
+      controller.dispose();
+    }
+    _attributeControllers.clear();
   }
 
   static bool _isValidEmail(String value) =>
@@ -314,8 +378,17 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
                   else if (_passwordRequired != null)
                     _PasswordForm(
                       controller: _passwordController,
+                      operation: _passwordRequired!.operation,
                       busy: _busy,
                       onSubmit: _submitPassword,
+                      onUseAnotherEmail: _useAnotherEmail,
+                    )
+                  else if (_attributesRequired case final attributesState?)
+                    _AttributesForm(
+                      state: attributesState,
+                      controllers: _attributeControllers,
+                      busy: _busy,
+                      onSubmit: _submitAttributes,
                       onUseAnotherEmail: _useAnotherEmail,
                     )
                   else
@@ -325,6 +398,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
                       busy: _busy,
                       onSignIn: _signIn,
                       onSignUp: _signUp,
+                      onResetPassword: _resetPassword,
                     ),
                 ],
               ],
@@ -370,6 +444,7 @@ class _EmailForm extends StatelessWidget {
     required this.busy,
     required this.onSignIn,
     required this.onSignUp,
+    required this.onResetPassword,
   });
 
   final TextEditingController controller;
@@ -377,6 +452,7 @@ class _EmailForm extends StatelessWidget {
   final bool busy;
   final VoidCallback onSignIn;
   final VoidCallback onSignUp;
+  final VoidCallback onResetPassword;
 
   @override
   Widget build(BuildContext context) {
@@ -427,6 +503,14 @@ class _EmailForm extends StatelessWidget {
             ),
           ],
         ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            key: const Key('resetPassword'),
+            onPressed: busy ? null : onResetPassword,
+            child: const Text('Forgot password?'),
+          ),
+        ),
       ],
     );
   }
@@ -435,12 +519,14 @@ class _EmailForm extends StatelessWidget {
 class _PasswordForm extends StatelessWidget {
   const _PasswordForm({
     required this.controller,
+    required this.operation,
     required this.busy,
     required this.onSubmit,
     required this.onUseAnotherEmail,
   });
 
   final TextEditingController controller;
+  final NativeAuthOperation operation;
   final bool busy;
   final VoidCallback onSubmit;
   final VoidCallback onUseAnotherEmail;
@@ -468,7 +554,66 @@ class _PasswordForm extends StatelessWidget {
           child: FilledButton(
             key: const Key('submitPassword'),
             onPressed: busy ? null : onSubmit,
-            child: const Text('Sign in'),
+            child: Text(switch (operation) {
+              NativeAuthOperation.signIn => 'Sign in',
+              NativeAuthOperation.signUp => 'Create account',
+              NativeAuthOperation.passwordReset => 'Set new password',
+            }),
+          ),
+        ),
+        TextButton(
+          key: const Key('useAnotherEmail'),
+          onPressed: busy ? null : onUseAnotherEmail,
+          child: const Text('Use another email'),
+        ),
+      ],
+    );
+  }
+}
+
+class _AttributesForm extends StatelessWidget {
+  const _AttributesForm({
+    required this.state,
+    required this.controllers,
+    required this.busy,
+    required this.onSubmit,
+    required this.onUseAnotherEmail,
+  });
+
+  final NativeAuthAttributesRequired state;
+  final Map<String, TextEditingController> controllers;
+  final bool busy;
+  final VoidCallback onSubmit;
+  final VoidCallback onUseAnotherEmail;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        for (final attribute in state.requiredAttributes) ...[
+          TextField(
+            key: Key('attribute_${attribute.name}'),
+            controller: controllers[attribute.name],
+            enabled: !busy,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: attribute.name,
+              helperText: attribute.regex == null
+                  ? attribute.type
+                  : '${attribute.type} · ${attribute.regex}',
+              errorText: state.invalidAttributeNames.contains(attribute.name)
+                  ? 'This value was rejected.'
+                  : null,
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            key: const Key('submitAttributes'),
+            onPressed: busy ? null : onSubmit,
+            child: const Text('Continue'),
           ),
         ),
         TextButton(
