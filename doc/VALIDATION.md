@@ -56,7 +56,9 @@ iOS Simulator install/start/native SDK invocation    PASS
 dart pub publish --dry-run (clean Git snapshot)      PASS
 repository secret/placeholder scan                   PASS
 GitHub CI (main and v0.1.0-dev.1 tag)                PASS
+GitHub CI (main and v0.2.0-dev.1 tag)                PASS
 pub.dev 0.1.0-dev.1 publication and indexing         PASS
+pub.dev 0.2.0-dev.1 publication and indexing         PASS
 ```
 
 The published package is
@@ -64,6 +66,13 @@ The published package is
 The matching
 [`v0.1.0-dev.1` GitHub prerelease](https://github.com/Wreos/microsoft_entra_external_id/releases/tag/v0.1.0-dev.1)
 was created from the same validated commit.
+
+The feature snapshot is now published as
+[`microsoft_entra_external_id 0.2.0-dev.1`](https://pub.dev/packages/microsoft_entra_external_id/versions/0.2.0-dev.1),
+with the matching
+[`v0.2.0-dev.1` GitHub prerelease](https://github.com/Wreos/microsoft_entra_external_id/releases/tag/v0.2.0-dev.1).
+Both are development previews; the new password sign-up, required-attribute,
+and password-reset paths still need live-tenant checks before a stable release.
 
 The iOS build resolves `MSAL` `2.15.0` from the official Microsoft repository
 and compiles the password delegates and token-cache adapter for both simulator
