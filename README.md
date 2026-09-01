@@ -107,13 +107,8 @@ The current release is a development preview. Password and Email OTP sign-in,
 password and Email OTP sign-up, required/custom attributes, password reset,
 token retrieval/refresh, cached-account lookup, and sign-out are implemented on
 Android and iOS. MFA, strong-auth registration, and browser-fallback execution
-remain explicit follow-up work.
-
-The Email OTP flow has passed a live-tenant test on Android. The iOS bridge has
-passed SwiftPM compilation and native-SDK initialization, but iOS live-tenant
-cross-platform live-tenant tests for password sign-up, attributes, reset, and
-API scopes remain open. See the exact
-[validation matrix][validation] before adopting the preview in production.
+remain explicit follow-up work. Maintainers track platform and tenant coverage
+in the [validation report][validation].
 
 ## Browser fallback
 
