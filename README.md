@@ -19,7 +19,7 @@ an Android device. The account identifier is redacted.
 
 - a Flutter plugin for Android and iOS, implemented in Kotlin and Swift;
 - a typed Pigeon channel shared by Dart and the native platforms;
-- exact native SDK pins: MSAL Android `8.4.2` and MSAL iOS `2.15.0`;
+- pinned official MSAL Native Authentication SDK dependencies for Android and iOS;
 - Swift Package Manager as the only iOS dependency integration path;
 - native initialization, cached-account lookup, password and Email OTP sign-in,
   password and Email OTP sign-up, tenant-defined required/custom attributes,
