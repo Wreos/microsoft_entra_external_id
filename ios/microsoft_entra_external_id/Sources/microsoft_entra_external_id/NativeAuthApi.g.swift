@@ -255,39 +255,84 @@ struct NativeSdkStatusMessage: Hashable, CustomStringConvertible {
 struct NativeAuthConfigurationMessage: Hashable, CustomStringConvertible {
   var clientId: String
   var tenantSubdomain: String
+  var redirectUri: String? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> NativeAuthConfigurationMessage? {
     let clientId = pigeonVar_list[0] as! String
     let tenantSubdomain = pigeonVar_list[1] as! String
+    let redirectUri: String? = nilOrValue(pigeonVar_list[2])
 
     return NativeAuthConfigurationMessage(
       clientId: clientId,
-      tenantSubdomain: tenantSubdomain
+      tenantSubdomain: tenantSubdomain,
+      redirectUri: redirectUri
     )
   }
   func toList() -> [Any?] {
     return [
       clientId,
       tenantSubdomain,
+      redirectUri,
     ]
   }
   static func == (lhs: NativeAuthConfigurationMessage, rhs: NativeAuthConfigurationMessage) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return NativeAuthApiPigeonInternal.deepEquals(lhs.clientId, rhs.clientId) && NativeAuthApiPigeonInternal.deepEquals(lhs.tenantSubdomain, rhs.tenantSubdomain)
+    return NativeAuthApiPigeonInternal.deepEquals(lhs.clientId, rhs.clientId) && NativeAuthApiPigeonInternal.deepEquals(lhs.tenantSubdomain, rhs.tenantSubdomain) && NativeAuthApiPigeonInternal.deepEquals(lhs.redirectUri, rhs.redirectUri)
   }
 
   func hash(into hasher: inout Hasher) {
     hasher.combine("NativeAuthConfigurationMessage")
     NativeAuthApiPigeonInternal.deepHash(value: clientId, hasher: &hasher)
     NativeAuthApiPigeonInternal.deepHash(value: tenantSubdomain, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: redirectUri, hasher: &hasher)
   }
 
   public var description: String {
-    return "NativeAuthConfigurationMessage(clientId: \(String(describing: clientId)), tenantSubdomain: \(String(describing: tenantSubdomain)))"
+    return "NativeAuthConfigurationMessage(clientId: \(String(describing: clientId)), tenantSubdomain: \(String(describing: tenantSubdomain)), redirectUri: \(String(describing: redirectUri)))"
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
+struct NativeAuthWebFallbackParametersMessage: Hashable, CustomStringConvertible {
+  var scopes: [String]
+  var loginHint: String? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeAuthWebFallbackParametersMessage? {
+    let scopes = pigeonVar_list[0] as! [String]
+    let loginHint: String? = nilOrValue(pigeonVar_list[1])
+
+    return NativeAuthWebFallbackParametersMessage(
+      scopes: scopes,
+      loginHint: loginHint
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      scopes,
+      loginHint,
+    ]
+  }
+  static func == (lhs: NativeAuthWebFallbackParametersMessage, rhs: NativeAuthWebFallbackParametersMessage) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return NativeAuthApiPigeonInternal.deepEquals(lhs.scopes, rhs.scopes) && NativeAuthApiPigeonInternal.deepEquals(lhs.loginHint, rhs.loginHint)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NativeAuthWebFallbackParametersMessage")
+    NativeAuthApiPigeonInternal.deepHash(value: scopes, hasher: &hasher)
+    NativeAuthApiPigeonInternal.deepHash(value: loginHint, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "NativeAuthWebFallbackParametersMessage(scopes: \(String(describing: scopes)), loginHint: \(String(describing: loginHint)))"
   }
 }
 
@@ -677,18 +722,20 @@ private class NativeAuthApiPigeonCodecReader: FlutterStandardReader {
     case 133:
       return NativeAuthConfigurationMessage.fromList(self.readValue() as! [Any?])
     case 134:
-      return NativeAuthSignInParametersMessage.fromList(self.readValue() as! [Any?])
+      return NativeAuthWebFallbackParametersMessage.fromList(self.readValue() as! [Any?])
     case 135:
-      return NativeAuthAttributeMessage.fromList(self.readValue() as! [Any?])
+      return NativeAuthSignInParametersMessage.fromList(self.readValue() as! [Any?])
     case 136:
-      return NativeAuthRequiredAttributeMessage.fromList(self.readValue() as! [Any?])
+      return NativeAuthAttributeMessage.fromList(self.readValue() as! [Any?])
     case 137:
-      return NativeAuthSignUpParametersMessage.fromList(self.readValue() as! [Any?])
+      return NativeAuthRequiredAttributeMessage.fromList(self.readValue() as! [Any?])
     case 138:
-      return NativeAuthResetPasswordParametersMessage.fromList(self.readValue() as! [Any?])
+      return NativeAuthSignUpParametersMessage.fromList(self.readValue() as! [Any?])
     case 139:
-      return NativeAuthAccessTokenParametersMessage.fromList(self.readValue() as! [Any?])
+      return NativeAuthResetPasswordParametersMessage.fromList(self.readValue() as! [Any?])
     case 140:
+      return NativeAuthAccessTokenParametersMessage.fromList(self.readValue() as! [Any?])
+    case 141:
       return NativeAuthResultMessage.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -713,26 +760,29 @@ private class NativeAuthApiPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeAuthConfigurationMessage {
       super.writeByte(133)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthSignInParametersMessage {
+    } else if let value = value as? NativeAuthWebFallbackParametersMessage {
       super.writeByte(134)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthAttributeMessage {
+    } else if let value = value as? NativeAuthSignInParametersMessage {
       super.writeByte(135)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthRequiredAttributeMessage {
+    } else if let value = value as? NativeAuthAttributeMessage {
       super.writeByte(136)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthSignUpParametersMessage {
+    } else if let value = value as? NativeAuthRequiredAttributeMessage {
       super.writeByte(137)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthResetPasswordParametersMessage {
+    } else if let value = value as? NativeAuthSignUpParametersMessage {
       super.writeByte(138)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthAccessTokenParametersMessage {
+    } else if let value = value as? NativeAuthResetPasswordParametersMessage {
       super.writeByte(139)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeAuthResultMessage {
+    } else if let value = value as? NativeAuthAccessTokenParametersMessage {
       super.writeByte(140)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeAuthResultMessage {
+      super.writeByte(141)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -763,6 +813,7 @@ protocol NativeAuthHostApi {
   func startSignIn(parameters: NativeAuthSignInParametersMessage) async throws -> NativeAuthResultMessage
   func startSignUp(parameters: NativeAuthSignUpParametersMessage) async throws -> NativeAuthResultMessage
   func startResetPassword(parameters: NativeAuthResetPasswordParametersMessage) async throws -> NativeAuthResultMessage
+  func acquireTokenWithBrowser(parameters: NativeAuthWebFallbackParametersMessage) async throws -> NativeAuthResultMessage
   func submitCode(continuationId: String, code: String) async throws -> NativeAuthResultMessage
   func submitPassword(continuationId: String, password: String) async throws -> NativeAuthResultMessage
   func submitAttributes(continuationId: String, attributes: [NativeAuthAttributeMessage]) async throws -> NativeAuthResultMessage
@@ -872,6 +923,23 @@ class NativeAuthHostApiSetup {
       }
     } else {
       startResetPasswordChannel.setMessageHandler(nil)
+    }
+    let acquireTokenWithBrowserChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.acquireTokenWithBrowser\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      acquireTokenWithBrowserChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let parametersArg = args[0] as! NativeAuthWebFallbackParametersMessage
+        Task { @MainActor in
+          do {
+            let result = try await api.acquireTokenWithBrowser(parameters: parametersArg)
+            reply(wrapResult(result))
+          } catch {
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      acquireTokenWithBrowserChannel.setMessageHandler(nil)
     }
     let submitCodeChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.submitCode\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {

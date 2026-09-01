@@ -4,6 +4,7 @@ final class NativeAuthConfiguration {
   const NativeAuthConfiguration({
     required this.clientId,
     required this.tenantSubdomain,
+    this.redirectUri,
   });
 
   /// Application (client) ID from the external tenant app registration.
@@ -11,6 +12,11 @@ final class NativeAuthConfiguration {
 
   /// Tenant prefix, for example `contoso` for `contoso.onmicrosoft.com`.
   final String tenantSubdomain;
+
+  /// Redirect URI registered for the public client browser fallback.
+  ///
+  /// This is required when the host app invokes [signInWithBrowser].
+  final String? redirectUri;
 }
 
 /// Authentication operation associated with an interactive state.

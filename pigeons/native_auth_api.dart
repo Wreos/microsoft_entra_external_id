@@ -44,10 +44,22 @@ class NativeAuthConfigurationMessage {
   NativeAuthConfigurationMessage({
     required this.clientId,
     required this.tenantSubdomain,
+    this.redirectUri,
   });
 
   String clientId;
   String tenantSubdomain;
+  String? redirectUri;
+}
+
+class NativeAuthWebFallbackParametersMessage {
+  NativeAuthWebFallbackParametersMessage({
+    required this.scopes,
+    this.loginHint,
+  });
+
+  List<String> scopes;
+  String? loginHint;
 }
 
 class NativeAuthSignInParametersMessage {
@@ -174,6 +186,11 @@ abstract class NativeAuthHostApi {
   @async
   NativeAuthResultMessage startResetPassword(
     NativeAuthResetPasswordParametersMessage parameters,
+  );
+
+  @async
+  NativeAuthResultMessage acquireTokenWithBrowser(
+    NativeAuthWebFallbackParametersMessage parameters,
   );
 
   @async

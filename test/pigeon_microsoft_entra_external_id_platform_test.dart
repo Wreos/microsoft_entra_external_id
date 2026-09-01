@@ -43,6 +43,11 @@ final class FakeNativeAuthHostApi extends pigeon.NativeAuthHostApi {
   ) async => _result;
 
   @override
+  Future<pigeon.NativeAuthResultMessage> acquireTokenWithBrowser(
+    pigeon.NativeAuthWebFallbackParametersMessage parameters,
+  ) async => _result;
+
+  @override
   Future<pigeon.NativeAuthResultMessage> submitCode(
     String continuationId,
     String code,

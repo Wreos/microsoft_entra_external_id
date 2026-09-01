@@ -30,9 +30,10 @@ access tokens, or ID tokens.
 ## Browser fallback
 
 `NativeAuthFailure.browserRequired == true` means the native flow cannot
-continue. The plugin does not open an embedded WebView or silently switch
-authentication mechanisms. The host may start a separate system-browser flow
-after explaining the transition to the user.
+continue. The host may call `signInWithBrowser(...)` after explaining the
+transition to the user. That method delegates to the official MSAL
+system-browser flow; it never opens an embedded WebView or silently changes
+authentication mechanisms.
 
 Ordinary SDK errors are returned as failures and must not trigger an automatic
 fallback. This prevents outages or malformed configuration from unexpectedly
@@ -46,14 +47,14 @@ changing the authentication surface.
 | Refresh-token theft from Dart storage | Refresh tokens are never exposed by the public or Pigeon contracts and remain in MSAL's native cache. |
 | Reusing or persisting an interactive continuation | Handles refer only to in-memory native state and are invalidated after use, detach, or process death. |
 | UI spoofing or insecure custom UI | The host owns the UI and must apply platform security, accessibility, privacy, and anti-overlay practices appropriate to its risk profile. |
-| Silent downgrade to browser/WebView auth | Browser-required is an explicit typed signal; no WebView or automatic browser fallback is implemented. |
+| Silent downgrade to browser/WebView auth | Browser-required is an explicit typed signal; browser fallback requires the host to call `signInWithBrowser(...)`, and the plugin never uses an embedded WebView. |
 | Token sent to the wrong API | The host requests explicit scopes and must send the access token only to the matching HTTPS resource server. |
 | Cross-engine state leakage | Each Flutter plugin instance owns one native client and releases native state when detached. |
 
 ## Known gaps
 
-MFA, strong-auth registration, browser-fallback execution, and
-process-recreation recovery are not implemented yet. Password sign-up,
+MFA, strong-auth registration, and process-recreation recovery are not
+implemented yet. Password sign-up,
 required attributes, and password reset are implemented but still require
 live-tenant validation on both platforms. See `doc/VALIDATION.md` for the
 matrix; do not infer production readiness from compilation or deterministic

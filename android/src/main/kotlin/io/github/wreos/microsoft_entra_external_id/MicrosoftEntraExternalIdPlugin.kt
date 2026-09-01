@@ -1,7 +1,12 @@
 package io.github.wreos.microsoft_entra_external_id
 
+import android.app.Activity
 import android.content.Context
+import com.microsoft.identity.client.AcquireTokenParameters
+import com.microsoft.identity.client.AuthenticationCallback
+import com.microsoft.identity.client.IAuthenticationResult
 import com.microsoft.identity.client.PublicClientApplication
+import com.microsoft.identity.client.exception.MsalException
 import com.microsoft.identity.nativeauth.INativeAuthPublicClientApplication
 import com.microsoft.identity.nativeauth.NativeAuthPublicClientApplicationParameters
 import com.microsoft.identity.nativeauth.RequiredUserAttribute
@@ -46,11 +51,16 @@ import com.microsoft.identity.nativeauth.statemachine.states.SignUpAttributesReq
 import com.microsoft.identity.nativeauth.statemachine.states.SignUpCodeRequiredState
 import com.microsoft.identity.nativeauth.statemachine.states.SignUpPasswordRequiredState
 import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.UUID
+import kotlin.coroutines.resume
 
 /** Pigeon host implementation backed by MSAL Native Authentication. */
-class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
+class MicrosoftEntraExternalIdPlugin : FlutterPlugin, ActivityAware, NativeAuthHostApi {
     private var applicationContext: Context? = null
+    private var activity: Activity? = null
     private var authClient: INativeAuthPublicClientApplication? = null
     private val continuations = mutableMapOf<String, AuthContinuation>()
 
@@ -77,11 +87,64 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
                 authorityUrl = "https://$tenant.ciamlogin.com/$tenant.onmicrosoft.com/",
                 challengeTypes = listOf("oob", "password"),
             )
+            parameters.redirectUri = configuration.redirectUri
             authClient = PublicClientApplication.createNativeAuthPublicClientApplication(context, parameters)
             continuations.clear()
             NativeAuthResultMessage(type = NativeAuthResultTypeMessage.INITIALIZED)
         } catch (error: Exception) {
             failure("initialization_failed", error.localizedMessage ?: "Unable to initialize MSAL.")
+        }
+    }
+
+    override suspend fun acquireTokenWithBrowser(
+        parameters: NativeAuthWebFallbackParametersMessage,
+    ): NativeAuthResultMessage {
+        val client = authClient ?: return notInitialized()
+        val hostActivity = activity
+            ?: return failure(
+                "activity_unavailable",
+                "A foreground Android Activity is required for browser authentication.",
+            )
+        if (parameters.scopes.isEmpty()) {
+            return failure("invalid_scopes", "At least one browser scope is required.")
+        }
+
+        return suspendCancellableCoroutine { continuation ->
+            val builder = AcquireTokenParameters.Builder()
+                .startAuthorizationFromActivity(hostActivity)
+                .withScopes(parameters.scopes)
+                .withCallback(object : AuthenticationCallback {
+                    override fun onSuccess(result: IAuthenticationResult) {
+                        continuation.resume(
+                            NativeAuthResultMessage(
+                                type = NativeAuthResultTypeMessage.SIGNED_IN,
+                                username = result.account.username,
+                                idToken = result.account.idToken,
+                                accessToken = result.accessToken,
+                                scopes = result.scope.toList(),
+                                expiresAtEpochMilliseconds = result.expiresOn.time,
+                            ),
+                        )
+                    }
+
+                    override fun onError(exception: MsalException) {
+                        continuation.resume(
+                            failure(
+                                code = exception.errorCode.takeIf { it.isNotBlank() }
+                                    ?: "browser_auth_failed",
+                                message = exception.message ?: "Browser authentication failed.",
+                            ),
+                        )
+                    }
+
+                    override fun onCancel() {
+                        continuation.resume(
+                            failure("browser_auth_cancelled", "Browser authentication was cancelled."),
+                        )
+                    }
+                })
+            parameters.loginHint?.let(builder::withLoginHint)
+            client.acquireToken(builder.build())
         }
     }
 
@@ -381,7 +444,24 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, NativeAuthHostApi {
         NativeAuthHostApi.setUp(binding.binaryMessenger, null)
         continuations.clear()
         authClient = null
+        activity = null
         applicationContext = null
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        activity = null
     }
 
     private suspend fun mapSignInResult(

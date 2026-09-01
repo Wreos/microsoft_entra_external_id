@@ -10,6 +10,8 @@ in Flutter:
 - reset a password with Email OTP and set a new password;
 - submit or resend the verification code;
 - acquire an API-scoped access token and force an MSAL cache refresh;
+- continue through the official MSAL system browser when native auth returns
+  `browserRequired`;
 - automatically sign in after sign-up;
 - sign out.
 
@@ -28,6 +30,10 @@ tenant**:
    flow and associate the application with it. Enable self-service password
    reset for customer users when recovery is required.
 4. Grant the API permissions required by your scenario.
+5. Add a mobile/desktop redirect URI for browser fallback. Configure the same
+   URI in the Android MSAL callback activity/intent filter and the iOS URL
+   scheme, following Microsoft's platform setup guidance. The included iOS
+   example uses `msauth.$(PRODUCT_BUNDLE_IDENTIFIER)://auth`.
 
 Use only the tenant prefix. For `contoso.onmicrosoft.com`, pass `contoso`.
 
@@ -37,18 +43,46 @@ Use only the tenant prefix. For `contoso.onmicrosoft.com`, pass `contoso`.
 flutter run \
   --dart-define=ENTRA_CLIENT_ID=<application-client-id> \
   --dart-define=ENTRA_TENANT_SUBDOMAIN=<tenant-prefix> \
+  --dart-define=ENTRA_REDIRECT_URI=<registered-redirect-uri> \
   --dart-define=ENTRA_API_SCOPE=api://<api-client-id>/<delegated-scope>
 ```
 
 `ENTRA_API_SCOPE` is optional. Without it, MSAL requests its default OIDC
-scopes. Enter a password to use password sign-in or password sign-up. Leave it
-empty to let the tenant select Email OTP or return a password continuation.
+scopes. `ENTRA_REDIRECT_URI` is required when the example displays the
+system-browser fallback action. Enter a password to use password sign-in or
+password sign-up. Leave it empty to let the tenant select Email OTP or return a
+password continuation.
 The example renders required attributes dynamically and uses the same code and
 password screens for password reset.
 
 The client ID, tenant prefix, and scope are public client configuration, not
 secrets. Do not add a client secret to this example or any mobile application.
 Never print or persist the entered password, access token, or ID token.
+
+For Android, the registered redirect URI has the form
+`msauth://<package-name>/<url-encoded-signature-hash>`. Add a matching callback
+activity to the host app manifest; the manifest path uses the unencoded hash:
+
+```xml
+<activity
+    android:name="com.microsoft.identity.client.BrowserTabActivity"
+    android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data
+            android:scheme="msauth"
+            android:host="&lt;package-name&gt;"
+            android:path="/&lt;signature-hash&gt;" />
+    </intent-filter>
+</activity>
+```
+
+The redirect URI and callback activity must match the signing variant being
+tested (debug, internal, or release). See Microsoft's [MSAL Android redirect
+configuration](https://learn.microsoft.com/en-us/entra/msal/android/) for the
+signature-hash commands.
 
 The iOS Runner already contains the MSAL keychain access-group entitlement.
 Select your own development team when signing for a physical Apple device.
@@ -57,3 +91,4 @@ Microsoft references:
 
 - [Prepare Android for native authentication](https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app)
 - [Run the iOS native-authentication sign-in sample](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in)
+- [Support native-authentication web fallback](https://learn.microsoft.com/en-us/entra/identity-platform/concept-native-authentication-web-fallback)

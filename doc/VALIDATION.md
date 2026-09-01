@@ -34,6 +34,8 @@ tenant validation of the new password/attribute/reset flows.
 - Silent MSAL cache retrieval, automatic expired-token refresh, and forced
   access-token refresh without exposing refresh tokens to Dart.
 - Sign-out and typed browser-required/error states.
+- Explicit system-browser fallback through the native MSAL interactive token
+  APIs on Android and iOS.
 - Custom Flutter example UI with no embedded WebView.
 - SwiftPM-only iOS integration and MSAL keychain entitlement in the example.
 
@@ -115,6 +117,9 @@ Email with password user flow and API scope smoke test on Android and iOS.
 The deterministic gates cover password sign-up, required attributes, password
 reset, MFA/strong-auth continuations, and browser-required result mapping. The
 new password/attribute/reset flows still need live-tenant checks on a physical
-Android device and iOS before a stable release. A browser-required MSAL result
-is exposed to Dart, but the plugin does not automatically start a browser flow
-after an SDK error or fallback signal.
+Android device and iOS before a stable release. The browser fallback bridge is
+compile-tested on both platforms but still needs a live tenant with a
+registered redirect URI and callback configuration. A browser-required MSAL
+result is exposed to Dart; the host must explicitly call
+`signInWithBrowser(...)` instead of relying on an automatic switch after an SDK
+error or fallback signal.

@@ -32,6 +32,20 @@ final class PigeonMicrosoftEntraExternalIdPlatform
       pigeon.NativeAuthConfigurationMessage(
         clientId: configuration.clientId,
         tenantSubdomain: configuration.tenantSubdomain,
+        redirectUri: configuration.redirectUri,
+      ),
+    ),
+  );
+
+  @override
+  Future<NativeAuthState> signInWithBrowser({
+    String? loginHint,
+    List<String> scopes = const [],
+  }) async => _mapResult(
+    await _hostApi.acquireTokenWithBrowser(
+      pigeon.NativeAuthWebFallbackParametersMessage(
+        scopes: scopes,
+        loginHint: loginHint,
       ),
     ),
   );

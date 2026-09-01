@@ -170,14 +170,17 @@ class NativeAuthConfigurationMessage {
   NativeAuthConfigurationMessage({
     required this.clientId,
     required this.tenantSubdomain,
+    this.redirectUri,
   });
 
   String clientId;
 
   String tenantSubdomain;
 
+  String? redirectUri;
+
   List<Object?> _toList() {
-    return <Object?>[clientId, tenantSubdomain];
+    return <Object?>[clientId, tenantSubdomain, redirectUri];
   }
 
   Object encode() {
@@ -189,6 +192,7 @@ class NativeAuthConfigurationMessage {
     return NativeAuthConfigurationMessage(
       clientId: result[0]! as String,
       tenantSubdomain: result[1]! as String,
+      redirectUri: result[2] as String?,
     );
   }
 
@@ -203,7 +207,8 @@ class NativeAuthConfigurationMessage {
       return true;
     }
     return _deepEquals(clientId, other.clientId) &&
-        _deepEquals(tenantSubdomain, other.tenantSubdomain);
+        _deepEquals(tenantSubdomain, other.tenantSubdomain) &&
+        _deepEquals(redirectUri, other.redirectUri);
   }
 
   @override
@@ -212,7 +217,57 @@ class NativeAuthConfigurationMessage {
 
   @override
   String toString() {
-    return 'NativeAuthConfigurationMessage(clientId: $clientId, tenantSubdomain: $tenantSubdomain)';
+    return 'NativeAuthConfigurationMessage(clientId: $clientId, tenantSubdomain: $tenantSubdomain, redirectUri: $redirectUri)';
+  }
+}
+
+class NativeAuthWebFallbackParametersMessage {
+  NativeAuthWebFallbackParametersMessage({
+    required this.scopes,
+    this.loginHint,
+  });
+
+  List<String> scopes;
+
+  String? loginHint;
+
+  List<Object?> _toList() {
+    return <Object?>[scopes, loginHint];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeAuthWebFallbackParametersMessage decode(Object result) {
+    result as List<Object?>;
+    return NativeAuthWebFallbackParametersMessage(
+      scopes: (result[0]! as List<Object?>).cast<String>(),
+      loginHint: result[1] as String?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeAuthWebFallbackParametersMessage ||
+        other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(scopes, other.scopes) &&
+        _deepEquals(loginHint, other.loginHint);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeAuthWebFallbackParametersMessage(scopes: $scopes, loginHint: $loginHint)';
   }
 }
 
@@ -683,26 +738,29 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NativeAuthConfigurationMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthSignInParametersMessage) {
+    } else if (value is NativeAuthWebFallbackParametersMessage) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthAttributeMessage) {
+    } else if (value is NativeAuthSignInParametersMessage) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthRequiredAttributeMessage) {
+    } else if (value is NativeAuthAttributeMessage) {
       buffer.putUint8(136);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthSignUpParametersMessage) {
+    } else if (value is NativeAuthRequiredAttributeMessage) {
       buffer.putUint8(137);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthResetPasswordParametersMessage) {
+    } else if (value is NativeAuthSignUpParametersMessage) {
       buffer.putUint8(138);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthAccessTokenParametersMessage) {
+    } else if (value is NativeAuthResetPasswordParametersMessage) {
       buffer.putUint8(139);
       writeValue(buffer, value.encode());
-    } else if (value is NativeAuthResultMessage) {
+    } else if (value is NativeAuthAccessTokenParametersMessage) {
       buffer.putUint8(140);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeAuthResultMessage) {
+      buffer.putUint8(141);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -726,22 +784,26 @@ class _PigeonCodec extends StandardMessageCodec {
       case 133:
         return NativeAuthConfigurationMessage.decode(readValue(buffer)!);
       case 134:
-        return NativeAuthSignInParametersMessage.decode(readValue(buffer)!);
+        return NativeAuthWebFallbackParametersMessage.decode(
+          readValue(buffer)!,
+        );
       case 135:
-        return NativeAuthAttributeMessage.decode(readValue(buffer)!);
+        return NativeAuthSignInParametersMessage.decode(readValue(buffer)!);
       case 136:
-        return NativeAuthRequiredAttributeMessage.decode(readValue(buffer)!);
+        return NativeAuthAttributeMessage.decode(readValue(buffer)!);
       case 137:
-        return NativeAuthSignUpParametersMessage.decode(readValue(buffer)!);
+        return NativeAuthRequiredAttributeMessage.decode(readValue(buffer)!);
       case 138:
+        return NativeAuthSignUpParametersMessage.decode(readValue(buffer)!);
+      case 139:
         return NativeAuthResetPasswordParametersMessage.decode(
           readValue(buffer)!,
         );
-      case 139:
+      case 140:
         return NativeAuthAccessTokenParametersMessage.decode(
           readValue(buffer)!,
         );
-      case 140:
+      case 141:
         return NativeAuthResultMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -878,6 +940,29 @@ class NativeAuthHostApi {
   ) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.startResetPassword$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[parameters],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeAuthResultMessage;
+  }
+
+  Future<NativeAuthResultMessage> acquireTokenWithBrowser(
+    NativeAuthWebFallbackParametersMessage parameters,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.microsoft_entra_external_id.NativeAuthHostApi.acquireTokenWithBrowser$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
       pigeonVar_channelName,
       pigeonChannelCodec,

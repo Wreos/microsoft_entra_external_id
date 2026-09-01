@@ -34,6 +34,13 @@ abstract class MicrosoftEntraExternalIdPlatform extends PlatformInterface {
     throw UnimplementedError('initialize() has not been implemented.');
   }
 
+  Future<NativeAuthState> signInWithBrowser({
+    String? loginHint,
+    List<String> scopes = const [],
+  }) {
+    throw UnimplementedError('signInWithBrowser() has not been implemented.');
+  }
+
   Future<NativeAuthState> getCurrentAccount() {
     throw UnimplementedError('getCurrentAccount() has not been implemented.');
   }

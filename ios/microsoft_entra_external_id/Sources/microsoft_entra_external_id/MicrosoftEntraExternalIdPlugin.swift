@@ -1,14 +1,17 @@
 import Flutter
 import MSAL
+import UIKit
 
 public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuthHostApi {
   private var nativeAuth: MSALNativeAuthPublicClientApplication?
+  private weak var presentingViewController: UIViewController?
   private var accountResult: MSALNativeAuthUserAccountResult?
   private var continuations: [String: AuthContinuation] = [:]
   private var activeDelegates: [UUID: AnyObject] = [:]
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = MicrosoftEntraExternalIdPlugin()
+    instance.presentingViewController = registrar.viewController
     NativeAuthHostApiSetup.setUp(binaryMessenger: registrar.messenger(), api: instance)
   }
 
@@ -25,6 +28,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
         tenantSubdomain: configuration.tenantSubdomain,
         challengeTypes: [.OOB, .password]
       )
+      config.redirectUri = configuration.redirectUri
       nativeAuth = try MSALNativeAuthPublicClientApplication(nativeAuthConfiguration: config)
       accountResult = nil
       continuations.removeAll()
@@ -34,6 +38,58 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
         code: "initialization_failed",
         message: error.localizedDescription
       )
+    }
+  }
+
+  func acquireTokenWithBrowser(
+    parameters: NativeAuthWebFallbackParametersMessage
+  ) async throws -> NativeAuthResultMessage {
+    guard let nativeAuth else { return notInitialized() }
+    guard let presentingViewController else {
+      return failure(
+        code: "view_controller_unavailable",
+        message: "A foreground view controller is required for browser authentication."
+      )
+    }
+    guard !parameters.scopes.isEmpty else {
+      return failure(code: "invalid_scopes", message: "At least one browser scope is required.")
+    }
+
+    let webParameters = MSALWebviewParameters(
+      authPresentationViewController: presentingViewController
+    )
+    let tokenParameters = MSALInteractiveTokenParameters(
+      scopes: parameters.scopes,
+      webviewParameters: webParameters
+    )
+    tokenParameters.loginHint = parameters.loginHint
+
+    return await withCheckedContinuation { continuation in
+      nativeAuth.acquireToken(with: tokenParameters) { result, error in
+        guard let result else {
+          continuation.resume(
+            returning: self.failure(
+              code: "browser_auth_failed",
+              message: error?.localizedDescription ?? "Browser authentication failed."
+            )
+          )
+          return
+        }
+
+        let expiresAt = result.expiresOn.map {
+          Int64(($0.timeIntervalSince1970 * 1_000).rounded())
+        }
+        continuation.resume(
+          returning: NativeAuthResultMessage(
+            type: .signedIn,
+            username: result.account.username,
+            idToken: result.idToken,
+            accessToken: result.accessToken,
+            scopes: result.scopes,
+            expiresAtEpochMilliseconds: expiresAt
+          )
+        )
+      }
     }
   }
 

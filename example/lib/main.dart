@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 const _clientId = String.fromEnvironment('ENTRA_CLIENT_ID');
 const _tenantSubdomain = String.fromEnvironment('ENTRA_TENANT_SUBDOMAIN');
 const _apiScope = String.fromEnvironment('ENTRA_API_SCOPE');
+const _redirectUri = String.fromEnvironment('ENTRA_REDIRECT_URI');
 
 void main() {
   runApp(const NativeAuthExampleApp());
@@ -15,11 +16,13 @@ class NativeAuthExampleApp extends StatelessWidget {
     super.key,
     this.clientId = _clientId,
     this.tenantSubdomain = _tenantSubdomain,
+    this.redirectUri = _redirectUri,
     this.plugin,
   });
 
   final String clientId;
   final String tenantSubdomain;
+  final String redirectUri;
   final MicrosoftEntraExternalId? plugin;
 
   @override
@@ -33,6 +36,7 @@ class NativeAuthExampleApp extends StatelessWidget {
       home: NativeAuthHomePage(
         clientId: clientId,
         tenantSubdomain: tenantSubdomain,
+        redirectUri: redirectUri,
         plugin: plugin,
       ),
     );
@@ -43,12 +47,14 @@ class NativeAuthHomePage extends StatefulWidget {
   const NativeAuthHomePage({
     required this.clientId,
     required this.tenantSubdomain,
+    this.redirectUri = _redirectUri,
     super.key,
     this.plugin,
   });
 
   final String clientId;
   final String tenantSubdomain;
+  final String redirectUri;
   final MicrosoftEntraExternalId? plugin;
 
   @override
@@ -67,6 +73,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   NativeAuthPasswordRequired? _passwordRequired;
   NativeAuthAttributesRequired? _attributesRequired;
   NativeAuthSignedIn? _signedIn;
+  NativeAuthFailure? _browserFailure;
   final _attributeControllers = <String, TextEditingController>{};
 
   List<String> get _scopes => _apiScope.isEmpty ? const [] : [_apiScope];
@@ -103,6 +110,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
         NativeAuthConfiguration(
           clientId: widget.clientId,
           tenantSubdomain: widget.tenantSubdomain,
+          redirectUri: widget.redirectUri.isEmpty ? null : widget.redirectUri,
         ),
       );
       if (initialized is NativeAuthFailure) return initialized;
@@ -225,6 +233,17 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
     progress: 'Refreshing access token...',
   );
 
+  Future<void> _continueInBrowser() {
+    final loginHint = _emailController.text.trim();
+    final scopes = _scopes.isEmpty
+        ? const ['openid', 'profile', 'email']
+        : _scopes;
+    return _perform(
+      () => _plugin.signInWithBrowser(loginHint: loginHint, scopes: scopes),
+      progress: 'Opening system browser...',
+    );
+  }
+
   void _useAnotherEmail() {
     if (_busy) return;
     setState(() {
@@ -263,8 +282,10 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   void _apply(NativeAuthState state) {
     switch (state) {
       case NativeAuthInitialized():
+        _browserFailure = null;
         _status = 'Native authentication is ready.';
       case NativeAuthSignedOut():
+        _browserFailure = null;
         _signedIn = null;
         _codeRequired = null;
         _passwordRequired = null;
@@ -274,6 +295,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
         _passwordController.clear();
         _status = 'Enter an email to sign in or create an account.';
       case final NativeAuthCodeRequired state:
+        _browserFailure = null;
         _codeRequired = state;
         _passwordRequired = null;
         _attributesRequired = null;
@@ -282,12 +304,14 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
             ? 'Enter the verification code.'
             : 'Verification code sent to ${state.sentTo}.';
       case final NativeAuthPasswordRequired state:
+        _browserFailure = null;
         _passwordRequired = state;
         _codeRequired = null;
         _attributesRequired = null;
         _clearAttributeControllers();
         _status = 'Enter the password for this account.';
       case final NativeAuthAttributesRequired state:
+        _browserFailure = null;
         _attributesRequired = state;
         _codeRequired = null;
         _passwordRequired = null;
@@ -300,6 +324,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
             ? 'Enter the required account details.'
             : 'Some account details were rejected. Check the highlighted fields.';
       case final NativeAuthSignedIn state:
+        _browserFailure = null;
         _signedIn = state;
         _codeRequired = null;
         _passwordRequired = null;
@@ -309,6 +334,7 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
         _passwordController.clear();
         _status = 'Signed in successfully.';
       case final NativeAuthFailure state:
+        _browserFailure = state.browserRequired ? state : null;
         _status = state.browserRequired
             ? '${state.message} System-browser fallback is required.'
             : state.message;
@@ -355,6 +381,15 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
                     liveRegion: true,
                     child: Text(_status, key: const Key('status')),
                   ),
+                  if (_browserFailure != null) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      key: const Key('browserFallback'),
+                      onPressed: _busy ? null : _continueInBrowser,
+                      icon: const Icon(Icons.open_in_browser),
+                      label: const Text('Continue in system browser'),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   if (_signedIn case final account?)
                     _SignedInCard(
@@ -428,7 +463,8 @@ class _ConfigurationCard extends StatelessWidget {
             const SizedBox(height: 12),
             const SelectableText(
               'flutter run --dart-define=ENTRA_CLIENT_ID=<client-id> '
-              '--dart-define=ENTRA_TENANT_SUBDOMAIN=<tenant-prefix>',
+              '--dart-define=ENTRA_TENANT_SUBDOMAIN=<tenant-prefix> '
+              '--dart-define=ENTRA_REDIRECT_URI=<registered-redirect-uri>',
             ),
           ],
         ),

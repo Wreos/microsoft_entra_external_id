@@ -16,6 +16,8 @@ class MockMicrosoftEntraExternalIdPlatform
   Map<String, String>? signedUpAttributes;
   String? resetPasswordUsername;
   List<String>? resetPasswordScopes;
+  String? browserLoginHint;
+  List<String>? browserScopes;
   String? submittedContinuationId;
   String? submittedCode;
   String? submittedPassword;
@@ -74,6 +76,16 @@ class MockMicrosoftEntraExternalIdPlatform
   }) async {
     resetPasswordUsername = username;
     resetPasswordScopes = scopes;
+    return const NativeAuthSignedOut();
+  }
+
+  @override
+  Future<NativeAuthState> signInWithBrowser({
+    String? loginHint,
+    List<String> scopes = const [],
+  }) async {
+    browserLoginHint = loginHint;
+    browserScopes = scopes;
     return const NativeAuthSignedOut();
   }
 
@@ -161,6 +173,19 @@ void main() {
     );
     expect(fakePlatform.initializedWith?.clientId, 'client-id');
     expect(fakePlatform.initializedWith?.tenantSubdomain, 'contoso');
+  });
+
+  test('browser fallback normalizes login hint and scopes', () async {
+    final fakePlatform = MockMicrosoftEntraExternalIdPlatform();
+    final plugin = MicrosoftEntraExternalId(platform: fakePlatform);
+
+    await plugin.signInWithBrowser(
+      loginHint: ' user@example.com ',
+      scopes: const [' openid ', 'profile', 'openid'],
+    );
+
+    expect(fakePlatform.browserLoginHint, 'user@example.com');
+    expect(fakePlatform.browserScopes, const ['openid', 'profile']);
   });
 
   test('initialize rejects a tenant domain instead of a subdomain', () {

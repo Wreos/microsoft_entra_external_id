@@ -49,8 +49,9 @@ The current public development prerelease targets Android and iOS and includes:
    a system browser.
 8. A custom Flutter example application and package/native tests.
 
-MFA, strong-auth registration, correlation metadata, and browser-fallback
-execution remain roadmap work. Live-tenant validation for password sign-up,
+MFA, strong-auth registration, and correlation metadata remain roadmap work.
+The system-browser fallback bridge is implemented as an explicit host action.
+Live-tenant validation for password sign-up,
 attributes, reset, and API scopes is still a release gate.
 
 ## Public API direction
@@ -149,7 +150,7 @@ the complete live-tenant matrix.
 ## Open questions
 
 - Which MFA and strong-auth registration states have stable parity across the current Android and iOS SDKs.
-- Whether the first public release should expose browser fallback or return a typed unsupported result until the fallback bridge is implemented.
+- Which browser redirect and callback configuration should be documented for additional host platforms.
 - Which flows belong in the first stable release versus later `0.x` releases.
 
 The bootstrap deployment floors are resolved as Android API 24 and iOS 17.

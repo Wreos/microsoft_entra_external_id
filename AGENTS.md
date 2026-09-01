@@ -37,9 +37,8 @@ Do not reintroduce the former `entra_external_id` package or class names.
 The implemented flow is password and Email OTP sign-in, Email OTP sign-up,
 verification-code/password submission, automatic sign-in after sign-up,
 cached-account lookup, access/ID token retrieval, silent cache refresh, forced
-access-token refresh, and sign-out. Password sign-up, required attributes,
-password reset, MFA, strong-auth registration, and browser fallback execution
-are not implemented yet.
+access-token refresh, sign-out, and explicit system-browser fallback. MFA and
+strong-auth registration are not implemented yet.
 
 Refresh tokens stay inside the native MSAL cache and must never be added to the
 Pigeon or Dart contracts. `getAccessToken(forceRefresh: false)` uses the cache
@@ -47,8 +46,9 @@ and refreshes expired access tokens; `forceRefresh: true` explicitly bypasses a
 still-valid cached access token.
 
 `NativeAuthFailure.browserRequired == true` is a signal to the host app. The
-plugin does not automatically open a browser, and ordinary SDK failures must
-not silently switch authentication mechanisms.
+host can call `signInWithBrowser(...)` to restart the flow through the official
+MSAL system-browser path. Ordinary SDK failures must not silently switch
+authentication mechanisms.
 
 ## Generated code
 

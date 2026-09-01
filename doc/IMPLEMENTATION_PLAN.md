@@ -141,7 +141,9 @@ physical-device and iOS live-tenant scenarios remain open and are tracked in
 **Deliverables**
 
 - Implement or explicitly reject MFA and strong-auth registration continuations.
-- Implement typed browser fallback without embedding a WebView in the plugin.
+- Implement typed, explicit system-browser fallback without embedding a WebView
+  in the plugin. **Complete:** `signInWithBrowser(...)` delegates to native
+  MSAL interactive acquisition on Android and iOS.
 - Define cancellation, timeout, app-background, and process-recreation behavior.
 
 **Validation gate**
@@ -149,6 +151,10 @@ physical-device and iOS live-tenant scenarios remain open and are tracked in
 - Capability matrix documents parity and known platform limitations.
 - Tests cover cancellation, stale continuations, duplicate submissions, engine
   detach, and multiple Flutter engines.
+
+**Status:** The browser fallback bridge is implemented and package/native
+compilation gates pass. Live-tenant redirect/callback validation and the
+remaining MFA/strong-auth states are still open.
 
 ## Stage 7 — Security and release candidate
 

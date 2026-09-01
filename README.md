@@ -68,6 +68,7 @@ await entra.initialize(
   const NativeAuthConfiguration(
     clientId: 'application-client-id',
     tenantSubdomain: 'contoso',
+    redirectUri: 'msauth.com.example.app://auth',
   ),
 );
 
@@ -105,21 +106,37 @@ be logged or persisted by the host application.
 
 The current release is a development preview. Password and Email OTP sign-in,
 password and Email OTP sign-up, required/custom attributes, password reset,
-token retrieval/refresh, cached-account lookup, and sign-out are implemented on
-Android and iOS. MFA, strong-auth registration, and browser-fallback execution
+token retrieval/refresh, cached-account lookup, sign-out, and explicit browser
+fallback are implemented on Android and iOS. MFA and strong-auth registration
 remain explicit follow-up work. Maintainers track platform and tenant coverage
 in the [validation report][validation].
 
 ## Browser fallback
 
-The plugin does not open a browser automatically. When MSAL determines that a
-flow must leave native authentication, the plugin returns
-`NativeAuthFailure(browserRequired: true)`. The host application must then
-start its own system-browser authentication flow.
+When MSAL determines that a flow must leave native authentication, the plugin
+returns `NativeAuthFailure(browserRequired: true)`. This follows Microsoft's
+[native-authentication web-fallback guidance][native-auth-web-fallback]. The
+host can then restart the flow through the system browser with the official
+MSAL client:
+
+```dart
+final result = await entra.signIn('user@example.com');
+if (result case NativeAuthFailure(browserRequired: true)) {
+  final browserResult = await entra.signInWithBrowser(
+    loginHint: 'user@example.com',
+    scopes: const ['openid', 'profile', 'email'],
+  );
+}
+```
+
+Register the platform redirect URI before using this method. On Android this
+also requires the MSAL browser callback activity/intent filter in the host
+application. On iOS, register `msauth.<bundle-id>://auth` and keep the MSAL
+keychain group enabled. The browser path uses the system browser, never an
+embedded WebView, and returns the same typed account and token result.
 
 An SDK initialization or runtime error is returned as a normal
 `NativeAuthFailure`; it does not silently switch authentication mechanisms.
-Embedded WebViews are never used as a fallback.
 
 ## Contributing
 
@@ -145,6 +162,7 @@ before `1.0.0` follow the [migration policy][migration].
 
 [native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
 [native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in
+[native-auth-web-fallback]: https://learn.microsoft.com/en-us/entra/identity-platform/concept-native-authentication-web-fallback
 [example]: https://github.com/Wreos/microsoft_entra_external_id/tree/main/example
 [intent]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/INTENT.md
 [plan]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/IMPLEMENTATION_PLAN.md

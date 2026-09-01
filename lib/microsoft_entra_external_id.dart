@@ -38,9 +38,25 @@ class MicrosoftEntraExternalId {
       NativeAuthConfiguration(
         clientId: clientId,
         tenantSubdomain: tenantSubdomain,
+        redirectUri: configuration.redirectUri?.trim().isEmpty == true
+            ? null
+            : configuration.redirectUri?.trim(),
       ),
     );
   }
+
+  /// Restarts authentication through the system browser.
+  ///
+  /// Call this when a native operation returns [NativeAuthFailure] with
+  /// [NativeAuthFailure.browserRequired] set to `true`. The native SDK keeps
+  /// the resulting account and tokens in its normal MSAL cache.
+  Future<NativeAuthState> signInWithBrowser({
+    String? loginHint,
+    List<String> scopes = const ['openid', 'profile', 'email'],
+  }) => _platform.signInWithBrowser(
+    loginHint: loginHint?.trim().isEmpty == true ? null : loginHint?.trim(),
+    scopes: _normalizeScopes(scopes),
+  );
 
   Future<NativeAuthState> getCurrentAccount() => _platform.getCurrentAccount();
 

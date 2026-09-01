@@ -17,9 +17,9 @@ Before editing, confirm from the app and request that all of these are true:
 - The desired primary flow is custom-UI native authentication.
 - Password or Email OTP native sign-in covers the application's sign-in need.
 
-If the app requires workforce Entra ID, password sign-up, password reset,
-required sign-up attributes, inline MFA, or automatic browser fallback,
-explain that the package does not yet implement that path.
+If the app requires workforce Entra ID or inline MFA, explain that the package
+does not yet implement that path. Browser fallback is supported explicitly via
+the official MSAL system-browser flow.
 Do not hide the gap with a custom OAuth client or embedded WebView.
 
 ## Inspect before changing
@@ -61,10 +61,12 @@ test accounts or tenant-specific credentials into source control.
 ## Platform setup
 
 - Android: ensure the application manifest includes Internet permission.
+- Android browser fallback: register the MSAL redirect URI and browser callback
+  activity/intent filter in the host application.
 - iOS: enable Swift Package Manager support and add the MSAL keychain group
   `$(AppIdentifierPrefix)com.microsoft.adalcache` to the Runner entitlements.
-- Do not add redirect handlers for a browser flow unless that browser flow is
-  being implemented and validated separately.
+- iOS browser fallback: register `msauth.<bundle-id>://auth` (or the exact
+  configured redirect URI) and keep the MSAL keychain group enabled.
 
 Use the repository example as the source of truth for the current platform
 configuration.
@@ -93,9 +95,9 @@ cache retrieval and automatic expiry refresh, or add `forceRefresh: true` to
 bypass a valid cached access token. Never request, expose, log, or persist the
 refresh token; MSAL owns it in the platform cache.
 
-When `browserRequired` is true, stop the native flow and hand control to the
-host application's explicitly configured system-browser authentication path.
-The plugin does not open that browser automatically. A normal SDK failure with
+When `browserRequired` is true, call `signInWithBrowser(...)` with the same
+login hint and scopes. This uses the official MSAL system-browser flow and
+returns the same typed signed-in result. A normal SDK failure with
 `browserRequired == false` should remain an error/retry state.
 
 ## Validate
