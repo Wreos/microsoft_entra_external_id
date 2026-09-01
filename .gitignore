@@ -34,3 +34,5 @@ migrate_working_dir/
 # Flutter's generated Xcode project workspace duplicates the canonical lock
 # stored under Runner.xcworkspace.
 /example/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+# Local live-tenant configuration used only for device testing.
+/example/.env.local

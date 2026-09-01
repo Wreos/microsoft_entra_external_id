@@ -39,12 +39,21 @@ Use only the tenant prefix. For `contoso.onmicrosoft.com`, pass `contoso`.
 
 ## Run
 
+For local device testing, keep the tenant values in the ignored `.env.local`
+file and export them before invoking Flutter:
+
+```shell
+set -a
+source .env.local
+set +a
+```
+
 ```shell
 flutter run \
-  --dart-define=ENTRA_CLIENT_ID=<application-client-id> \
-  --dart-define=ENTRA_TENANT_SUBDOMAIN=<tenant-prefix> \
-  --dart-define=ENTRA_REDIRECT_URI=<registered-redirect-uri> \
-  --dart-define=ENTRA_API_SCOPE=api://<api-client-id>/<delegated-scope>
+  --dart-define=ENTRA_CLIENT_ID="$ENTRA_CLIENT_ID" \
+  --dart-define=ENTRA_TENANT_SUBDOMAIN="$ENTRA_TENANT_SUBDOMAIN" \
+  --dart-define=ENTRA_REDIRECT_URI="$ENTRA_REDIRECT_URI" \
+  --dart-define=ENTRA_API_SCOPE="$ENTRA_API_SCOPE"
 ```
 
 `ENTRA_API_SCOPE` is optional. Without it, MSAL requests its default OIDC
