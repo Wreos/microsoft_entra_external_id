@@ -1,4 +1,4 @@
-# Microsoft Entra External ID for Flutter
+# Microsoft Entra External ID Native Auth for Flutter
 
 An unofficial Flutter plugin for Microsoft Entra External ID Native
 Authentication, backed by the official MSAL Android and iOS SDKs.
