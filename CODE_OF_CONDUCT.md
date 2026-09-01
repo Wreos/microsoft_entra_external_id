@@ -53,7 +53,7 @@ event.
 ## Enforcement
 
 Report abusive, harassing, or otherwise unacceptable behaviour privately to
-[lozhkovoi@gmail.com](mailto:lozhkovoi@gmail.com). Reports will be reviewed
+[wreos96@gmail.com](mailto:wreos96@gmail.com). Reports will be reviewed
 promptly and fairly. The reporter's identity and report details will be kept
 confidential, except where disclosure is necessary to investigate or protect
 people from harm.
@@ -77,4 +77,3 @@ This Code of Conduct is adapted from the
 [Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)
 and its
 [Community Impact Guidelines](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html#enforcement-guidelines).
-
