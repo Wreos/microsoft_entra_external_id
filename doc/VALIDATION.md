@@ -1,10 +1,10 @@
 # Validation report
 
-Validated on 2026-09-01. This report covers the repository bootstrap,
+Reviewed on 2026-09-01. This report covers the repository bootstrap,
 deterministic native password/Email OTP sign-in and sign-up, required
-attributes, password reset, and token-management slices, plus the existing live
-Android Email OTP tenant test. It does not claim production readiness or live
-tenant validation of the new password/attribute/reset flows.
+attributes, password reset, token-management slices, and the existing live
+Android Email OTP tenant test. It does not establish production readiness or
+live-tenant validation of the new password, attribute, and reset flows.
 
 ## Environment
 
@@ -41,7 +41,7 @@ tenant validation of the new password/attribute/reset flows.
 
 ## Deterministic gates
 
-The final implementation snapshot passed:
+The implementation snapshot passed:
 
 ```text
 Pigeon regeneration + generated-output drift check   PASS
@@ -63,13 +63,13 @@ pub.dev 0.1.0-dev.1 publication and indexing         PASS
 pub.dev 0.2.0-dev.1 publication and indexing         PASS
 ```
 
-The published package is
-[`microsoft_entra_external_id 0.1.0-dev.1`](https://pub.dev/packages/microsoft_entra_external_id).
-The matching
+The published package,
+[`microsoft_entra_external_id 0.1.0-dev.1`](https://pub.dev/packages/microsoft_entra_external_id),
+and its matching
 [`v0.1.0-dev.1` GitHub prerelease](https://github.com/Wreos/microsoft_entra_external_id/releases/tag/v0.1.0-dev.1)
-was created from the same validated commit.
+come from the same validated commit.
 
-The feature snapshot is now published as
+The feature snapshot is published as
 [`microsoft_entra_external_id 0.2.0-dev.1`](https://pub.dev/packages/microsoft_entra_external_id/versions/0.2.0-dev.1),
 with the matching
 [`v0.2.0-dev.1` GitHub prerelease](https://github.com/Wreos/microsoft_entra_external_id/releases/tag/v0.2.0-dev.1).
@@ -92,7 +92,8 @@ The example was also installed and started on a Pixel Tablet Android 15
 emulator. With syntactically valid non-production identifiers, the official
 MSAL native client initialized, cached-account lookup returned signed-out, and
 the custom Flutter sign-in/sign-up screen rendered without an embedded WebView.
-This proves device-level bridge wiring independently of tenant configuration.
+This verifies device-level bridge wiring without relying on tenant
+configuration.
 
 The scenario-catalog example was installed on a physical Motorola device with
 the live tenant configuration. Its Email OTP, Password, Attributes, Password
@@ -106,8 +107,8 @@ The iOS app was ad-hoc signed with the example's MSAL keychain entitlement,
 installed, and started on an isolated iPhone 17 Pro simulator. With
 syntactically valid non-production identifiers, the official MSAL native client
 initialized, cached-account lookup returned signed-out, and the Flutter
-sign-in/sign-up screen rendered. This proves the iOS runtime bridge and native
-SDK invocation without claiming a live-tenant authentication result. Xcode does
+sign-in/sign-up screen rendered. This verifies the iOS runtime bridge and native
+SDK invocation, not a live-tenant authentication result. Xcode does
 not discover devices from this isolated device set as test destinations, so
 XCTest execution remains a manual release gate even though the XCTest bundle
 compiles for both simulator architectures.

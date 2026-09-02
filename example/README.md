@@ -1,7 +1,7 @@
 # Microsoft Entra External ID native-authentication example
 
-This app mirrors Microsoft's native-authentication samples while keeping the UI
-in Flutter. Its Material navigation separates five reproducible scenarios:
+This Flutter app implements the native-authentication flows in Microsoft's
+samples. Material navigation separates them into five reproducible scenarios:
 
 - **Email OTP** for passwordless sign-in and sign-up;
 - **Password** for direct password sign-in and sign-up;
@@ -9,7 +9,7 @@ in Flutter. Its Material navigation separates five reproducible scenarios:
 - **Password Reset** for the complete recovery continuation;
 - **More** for explicit system-browser fallback and API configuration status.
 
-Together, those scenarios demonstrate how to:
+The app can:
 
 - restore a cached account;
 - sign in with email/username and password or Email OTP;
@@ -23,13 +23,12 @@ Together, those scenarios demonstrate how to:
 - automatically sign in after sign-up;
 - sign out.
 
-Android calls MSAL Native Auth directly. iOS uses
+Android calls MSAL Native Auth directly. iOS calls
 `MSALNativeAuthPublicClientApplication` through Swift Package Manager.
 
 ## External tenant setup
 
-Before running the app, complete Microsoft's prerequisites for an **external
-tenant**:
+Before running the app, set up an **external tenant** as Microsoft requires:
 
 1. Register an application and record its Application (client) ID.
 2. Under **Authentication > Advanced settings**, enable both mobile/desktop
@@ -65,11 +64,11 @@ flutter run \
 ```
 
 `ENTRA_API_SCOPE` is optional. Without it, MSAL requests its default OIDC
-scopes. `ENTRA_REDIRECT_URI` is required when the example displays the
-system-browser fallback action. Select **Email OTP** or **Password** explicitly
-instead of using an empty password to choose an authentication mechanism. The
-example renders required attributes dynamically and uses the same code and
-password continuation screens for password reset.
+scopes. `ENTRA_REDIRECT_URI` is required for the system-browser fallback action.
+Choose **Email OTP** or **Password** explicitly. Do not use an empty password to
+select an authentication mechanism. The example renders required attributes
+dynamically and reuses its code and password continuation screens for password
+reset.
 
 The client ID, tenant prefix, and scope are public client configuration, not
 secrets. Do not add a client secret to this example or any mobile application.

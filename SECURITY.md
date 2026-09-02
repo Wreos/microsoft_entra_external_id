@@ -3,8 +3,8 @@
 ## Supported versions
 
 The latest published `0.x` development release receives security fixes on a
-best-effort basis. Older development versions are not supported. This package
-has not reached a stable `1.0.0` API or production-readiness guarantee.
+best-effort basis. Older development versions are unsupported. This package does
+not have a stable `1.0.0` API or a production-readiness guarantee.
 
 ## Reporting a vulnerability
 
@@ -22,10 +22,10 @@ details in that issue.
 
 ## Scope
 
-Reports are especially useful for credential or token exposure, unsafe native
-cache handling, continuation reuse, authentication-state confusion, logging of
-sensitive values, browser-fallback confusion, and Android/iOS bridge behavior
-that differs from the documented contract.
+Please report credential or token exposure, unsafe native cache handling,
+continuation reuse, authentication-state confusion, logging of sensitive
+values, browser-fallback confusion, and Android/iOS bridge behaviour that
+differs from the documented contract.
 
 Microsoft Entra service or MSAL vulnerabilities should also be reported through
 Microsoft's security-response process. This project is unofficial and cannot

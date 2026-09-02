@@ -1,8 +1,8 @@
 # Toolchain and dependency baseline
 
-Verified on 2026-08-30. Versions are exact where build reproducibility matters.
-Revalidate the Microsoft SDK pins on the day each native integration stage
-starts.
+These versions were checked on 2026-08-30. Pins are exact where build
+reproducibility depends on them. Revalidate the Microsoft SDK pins when each
+native integration stage starts.
 
 ## Flutter and Dart
 
@@ -13,8 +13,7 @@ starts.
 
 The repository follows Flutter's current plugin template and its
 [built-in Kotlin migration for plugin authors][flutter-built-in-kotlin].
-The minimum is deliberate: supporting older Flutter versions would require a
-second Android build setup before the public API exists.
+The minimum avoids a second Android build setup before the public API exists.
 
 ## Android
 
@@ -43,9 +42,9 @@ compatibility declarations once Flutter and AGP expose one converged baseline.
 - Minimum deployment target: iOS `17.0`.
 - MSAL iOS: exact `2.15.0`.
 
-iOS 17 is selected because the official MSAL iOS `2.15.0` Swift package
-requires it. Lowering the plugin target would mean pinning an older MSAL release
-and creating dependency debt before the first native flow exists.
+iOS 17 is the minimum because the official MSAL iOS `2.15.0` Swift package
+requires it. A lower plugin target would require an older MSAL release and add
+dependency debt before the first native flow exists.
 
 ## Dependency policy
 

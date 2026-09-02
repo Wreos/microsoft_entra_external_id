@@ -1,5 +1,5 @@
 name: microsoft_entra_external_id
-description: "Flutter bridge for Microsoft Entra External ID Native Authentication using the official MSAL Android and iOS SDKs."
+description: "Flutter bridge to the official Microsoft Entra External ID Native Authentication SDKs."
 version: 0.2.0-dev.2
 homepage: https://github.com/Wreos/microsoft_entra_external_id
 repository: https://github.com/Wreos/microsoft_entra_external_id

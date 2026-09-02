@@ -1,7 +1,7 @@
 # Security model
 
-`microsoft_entra_external_id` is a bridge between application-owned Flutter UI
-and Microsoft-owned Native Authentication SDKs. It does not implement OAuth or
+`microsoft_entra_external_id` connects application-owned Flutter UI to
+Microsoft-owned Native Authentication SDKs. It does not implement OAuth or
 OpenID Connect in Dart.
 
 ## Trust boundaries
@@ -30,9 +30,9 @@ access tokens, or ID tokens.
 ## Browser fallback
 
 `NativeAuthFailure.browserRequired == true` means the native flow cannot
-continue. The host may call `signInWithBrowser(...)` after explaining the
-transition to the user. That method delegates to the official MSAL
-system-browser flow; it never opens an embedded WebView or silently changes
+continue. After explaining the transition to the user, the host may call
+`signInWithBrowser(...)`. That method delegates to the official MSAL
+system-browser flow. It never opens an embedded WebView or silently changes
 authentication mechanisms.
 
 Ordinary SDK errors are returned as failures and must not trigger an automatic
@@ -51,7 +51,7 @@ changing the authentication surface.
 | Token sent to the wrong API | The host requests explicit scopes and must send the access token only to the matching HTTPS resource server. |
 | Cross-engine state leakage | Each Flutter plugin instance owns one native client and releases native state when detached. |
 
-## Known gaps
+## Known limitations
 
 MFA, strong-auth registration, and process-recreation recovery are not
 implemented yet. Password sign-up,

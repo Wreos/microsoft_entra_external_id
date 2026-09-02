@@ -5,19 +5,28 @@ package: microsoft_entra_external_id
 repository: microsoft_entra_external_id
 ---
 
-# Microsoft Entra External ID for Flutter — Intent
+# Microsoft Entra External ID for Flutter: intent
 
 ## Product thesis
 
-`microsoft_entra_external_id` will be an unofficial Flutter plugin that bridges the official Microsoft Authentication Library (MSAL) Native Authentication SDKs for Android and iOS.
+`microsoft_entra_external_id` is an unofficial Flutter plugin that bridges the
+official Microsoft Authentication Library (MSAL) Native Authentication SDKs for
+Android and iOS.
 
-It will let Flutter applications build their own sign-up, sign-in, password-reset, and challenge UI while delegating authentication protocol handling, token caching, and platform-specific behavior to Microsoft's native SDKs.
+It lets Flutter applications build their own sign-up, sign-in, password-reset,
+and challenge UI. Microsoft's native SDKs handle the authentication protocol,
+token cache, and platform-specific behaviour.
 
 The plugin is specifically for Microsoft Entra External ID external tenants. It is not a general Microsoft identity or workforce Entra ID plugin.
 
 ## Problem
 
-Microsoft provides Native Authentication SDKs for Kotlin/Java and Swift/Objective-C, but no official Flutter integration. Existing Flutter MSAL plugins focus on browser-delegated authentication through a browser, embedded web view, or broker. Flutter teams that need a first-party, fully branded customer authentication UI must currently maintain their own Android and iOS bridges or call lower-level authentication APIs directly.
+Microsoft provides Native Authentication SDKs for Kotlin/Java and
+Swift/Objective-C, but no official Flutter integration. Existing Flutter MSAL
+plugins focus on browser-delegated authentication through a browser, embedded
+web view, or broker. Flutter teams that need a fully branded customer
+authentication UI currently maintain their own Android and iOS bridges or call
+lower-level authentication APIs directly.
 
 ## Target users
 
@@ -27,7 +36,9 @@ Microsoft provides Native Authentication SDKs for Kotlin/Java and Swift/Objectiv
 
 ## Core promise
 
-Expose the native authentication flow as a typed Dart state machine. The host application owns presentation; the plugin owns the bridge to the native MSAL SDKs.
+The public API exposes the native authentication flow as a typed Dart state
+machine. The host application owns presentation. The plugin bridges to the
+native MSAL SDKs.
 
 The plugin must never claim that every flow is browserless. It must surface browser fallback explicitly when Entra or a federated identity provider requires it.
 
@@ -73,7 +84,7 @@ Continuation handles are opaque, short-lived, and in-memory only. Applications a
 
 ## Architecture decisions
 
-- **Native Authentication is a hard invariant.** On Android, create and retain
+- Native Authentication is a hard invariant. On Android, create and retain
   `INativeAuthPublicClientApplication` through
   `PublicClientApplication.createNativeAuthPublicClientApplication(...)`, as
   defined by Microsoft's [External ID Native Authentication tutorial][native-auth-android].
@@ -143,9 +154,9 @@ Every implementation stage must pass its gate before the next stage starts:
   bridge code.
 - No secret, credential, continuation token, or access token appears in logs or persisted plugin state.
 
-Stable-release criteria remain stricter: password/OTP parity on both platforms,
-password reset and required attributes, an independent integration trial, and
-the complete live-tenant matrix.
+Stable-release criteria are password/OTP parity on both platforms, password
+reset and required attributes, an independent integration trial, and the full
+live-tenant matrix.
 
 ## Open questions
 

@@ -1,10 +1,10 @@
 # Implementation plan
 
-Every stage has a validation gate. A stage is complete only when its checks
-pass and the result is committed. A live-tenant test is never used as a
-substitute for deterministic unit and contract tests.
+Each stage ends with a validation gate. Mark a stage complete only after its
+checks pass and the result is committed. A live-tenant test never substitutes
+for deterministic unit and contract tests.
 
-## Stage 0 — Intent and market boundary
+## Stage 0: Intent and market boundary
 
 **Deliverables**
 
@@ -19,7 +19,7 @@ substitute for deterministic unit and contract tests.
 
 **Status:** complete. See `INTENT.md`.
 
-## Stage 1 — Repository bootstrap
+## Stage 1: Repository bootstrap
 
 **Deliverables**
 
@@ -48,7 +48,7 @@ isolated simulator and the XCTest bundle compiles, but Xcode does not expose
 that isolated device set as a test destination. XCTest execution remains a
 manual release gate.
 
-## Stage 2 — Cross-platform contract spike
+## Stage 2: Cross-platform contract spike
 
 **Deliverables**
 
@@ -72,7 +72,7 @@ account, ID/access-token, scopes, expiry, and native-cache refresh contract
 slices are complete. MFA, cancellation, and correlation metadata remain in
 later slices.
 
-## Stage 3 — Android initialization and sign-in slice
+## Stage 3: Android initialization and sign-in slice
 
 **Deliverables**
 
@@ -94,7 +94,7 @@ live-tenant smoke test are complete. Password/API-scoped-token live-tenant
 validation and complete native branch tests are still open, so the full stage
 is not complete.
 
-## Stage 4 — iOS parity for the sign-in slice
+## Stage 4: iOS parity for the sign-in slice
 
 **Deliverables**
 
@@ -116,7 +116,7 @@ password/API-scoped-token live-tenant validation, complete delegate tests, and
 the iOS live-tenant smoke tests are still open, so the full stage is not
 complete.
 
-## Stage 5 — Sign-up, attributes, and password reset
+## Stage 5: Sign-up, attributes, and password reset
 
 **Deliverables**
 
@@ -136,7 +136,7 @@ flows, and deterministic Dart/Android/iOS compilation gates are complete. The
 physical-device and iOS live-tenant scenarios remain open and are tracked in
 `doc/VALIDATION.md`.
 
-## Stage 6 — Advanced states and fallback
+## Stage 6: Advanced states and fallback
 
 **Deliverables**
 
@@ -156,7 +156,7 @@ physical-device and iOS live-tenant scenarios remain open and are tracked in
 compilation gates pass. Live-tenant redirect/callback validation and the
 remaining MFA/strong-auth states are still open.
 
-## Stage 7 — Security and release candidate
+## Stage 7: Security and release candidate
 
 **Deliverables**
 
@@ -173,26 +173,26 @@ remaining MFA/strong-auth states are still open.
   native bridge code.
 - Publish only as a prerelease until both platforms pass the documented matrix.
 
-**Status:** CI/CD infrastructure complete: immutable Action pins, Dart and
+**Status:** CI/CD infrastructure is in place: immutable Action pins, Dart and
 Pigeon quality gates, Android plugin unit tests, iOS plugin-target compilation,
 dependency review, targeted secret scanning, publish dry-run, weekly dependency
-updates, and tag-gated draft GitHub releases are configured. CI does not build
-or run the example app. The threat model, security-reporting path, migration
-policy, and initial API/integration documentation are complete. The
+updates, and tag-gated draft GitHub releases. CI does not build or run the
+example app. The threat model, security-reporting path, migration policy, and
+initial API/integration documentation are complete. The
 `0.1.0-dev.1` development preview is published on pub.dev with a matching
 public GitHub prerelease. The independent-team trial and live-tenant matrix
 remain open, so the full stage is not complete. Those open parity gates block a
 stable release; they are documented limitations rather than hidden blockers
 for the published development preview.
 
-## Stage 8 — Native SDK parity roadmap
+## Stage 8: Native SDK parity roadmap
 
-The Flutter API targets flow-level parity, not a one-to-one copy of every MSAL
-class and delegate. Native clients, delegate objects, refresh tokens, and
+The Flutter API models flows rather than copying every MSAL class and delegate.
+Native clients, delegate objects, refresh tokens, and
 continuation data remain private to the platform implementation. Experimental
 native APIs are not adopted until Microsoft marks them production-ready.
 
-### Milestone 8.1 — Validate the implemented core
+### Milestone 8.1: Validate the implemented core
 
 **Deliverables**
 
@@ -211,7 +211,7 @@ native APIs are not adopted until Microsoft marks them production-ready.
 - Tokens, credentials, one-time codes, and continuation data do not appear in
   logs, fixtures, screenshots, or persisted test output.
 
-### Milestone 8.2 — Harden the cross-platform contract
+### Milestone 8.2: Harden the cross-platform contract
 
 **Deliverables**
 
@@ -232,7 +232,7 @@ native APIs are not adopted until Microsoft marks them production-ready.
 - Lifecycle and concurrency tests cannot reuse a completed, detached, or
   otherwise stale continuation.
 
-### Milestone 8.3 — Multi-factor authentication
+### Milestone 8.3: Multi-factor authentication
 
 **Deliverables**
 
@@ -249,7 +249,7 @@ native APIs are not adopted until Microsoft marks them production-ready.
   states.
 - Live-tenant email and SMS MFA scenarios pass on both platforms.
 
-### Milestone 8.4 — Strong-auth method registration
+### Milestone 8.4: Strong-auth method registration
 
 **Deliverables**
 
@@ -265,7 +265,7 @@ native APIs are not adopted until Microsoft marks them production-ready.
 - Android and iOS produce the same Flutter-visible registration flow.
 - New-account and policy-triggered live-tenant registration scenarios pass.
 
-### Milestone 8.5 — Advanced authorization requests
+### Milestone 8.5: Advanced authorization requests
 
 **Deliverables**
 

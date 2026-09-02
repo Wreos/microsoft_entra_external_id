@@ -1,18 +1,18 @@
 # Contributing to Microsoft Entra External ID for Flutter
 
-Thanks for contributing. This project is an unofficial Flutter bridge to the
-official Microsoft Entra External ID Native Authentication SDKs. Flutter owns
-the UI; MSAL owns the authentication protocol and native token cache.
+This project is an unofficial Flutter bridge to the official Microsoft Entra
+External ID Native Authentication SDKs. Flutter owns the UI. MSAL owns the
+authentication protocol and native token cache.
 
-Contributions must preserve that boundary. Do not introduce a Dart OAuth
+Preserve that boundary in every contribution. Do not introduce a Dart OAuth
 implementation, an embedded WebView, browser-first MSAL, or refresh tokens in
 the Dart or Pigeon contracts.
 
 ## Before you start
 
 - Search existing issues and pull requests to avoid duplicate work.
-- Open an issue before investing in a large feature or behaviour change so the
-  approach can be discussed first.
+- Open an issue before starting a large feature or behaviour change so we can
+  discuss the approach first.
 - Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 - Report vulnerabilities privately as described in the
   [security policy](SECURITY.md), not in a public issue.
@@ -35,9 +35,9 @@ data, or personally identifiable information.
 
 ## Making a change
 
-Keep changes focused and update contract tests with behaviour changes. For
-changes to the Pigeon contract, edit `pigeons/native_auth_api.dart` and
-regenerate every platform channel together:
+Keep changes focused. If you change behaviour, update the contract tests. For a
+Pigeon contract change, edit `pigeons/native_auth_api.dart` and regenerate every
+platform channel together:
 
 ```sh
 dart run pigeon --input pigeons/native_auth_api.dart
@@ -60,19 +60,18 @@ flutter test
 (cd example && flutter test)
 ```
 
-For Android or iOS changes, run the relevant native and device tests when you
-have the required environment. For release-related changes, run
-`dart pub publish --dry-run` from a clean Git snapshot. CI validates the Dart
-plugin contract, Android plugin module, and iOS plugin target; it does not run
-the example application or live-tenant scenarios.
+For Android or iOS changes, run the relevant native and device tests when your
+environment allows it. For release-related changes, run `dart pub publish
+--dry-run` from a clean Git snapshot. CI validates the Dart plugin contract,
+Android plugin module, and iOS plugin target. It does not run the example app
+or live-tenant scenarios.
 
 ## Pull requests
 
-Use the pull-request template and explain the problem, the chosen solution,
-and how you tested it. Include documentation and changelog updates when they
-affect users. Keep generated code in sync and do not include unrelated
-formatting or refactors.
+Use the pull-request template to explain the problem, the chosen solution, and
+how you tested it. Update documentation and the changelog when users are
+affected. Keep generated code in sync, and leave unrelated formatting or
+refactors out of the change.
 
 By contributing, you agree that your contributions are licensed under this
 repository's [MIT License](LICENSE).
-
