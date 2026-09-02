@@ -1,6 +1,6 @@
 # Repository guidance
 
-## Product boundary
+## Overview
 
 `microsoft_entra_external_id` is an unofficial Flutter bridge to the official
 Microsoft Entra External ID Native Authentication SDKs. Flutter owns the UI;
