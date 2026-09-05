@@ -721,6 +721,8 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       code = "invalid_credentials"
     } else if let error = error as? SignUpStartError, error.isUserAlreadyExists {
       code = "user_already_exists"
+    } else if let error = error as? SignUpStartError, error.isInvalidPassword {
+      code = "invalid_password"
     } else if let error = error as? SignUpStartError, error.isInvalidUsername {
       code = "invalid_username"
     }

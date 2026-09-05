@@ -107,16 +107,17 @@ Home Screen without Flutter tooling. This confirms that the iOS device can run
 the plugin's signed Profile artifact. Authentication credentials were not
 entered during this launch.
 
-Stable release remains blocked on the other live iOS tenant checks: password
-sign-in/sign-up, required sign-up attributes, password reset, silent and
-forced refresh with a protected API scope, and explicit browser fallback
-including its redirect.
+The password provider was enabled temporarily in a separate test user flow on
+2026-09-05. A live iOS run then passed password sign-up with a required
+attribute, automatic sign-in, default-scope access-token retrieval and forced
+refresh, sign-out, password sign-in, password reset by Email OTP, and sign-in
+with the new password. The example application was returned to its original
+Email OTP user flow after the check. Test aliases, passwords, codes, and token
+values were kept out of the repository.
 
-The configured local test tenant currently exposes the `EmailOtpSignup`
-identity provider only. A live password sign-up attempt reached the tenant and
-returned the typed `SignUpStartError` for its unsupported password provider;
-it did not activate a browser fallback. Enable a password-capable provider in
-a separate test tenant before treating the password scenarios as validated.
+Stable release remains blocked on two live iOS tenant checks: silent and forced
+refresh with a protected API scope, and explicit browser fallback including its
+registered redirect.
 
 ## Earlier validation — 2026-09-01
 
