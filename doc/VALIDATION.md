@@ -2,12 +2,13 @@
 
 ## iOS release checks — 2026-09-05
 
-Checked commit `53f4f2b` with Flutter 3.47.2, Dart 3.13.2 and MSAL iOS
-2.15.0. The following checks passed locally:
+Checked release candidate `0.2.0-dev.3` with Flutter 3.47.2, Dart 3.13.2 and
+MSAL iOS 2.15.0. The following checks passed locally:
 
 - Formatting and analysis with fatal infos and warnings.
 - All 21 Dart plugin tests and 8 example widget tests.
-- Pigeon regeneration with no generated-channel changes.
+- Pigeon regeneration followed by formatting its Dart output, with no
+  generated-channel changes.
 - Swift plugin compilation for the iOS Simulator.
 - Full Runner and XCTest bundle compilation with an iOS 17 deployment target.
 - All 4 native XCTest cases on an iPhone 16 Pro simulator running iOS 18.6;
@@ -16,6 +17,11 @@ Checked commit `53f4f2b` with Flutter 3.47.2, Dart 3.13.2 and MSAL iOS
 - The Flutter integration test passed on the same simulator from the clean
   snapshot in a directory named `microsoft_entra_external_id`. It invokes
   `getNativeSdkStatus` through the real Flutter/Swift platform channel.
+- The configured Debug example built, installed, and launched on that
+  simulator. Its Email OTP, Password, Attributes, Password Reset, and More
+  screens rendered after native initialization; no `MSALErrorDomain -50000`
+  was reported.
+- All 8 Android plugin unit tests passed through the example's Gradle wrapper.
 - `dart pub publish --dry-run` from a clean `git archive HEAD` snapshot:
   zero warnings for `0.2.0-dev.3`.
 
