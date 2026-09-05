@@ -26,6 +26,9 @@ MSAL iOS 2.15.0. The following checks passed locally:
   scopes, requested a forced refresh, and signed out successfully. The test
   account, verification code, and tokens were supplied only at runtime and
   were not stored in the repository.
+- A separate live Email OTP sign-up passed with a runtime-only Gmail alias.
+  It confirmed the code, completed automatic sign-in, retrieved and force
+  refreshed an access token using the default OpenID scopes, then signed out.
 - The configured Debug example built, installed, and launched on that
   simulator. Its Email OTP, Password, Attributes, Password Reset, and More
   screens rendered after native initialization; no `MSALErrorDomain -50000`
@@ -101,10 +104,9 @@ the plugin's signed Profile artifact. Authentication credentials were not
 entered during this launch.
 
 Stable release remains blocked on the other live iOS tenant checks: password
-sign-in/sign-up, Email OTP sign-up and required attributes, password reset,
-token cache across process restart, silent and forced refresh with a protected
-API scope, sign-out persistence, and explicit browser fallback including its
-redirect.
+sign-in/sign-up, required sign-up attributes, password reset, token cache
+across process restart, silent and forced refresh with a protected API scope,
+sign-out persistence, and explicit browser fallback including its redirect.
 
 ## Earlier validation — 2026-09-01
 
