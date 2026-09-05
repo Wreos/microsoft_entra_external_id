@@ -2,7 +2,7 @@
 
 ## iOS release checks — 2026-09-05
 
-Checked release candidate `0.2.0-dev.3` with Flutter 3.47.2, Dart 3.13.2 and
+Checked release candidate `0.2.0-dev.4` with Flutter 3.47.2, Dart 3.13.2 and
 MSAL iOS 2.15.0. The following checks passed locally:
 
 - Formatting and analysis with fatal infos and warnings.
@@ -17,13 +17,17 @@ MSAL iOS 2.15.0. The following checks passed locally:
 - The Flutter integration test passed on the same simulator from the clean
   snapshot in a directory named `microsoft_entra_external_id`. It invokes
   `getNativeSdkStatus` through the real Flutter/Swift platform channel.
+- Its configured native-client smoke test also passed on that simulator with
+  local Entra configuration. It initializes the real MSAL client and fails if
+  initialization returns a typed native error, covering the prior
+  `MSALErrorDomain -50000` regression.
 - The configured Debug example built, installed, and launched on that
   simulator. Its Email OTP, Password, Attributes, Password Reset, and More
   screens rendered after native initialization; no `MSALErrorDomain -50000`
   was reported.
 - All 8 Android plugin unit tests passed through the example's Gradle wrapper.
 - `dart pub publish --dry-run` from a clean `git archive HEAD` snapshot:
-  zero warnings for `0.2.0-dev.3`.
+  zero warnings for `0.2.0-dev.4`.
 
 Xcode now discovers standard simulator test destinations, and the full
 Runner test build succeeds. This supersedes the simulator discovery and
@@ -67,6 +71,21 @@ xcodebuild -workspace Runner.xcworkspace -scheme Runner \
   -configuration Debug -destination 'platform=iOS Simulator,id=<simulator-id>' \
   -disableAutomaticPackageResolution -parallel-testing-enabled NO \
   test-without-building CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=17.0
+```
+
+Run the configured simulator smoke test from a clean checkout named
+`microsoft_entra_external_id`. The ignored `.env.local` supplies local values;
+the command does not print them:
+
+```sh
+set -a
+source example/.env.local
+set +a
+(cd example && flutter test \
+  --dart-define=ENTRA_CLIENT_ID="$ENTRA_CLIENT_ID" \
+  --dart-define=ENTRA_TENANT_SUBDOMAIN="$ENTRA_TENANT_SUBDOMAIN" \
+  --dart-define=ENTRA_REDIRECT_URI="$ENTRA_REDIRECT_URI_IOS" \
+  integration_test/plugin_integration_test.dart -d <simulator-id>)
 ```
 
 On 2026-09-05, the example was also built as a Profile application with a

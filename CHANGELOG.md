@@ -1,3 +1,8 @@
+## 0.2.0-dev.4
+
+- Add an opt-in simulator integration test for configured iOS native-client
+  initialization, including the MSAL internal-error regression path.
+
 ## 0.2.0-dev.3
 
 - Fix iOS MSAL initialization for broker-capable redirect URIs by registering
