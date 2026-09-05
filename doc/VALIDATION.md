@@ -112,6 +112,12 @@ sign-in/sign-up, required sign-up attributes, password reset, silent and
 forced refresh with a protected API scope, and explicit browser fallback
 including its redirect.
 
+The configured local test tenant currently exposes the `EmailOtpSignup`
+identity provider only. A live password sign-up attempt reached the tenant and
+returned the typed `SignUpStartError` for its unsupported password provider;
+it did not activate a browser fallback. Enable a password-capable provider in
+a separate test tenant before treating the password scenarios as validated.
+
 ## Earlier validation — 2026-09-01
 
 Reviewed on 2026-09-01. This report covers the repository bootstrap,
