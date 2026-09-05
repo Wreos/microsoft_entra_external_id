@@ -1,3 +1,8 @@
+## 0.2.0-dev.3
+
+- Fix iOS MSAL initialization for broker-capable redirect URIs by registering
+  the required `msauthv2` and `msauthv3` query schemes in the example app.
+
 ## 0.2.0-dev.2
 
 - Add explicit system-browser fallback through the native MSAL clients.

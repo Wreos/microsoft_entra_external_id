@@ -1,5 +1,83 @@
 # Validation report
 
+## iOS release checks — 2026-09-05
+
+Checked commit `53f4f2b` with Flutter 3.47.2, Dart 3.13.2 and MSAL iOS
+2.15.0. The following checks passed locally:
+
+- Formatting and analysis with fatal infos and warnings.
+- All 21 Dart plugin tests and 8 example widget tests.
+- Pigeon regeneration with no generated-channel changes.
+- Swift plugin compilation for the iOS Simulator.
+- Full Runner and XCTest bundle compilation with an iOS 17 deployment target.
+- All 4 native XCTest cases on an iPhone 16 Pro simulator running iOS 18.6;
+  no failures or skipped tests. These check SDK linkage and typed failures
+  before initialization or without a password continuation.
+- The Flutter integration test passed on the same simulator from the clean
+  snapshot in a directory named `microsoft_entra_external_id`. It invokes
+  `getNativeSdkStatus` through the real Flutter/Swift platform channel.
+- `dart pub publish --dry-run` from a clean `git archive HEAD` snapshot:
+  zero warnings for `0.2.0-dev.3`.
+
+Xcode now discovers standard simulator test destinations, and the full
+Runner test build succeeds. This supersedes the simulator discovery and
+asset-compiler limitations recorded below on September 1. The initial Flutter
+build stalled while Git read files in its separate MSAL checkout; direct
+Xcode builds used the workspace's already-resolved SwiftPM dependencies.
+Direct Xcode commands need `IPHONEOS_DEPLOYMENT_TARGET=17.0` because the
+ephemeral Flutter-generated package initially declares iOS 15.
+
+Running the Flutter integration test from the original checkout also exposed
+a SwiftPM package-identity conflict: Flutter's plugin-author integration adds
+`microsoft_entra_external_id`, while its generated dependency uses the checkout
+basename `oss-flutter-plugin-sdk-entra-id`. Xcode rejects these as duplicate
+targets with different package identities. Use a clean checkout whose directory
+is named `microsoft_entra_external_id` when validating the example through
+Flutter. This is separate from the successful direct Xcode tests above.
+
+The configured example subsequently built and launched on the simulator, but
+initialization displayed `MSALErrorDomain -50000`. The simulator app's signature
+contained empty entitlements despite the example's declared Keychain group.
+Ad-hoc signing with that group caused Simulator to reject launch
+(`FBSOpenApplicationServiceErrorDomain 1`, underlying spawn error 153).
+
+The same error was reproduced on a developer-signed iPhone. It was caused by
+the missing `msauthv2` and `msauthv3` entries in `LSApplicationQueriesSchemes`.
+MSAL validates these schemes when a broker-capable `msauth.<bundle-id>://auth`
+redirect URI is configured and reports the validation failure as error `-50000`.
+The example now declares both schemes. Its signed Profile artifact was rebuilt,
+installed, and launched on the iPhone after the fix. Native-auth SDK
+initialization then completed successfully on the physical device.
+
+Reproduce the native checks from `example/ios`:
+
+```sh
+xcodebuild -workspace Runner.xcworkspace -scheme Runner \
+  -configuration Debug -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -disableAutomaticPackageResolution build-for-testing \
+  CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=17.0
+xcodebuild -workspace Runner.xcworkspace -scheme Runner \
+  -configuration Debug -destination 'platform=iOS Simulator,id=<simulator-id>' \
+  -disableAutomaticPackageResolution -parallel-testing-enabled NO \
+  test-without-building CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=17.0
+```
+
+On 2026-09-05, the example was also built as a Profile application with a
+locally configured external tenant, signed by an Apple Development profile,
+installed on a physical iPhone 15 Pro, and launched successfully from the
+Home Screen without Flutter tooling. This confirms that the iOS device can run
+the plugin's signed Profile artifact. Authentication credentials were not
+entered during this launch.
+
+Stable release remains blocked on live iOS tenant validation: Email OTP and
+password sign-in/sign-up, required attributes, password reset, token cache
+across process restart, silent and forced refresh with a protected API scope,
+sign-out persistence, and explicit browser fallback including its redirect.
+No live authentication result is implied by the deterministic tests above.
+
+## Earlier validation — 2026-09-01
+
 Reviewed on 2026-09-01. This report covers the repository bootstrap,
 deterministic native password/Email OTP sign-in and sign-up, required
 attributes, password reset, token-management slices, and the existing live

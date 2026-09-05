@@ -1,6 +1,6 @@
 name: microsoft_entra_external_id
 description: "Flutter bridge to the official Microsoft Entra External ID Native Authentication SDKs."
-version: 0.2.0-dev.2
+version: 0.2.0-dev.3
 homepage: https://github.com/Wreos/microsoft_entra_external_id
 repository: https://github.com/Wreos/microsoft_entra_external_id
 issue_tracker: https://github.com/Wreos/microsoft_entra_external_id/issues
