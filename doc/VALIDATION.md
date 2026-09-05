@@ -31,6 +31,8 @@ MSAL iOS 2.15.0. The following checks passed locally:
   refreshed an access token using the default OpenID scopes, then signed out.
 - After a separate Email OTP sign-in, a new iOS app process initialized the
   plugin and found the signed-in account through the native MSAL cache.
+- A sign-out followed by a new iOS app process returned the signed-out state
+  from the native MSAL cache.
 - The configured Debug example built, installed, and launched on that
   simulator. Its Email OTP, Password, Attributes, Password Reset, and More
   screens rendered after native initialization; no `MSALErrorDomain -50000`
@@ -107,8 +109,8 @@ entered during this launch.
 
 Stable release remains blocked on the other live iOS tenant checks: password
 sign-in/sign-up, required sign-up attributes, password reset, silent and
-forced refresh with a protected API scope, sign-out persistence, and explicit
-browser fallback including its redirect.
+forced refresh with a protected API scope, and explicit browser fallback
+including its redirect.
 
 ## Earlier validation — 2026-09-01
 
