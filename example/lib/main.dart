@@ -268,12 +268,16 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
   );
 
   Future<void> _continueInBrowser() {
+    if (_scopes.isEmpty) {
+      setState(
+        () =>
+            _status = 'Configure ENTRA_API_SCOPE before using browser sign-in.',
+      );
+      return Future.value();
+    }
     final loginHint = _emailController.text.trim();
-    final scopes = _scopes.isEmpty
-        ? const ['openid', 'profile', 'email']
-        : _scopes;
     return _perform(
-      () => _plugin.signInWithBrowser(loginHint: loginHint, scopes: scopes),
+      () => _plugin.signInWithBrowser(loginHint: loginHint, scopes: _scopes),
       progress: 'Opening system browser...',
     );
   }
@@ -459,7 +463,9 @@ class _NativeAuthHomePageState extends State<NativeAuthHomePage> {
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
                       key: const Key('browserFallback'),
-                      onPressed: _busy ? null : _continueInBrowser,
+                      onPressed: _busy || _scopes.isEmpty
+                          ? null
+                          : _continueInBrowser,
                       icon: const Icon(Icons.open_in_browser),
                       label: const Text('Continue in system browser'),
                     ),
@@ -756,7 +762,9 @@ class _MoreScenario extends StatelessWidget {
           width: double.infinity,
           child: FilledButton.tonalIcon(
             key: const Key('browserFallbackDirect'),
-            onPressed: busy || !browserConfigured ? null : onContinueInBrowser,
+            onPressed: busy || !browserConfigured || !apiScopeConfigured
+                ? null
+                : onContinueInBrowser,
             icon: const Icon(Icons.open_in_browser),
             label: const Text('Sign in with system browser'),
           ),

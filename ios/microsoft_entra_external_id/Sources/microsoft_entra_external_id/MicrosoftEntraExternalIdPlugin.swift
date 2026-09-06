@@ -45,7 +45,9 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
     parameters: NativeAuthWebFallbackParametersMessage
   ) async throws -> NativeAuthResultMessage {
     guard let nativeAuth else { return notInitialized() }
-    guard let presentingViewController else {
+    guard let presentingViewController = await MainActor.run(body: {
+      currentPresentationViewController()
+    }) else {
       return failure(
         code: "view_controller_unavailable",
         message: "A foreground view controller is required for browser authentication."
@@ -91,6 +93,34 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
         )
       }
     }
+  }
+
+  @MainActor private func currentPresentationViewController() -> UIViewController? {
+    if let presentingViewController {
+      return topViewController(from: presentingViewController)
+    }
+    let rootViewController = UIApplication.shared.connectedScenes
+      .compactMap { $0 as? UIWindowScene }
+      .first { $0.activationState == .foregroundActive }?
+      .windows
+      .first { $0.isKeyWindow }?
+      .rootViewController
+    return rootViewController.map(topViewController(from:))
+  }
+
+  @MainActor private func topViewController(from viewController: UIViewController) -> UIViewController {
+    if let presented = viewController.presentedViewController {
+      return topViewController(from: presented)
+    }
+    if let navigation = viewController as? UINavigationController,
+      let visible = navigation.visibleViewController {
+      return topViewController(from: visible)
+    }
+    if let tab = viewController as? UITabBarController,
+      let selected = tab.selectedViewController {
+      return topViewController(from: selected)
+    }
+    return viewController
   }
 
   func getCurrentAccount() async throws -> NativeAuthResultMessage {

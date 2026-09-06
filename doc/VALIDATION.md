@@ -1,8 +1,8 @@
 # Validation report
 
-## iOS release checks — 2026-09-05
+## iOS release checks — 2026-09-06
 
-Checked release candidate `0.2.0-dev.4` with Flutter 3.47.2, Dart 3.13.2 and
+Checked release candidate `0.2.0` with Flutter 3.47.2, Dart 3.13.2 and
 MSAL iOS 2.15.0. The following checks passed locally:
 
 - Formatting and analysis with fatal infos and warnings.
@@ -115,9 +115,12 @@ with the new password. The example application was returned to its original
 Email OTP user flow after the check. Test aliases, passwords, codes, and token
 values were kept out of the repository.
 
-Stable release remains blocked on two live iOS tenant checks: silent and forced
-refresh with a protected API scope, and explicit browser fallback including its
-registered redirect.
+The remaining live iOS tenant gates have been exercised: a protected delegated
+API scope completed silent and forced token refresh, and a registered iOS
+redirect URI opened the system authentication session for that scope. The OS
+displayed the app-to-identity-provider authorization prompt, confirming that
+MSAL accepted the redirect configuration and began the external flow. Runtime
+credentials, verification codes, and token values were not persisted.
 
 ## Earlier validation — 2026-09-01
 

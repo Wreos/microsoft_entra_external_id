@@ -100,9 +100,9 @@ The [example][example] covers tenant prerequisites and run commands. Client ID
 and tenant subdomain are public configuration values. Never put a client secret
 in a mobile application, and do not log or persist passwords or returned tokens.
 
-## Preview status
+## Release status
 
-The current release is a development preview. Password and Email OTP sign-in,
+Password and Email OTP sign-in,
 password and Email OTP sign-up, required/custom attributes, password reset,
 token retrieval/refresh, cached-account lookup, sign-out, and explicit browser
 fallback are implemented on Android and iOS. MFA and strong-auth registration
@@ -121,7 +121,7 @@ final result = await entra.signIn('user@example.com');
 if (result case NativeAuthFailure(browserRequired: true)) {
   final browserResult = await entra.signInWithBrowser(
     loginHint: 'user@example.com',
-    scopes: const ['openid', 'profile', 'email'],
+    scopes: const ['api://<resource-app-id>/read'],
   );
 }
 ```
@@ -129,8 +129,9 @@ if (result case NativeAuthFailure(browserRequired: true)) {
 Register the platform redirect URI before using this method. On Android this
 also requires the MSAL browser callback activity/intent filter in the host
 application. On iOS, register `msauth.<bundle-id>://auth` and keep the MSAL
-keychain group enabled. The browser path uses the system browser, never an
-embedded WebView, and returns the same typed account and token result.
+keychain group enabled. Pass at least one delegated resource scope; MSAL adds
+the OpenID Connect scopes itself. The browser path uses the system browser,
+never an embedded WebView, and returns the same typed account and token result.
 
 SDK initialization and runtime errors return a normal `NativeAuthFailure`. They
 never silently switch authentication mechanisms.

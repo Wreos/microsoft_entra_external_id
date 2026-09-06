@@ -1,3 +1,15 @@
+## 0.2.0
+
+- Release the native Email OTP and password flows, sign-up attributes,
+  password reset, token retrieval and refresh, cache lookup, sign-out, and
+  explicit system-browser fallback on Android and iOS.
+- Require a delegated resource scope for system-browser fallback. MSAL adds
+  OpenID Connect scopes to interactive requests itself; an OIDC-only scope list
+  cannot authorize a resource request.
+- Resolve the iOS browser presentation controller from the active Flutter
+  scene so an attached engine can launch the system authentication session.
+- Map invalid iOS sign-up passwords to the public `invalid_password` failure.
+
 ## 0.2.0-dev.4
 
 - Add an opt-in simulator integration test for configured iOS native-client

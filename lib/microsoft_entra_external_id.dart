@@ -50,9 +50,13 @@ class MicrosoftEntraExternalId {
   /// Call this when a native operation returns [NativeAuthFailure] with
   /// [NativeAuthFailure.browserRequired] set to `true`. The native SDK keeps
   /// the resulting account and tokens in its normal MSAL cache.
+  ///
+  /// [scopes] must contain at least one delegated resource scope registered
+  /// for the application, such as `api://<resource-app-id>/read`. MSAL adds
+  /// its OpenID Connect scopes to an interactive request itself.
   Future<NativeAuthState> signInWithBrowser({
     String? loginHint,
-    List<String> scopes = const ['openid', 'profile', 'email'],
+    required List<String> scopes,
   }) => _platform.signInWithBrowser(
     loginHint: loginHint?.trim().isEmpty == true ? null : loginHint?.trim(),
     scopes: _normalizeScopes(scopes),

@@ -216,6 +216,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('browserFallbackDirect')), findsOneWidget);
     expect(find.text('Protected API scope'), findsOneWidget);
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('browserFallbackDirect')))
+          .onPressed,
+      isNull,
+    );
   });
 
   testWidgets('runs the email OTP sign-in UI flow', (tester) async {

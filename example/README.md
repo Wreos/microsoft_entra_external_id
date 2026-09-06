@@ -63,8 +63,10 @@ flutter run \
   --dart-define=ENTRA_API_SCOPE="$ENTRA_API_SCOPE"
 ```
 
-`ENTRA_API_SCOPE` is optional. Without it, MSAL requests its default OIDC
-scopes. `ENTRA_REDIRECT_URI` is required for the system-browser fallback action.
+`ENTRA_API_SCOPE` is optional for native authentication, but required for the
+system-browser fallback action. It must be a delegated scope exposed by a
+resource application; MSAL adds the OpenID Connect scopes itself.
+`ENTRA_REDIRECT_URI` is also required for the system-browser fallback action.
 Choose **Email OTP** or **Password** explicitly. Do not use an empty password to
 select an authentication mechanism. The example renders required attributes
 dynamically and reuses its code and password continuation screens for password
