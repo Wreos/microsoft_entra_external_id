@@ -1,167 +1,46 @@
-# Microsoft Entra External ID Native Authentication for Flutter
+# Microsoft Entra External ID for Flutter
 
-An unofficial Flutter plugin that connects Microsoft Entra External ID Native
-Authentication to the official MSAL SDKs for Android and iOS.
+An unofficial Flutter bridge to the official Microsoft Entra External ID Native
+Authentication SDKs. Flutter owns the UI. MSAL owns the protocol and native
+token cache.
 
-Your Flutter app owns the sign-up and sign-in UI. MSAL runs the authentication
-protocol and keeps the native token cache.
+## Supported flows
 
-## Example
+- Email OTP and password sign-in and sign-up.
+- Required sign-up attributes and password reset.
+- Cached-account lookup, access and ID tokens, silent and forced refresh, and
+  sign-out.
+- Explicit system-browser fallback.
 
-<p>
-  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-email-otp.png" width="155" alt="Email OTP">
-  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-password.png" width="155" alt="Email and password">
-  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-attributes.png" width="155" alt="Sign-up attributes">
-  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-password-reset.png" width="155" alt="Password reset">
-  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-more.png" width="155" alt="Browser fallback and API setup">
-</p>
-
-## What's included
-
-- Android and iOS plugin implementations in Kotlin and Swift.
-- A typed Pigeon channel between Dart and the native platforms.
-- Exact MSAL Native Authentication SDK versions for Android and iOS.
-- Swift Package Manager as the only iOS dependency integration path.
-- Native initialization, cached-account lookup, password and Email OTP sign-in
-  and sign-up, tenant-defined required/custom attributes, self-service password
-  reset, code/password/attribute submission, token acquisition and refresh,
-  automatic sign-in after sign-up or reset, and sign-out.
-- A Flutter example that owns the full authentication UI.
-
-Read [INTENT.md][intent] for scope and [the implementation plan][plan] for the
-current status and roadmap. [The stack guide][stack] lists the verified
-toolchain and deployment floors.
+MFA, strong-auth registration, and process-recreation recovery are not
+implemented.
 
 ## Requirements
 
-- Flutter 3.47 or newer and Dart 3.13.2 or newer;
-- Android API 24 or newer, with a Java 17 build JDK;
-- iOS 17 or newer and a current Xcode toolchain.
+- Flutter 3.47+ and Dart 3.13.2+.
+- Android API 24+ with Java 17.
+- iOS 17+.
 
-## Scope
+The package supports Microsoft Entra External ID external tenants. It does not
+support workforce Entra ID, Azure AD B2C compatibility, embedded WebViews, or a
+Dart OAuth implementation.
 
-This plugin supports **external tenants** in Microsoft Entra External ID. It
-does not support workforce Entra ID, legacy Azure AD B2C compatibility, or
-browser-only MSAL flows.
+## Start here
 
-The host Flutter app owns the UI. The plugin exposes native authentication as
-typed states and continuations.
+1. Follow the [tutorial](doc/tutorial.md) to configure a tenant and initialize
+   the client.
+2. Use the [how-to guides](doc/how-to.md) for OTP, attributes, reset, tokens,
+   and browser fallback.
+3. Consult the [reference](doc/reference.md) for methods, states, and platform
+   requirements.
+4. Read the [architecture and security notes](doc/explanation.md) before
+   handling credentials or tokens.
 
-On Android, the plugin uses Microsoft's `INativeAuthPublicClientApplication`,
-created with `createNativeAuthPublicClientApplication(...)` as documented in
-the official [Native Authentication tutorial][native-auth-android].
-Browser-based MSAL and embedded WebViews are outside the core authentication
-path.
+The [example](example/README.md) is a runnable Flutter app with separate Email
+OTP, Password, Attributes, Password Reset, and browser-fallback screens.
 
-On iOS, it uses `MSALNativeAuthPublicClientApplication` and its typed delegate
-states, following Microsoft's [iOS Native Authentication quickstart][native-auth-ios].
+## Contributing and security
 
-## Quick start
-
-```dart
-import 'package:microsoft_entra_external_id/microsoft_entra_external_id.dart';
-
-final entra = MicrosoftEntraExternalId();
-await entra.initialize(
-  const NativeAuthConfiguration(
-    clientId: 'application-client-id',
-    tenantSubdomain: 'contoso',
-    redirectUri: 'msauth.com.example.app://auth',
-  ),
-);
-
-final state = await entra.signInWithPassword(
-  'user@example.com',
-  password,
-  scopes: const ['api://your-api-client-id/access_as_user'],
-);
-if (state case final NativeAuthSignedIn signedIn) {
-  final accessToken = signedIn.token.accessToken;
-  final idToken = signedIn.idToken;
-  // Send the access token only to its intended HTTPS API.
-}
-```
-
-For a username-first UI, call `signIn(username)` without a password, then handle
-`NativeAuthPasswordRequired` with `submitPassword(...)`. Email OTP uses
-`NativeAuthCodeRequired` and `submitCode(...)`. Use `signUpWithPassword(...)`
-for password sign-up. If the tenant requests profile data, render the returned
-`NativeAuthAttributesRequired` fields and call `submitAttributes(...)`.
-Password recovery begins with `resetPassword(...)` and uses the same typed code
-and password states with `operation == NativeAuthOperation.passwordReset`.
-
-MSAL owns the refresh token in its protected native cache. The plugin never
-returns it to Dart. Acquire a cached token or let MSAL refresh an expired token
-with `getAccessToken(scopes: ...)`; set `forceRefresh: true` only when the host
-application explicitly needs to bypass a still-valid cached access token.
-
-The [example][example] covers tenant prerequisites and run commands. Client ID
-and tenant subdomain are public configuration values. Never put a client secret
-in a mobile application, and do not log or persist passwords or returned tokens.
-
-## Release status
-
-Password and Email OTP sign-in,
-password and Email OTP sign-up, required/custom attributes, password reset,
-token retrieval/refresh, cached-account lookup, sign-out, and explicit browser
-fallback are implemented on Android and iOS. MFA and strong-auth registration
-are not implemented yet.
-
-## Browser fallback
-
-When MSAL requires a flow to leave native authentication, the plugin returns
-`NativeAuthFailure(browserRequired: true)`. This follows Microsoft's
-[native-authentication web-fallback guidance][native-auth-web-fallback]. The
-host can restart the flow in the system browser with the official MSAL client:
-
-```dart
-final result = await entra.signIn('user@example.com');
-if (result case NativeAuthFailure(browserRequired: true)) {
-  final browserResult = await entra.signInWithBrowser(
-    loginHint: 'user@example.com',
-    scopes: const ['api://<resource-app-id>/read'],
-  );
-}
-```
-
-Register the platform redirect URI before using this method. On Android this
-also requires the MSAL browser callback activity/intent filter in the host
-application. On iOS, register `msauth.<bundle-id>://auth` and keep the MSAL
-keychain group enabled. Pass at least one delegated resource scope; MSAL adds
-the OpenID Connect scopes itself. The browser path uses the system browser,
-never an embedded WebView, and returns the same typed account and token result.
-
-SDK initialization and runtime errors return a normal `NativeAuthFailure`. They
-never silently switch authentication mechanisms.
-
-## Contributing
-
-Read [CONTRIBUTING.md][contributing] before opening an issue or pull request.
-It covers the native-authentication boundary, local setup, Pigeon regeneration,
-and required validation. All project spaces follow the [Code of Conduct][code-of-conduct].
-
-Pull requests run formatting, analysis, Dart tests, generated Pigeon drift
-checks, Android plugin tests, iOS plugin-target compilation, dependency review,
-and a pub.dev dry run. CI does not run the example app or live-tenant flows.
-Those remain release checks. Third-party GitHub Actions are pinned to commit
-SHAs and updated through Dependabot.
-
-A version tag matching `version` in `pubspec.yaml` reruns CI and creates a
-draft GitHub release. Publishing to pub.dev remains a manual release step.
-
-Security reports and the custom-UI trust boundary are documented in
-[SECURITY.md][security] and the [security model][security-model]. API changes
-before `1.0.0` follow the [migration policy][migration].
-
-[native-auth-android]: https://learn.microsoft.com/en-us/entra/identity-platform/tutorial-native-authentication-prepare-android-app
-[native-auth-ios]: https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-native-authentication-ios-sign-in
-[native-auth-web-fallback]: https://learn.microsoft.com/en-us/entra/identity-platform/concept-native-authentication-web-fallback
-[example]: https://github.com/Wreos/microsoft_entra_external_id/tree/main/example
-[intent]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/INTENT.md
-[plan]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/IMPLEMENTATION_PLAN.md
-[stack]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/STACK.md
-[security]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/SECURITY.md
-[security-model]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/SECURITY_MODEL.md
-[migration]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/MIGRATION.md
-[contributing]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/CONTRIBUTING.md
-[code-of-conduct]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/CODE_OF_CONDUCT.md
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Report
+vulnerabilities under [SECURITY.md](SECURITY.md). API changes before `1.0.0`
+follow the [migration policy](doc/MIGRATION.md).
