@@ -4,6 +4,10 @@ An unofficial Flutter bridge to the official Microsoft Entra External ID Native
 Authentication SDKs. Flutter owns the UI. MSAL owns the protocol and native
 token cache.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Wreos/microsoft_entra_external_id/main/doc/assets/example-email-otp.png" width="240" alt="Email OTP sign-in example">
+</p>
+
 ## Supported flows
 
 - Email OTP and password sign-in and sign-up.
