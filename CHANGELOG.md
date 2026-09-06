@@ -1,3 +1,7 @@
+## 0.2.2
+
+- Clarify that the package is an independent, unofficial project.
+
 ## 0.2.1
 
 - Reorganize the public documentation into a tutorial, how-to guides,
