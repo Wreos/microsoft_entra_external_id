@@ -33,12 +33,11 @@ instance.
 - A native SDK error returns a typed failure. Only the host can start browser
   fallback after `browserRequired`.
 
-## Validation
+## Release checks
 
 Every change needs formatting, fatal analysis, Dart tests, and the relevant
 native tests. Release changes also need a clean-snapshot `dart pub publish
---dry-run` and live device checks for the flow being changed. See
-[VALIDATION.md](VALIDATION.md) for the recorded matrix.
+--dry-run` and live device checks for the flow being changed.
 
 ## Remaining work
 

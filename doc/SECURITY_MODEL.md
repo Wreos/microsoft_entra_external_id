@@ -54,5 +54,4 @@ changing the authentication surface.
 ## Known limitations
 
 MFA, strong-auth registration, and process-recreation recovery are not
-implemented. See `doc/VALIDATION.md` for recorded live coverage. A host must
-still validate its tenant policy and target devices.
+implemented. A host must validate its tenant policy and target devices.

@@ -43,8 +43,7 @@ Manager only.
 
 Release work requires formatting, fatal analysis, Dart and native tests, a
 runnable example, a clean-snapshot `dart pub publish --dry-run`, and live
-platform checks appropriate to the changed flow. The current evidence is in
-[doc/VALIDATION.md](doc/VALIDATION.md).
+platform checks appropriate to the changed flow.
 
 ## Roadmap
 

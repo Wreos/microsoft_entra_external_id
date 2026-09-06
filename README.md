@@ -29,9 +29,8 @@ protocol and keeps the native token cache.
 - A Flutter example that owns the full authentication UI.
 
 Read [INTENT.md][intent] for scope and [the implementation plan][plan] for the
-delivery sequence. [The stack guide][stack] lists the verified toolchain and
-deployment floors. [The validation report][validation] records the evidence and
-environment limits.
+current status and roadmap. [The stack guide][stack] lists the verified
+toolchain and deployment floors.
 
 ## Requirements
 
@@ -106,8 +105,7 @@ Password and Email OTP sign-in,
 password and Email OTP sign-up, required/custom attributes, password reset,
 token retrieval/refresh, cached-account lookup, sign-out, and explicit browser
 fallback are implemented on Android and iOS. MFA and strong-auth registration
-are not implemented yet. The [validation report][validation] tracks platform
-and tenant coverage.
+are not implemented yet.
 
 ## Browser fallback
 
@@ -162,7 +160,6 @@ before `1.0.0` follow the [migration policy][migration].
 [intent]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/INTENT.md
 [plan]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/IMPLEMENTATION_PLAN.md
 [stack]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/STACK.md
-[validation]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/VALIDATION.md
 [security]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/SECURITY.md
 [security-model]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/SECURITY_MODEL.md
 [migration]: https://github.com/Wreos/microsoft_entra_external_id/blob/main/doc/MIGRATION.md
