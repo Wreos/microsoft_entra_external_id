@@ -142,17 +142,14 @@ Read [CONTRIBUTING.md][contributing] before opening an issue or pull request.
 It covers the native-authentication boundary, local setup, Pigeon regeneration,
 and required validation. All project spaces follow the [Code of Conduct][code-of-conduct].
 
-Pull requests run package-scoped Dart formatting, analysis and unit tests,
-generated Pigeon drift detection, Android plugin unit tests, iOS plugin-target
-compilation, dependency review, and a pub.dev dry run. CI does not build or run
-the example application. Device and live-tenant scenarios are manual release
-gates. All third-party GitHub Actions are pinned to immutable commit SHAs and
-updated through Dependabot.
+Pull requests run formatting, analysis, Dart tests, generated Pigeon drift
+checks, Android plugin tests, iOS plugin-target compilation, dependency review,
+and a pub.dev dry run. CI does not run the example app or live-tenant flows.
+Those remain release checks. Third-party GitHub Actions are pinned to commit
+SHAs and updated through Dependabot.
 
-A version tag that exactly matches `version` in `pubspec.yaml`, such as
-`v0.1.0-dev.1`, reruns the full CI workflow and creates a draft GitHub
-prerelease. Publishing that draft or publishing to pub.dev remains a manual
-release decision until the live-tenant validation matrix is complete.
+A version tag matching `version` in `pubspec.yaml` reruns CI and creates a
+draft GitHub release. Publishing to pub.dev remains a manual release step.
 
 Security reports and the custom-UI trust boundary are documented in
 [SECURITY.md][security] and the [security model][security-model]. API changes

@@ -1,15 +1,14 @@
 # Microsoft Entra External ID native-authentication example
 
-This Flutter app implements the native-authentication flows in Microsoft's
-samples. Material navigation separates them into five reproducible scenarios:
+This Flutter app demonstrates the native-authentication flows in five screens:
 
-- **Email OTP** for passwordless sign-in and sign-up;
-- **Password** for direct password sign-in and sign-up;
-- **Attributes** for Email OTP sign-up with tenant-required profile data;
-- **Password Reset** for the complete recovery continuation;
-- **More** for explicit system-browser fallback and API configuration status.
+- Email OTP for passwordless sign-in and sign-up.
+- Password for direct password sign-in and sign-up.
+- Attributes for Email OTP sign-up with tenant-required profile data.
+- Password Reset for the recovery continuation.
+- More for system-browser fallback and API configuration status.
 
-The app can:
+It supports:
 
 - restore a cached account;
 - sign in with email/username and password or Email OTP;

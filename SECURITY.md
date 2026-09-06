@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-The latest published `0.x` development release receives security fixes on a
-best-effort basis. Older development versions are unsupported. This package does
-not have a stable `1.0.0` API or a production-readiness guarantee.
+The latest published `0.x` release receives security fixes on a best-effort
+basis. Older versions are unsupported. The public API may still change before
+`1.0.0`; review the changelog before upgrading.
 
 ## Reporting a vulnerability
 

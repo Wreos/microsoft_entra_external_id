@@ -54,8 +54,5 @@ changing the authentication surface.
 ## Known limitations
 
 MFA, strong-auth registration, and process-recreation recovery are not
-implemented yet. Password sign-up,
-required attributes, and password reset are implemented but still require
-live-tenant validation on both platforms. See `doc/VALIDATION.md` for the
-matrix; do not infer production readiness from compilation or deterministic
-tests alone.
+implemented. See `doc/VALIDATION.md` for recorded live coverage. A host must
+still validate its tenant policy and target devices.

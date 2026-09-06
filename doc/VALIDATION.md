@@ -1,77 +1,45 @@
-# Validation report
+# Validation
 
-## iOS release checks — 2026-09-06
+## Release 0.2.0, 2026-09-06
 
-Checked release candidate `0.2.0` with Flutter 3.47.2, Dart 3.13.2 and
-MSAL iOS 2.15.0. The following checks passed locally:
+Toolchain: Flutter 3.47.2, Dart 3.13.2, Pigeon 28.0.0, MSAL Android 8.4.2, and
+MSAL iOS 2.15.0.
 
-- Formatting and analysis with fatal infos and warnings.
-- All 21 Dart plugin tests and 8 example widget tests.
-- Pigeon regeneration followed by formatting its Dart output, with no
-  generated-channel changes.
-- Swift plugin compilation for the iOS Simulator.
-- Full Runner and XCTest bundle compilation with an iOS 17 deployment target.
-- All 4 native XCTest cases on an iPhone 16 Pro simulator running iOS 18.6;
-  no failures or skipped tests. These check SDK linkage and typed failures
-  before initialization or without a password continuation.
-- The Flutter integration test passed on the same simulator from the clean
-  snapshot in a directory named `microsoft_entra_external_id`. It invokes
-  `getNativeSdkStatus` through the real Flutter/Swift platform channel.
-- Its configured native-client smoke test also passed on that simulator with
-  local Entra configuration. It initializes the real MSAL client and fails if
-  initialization returns a typed native error, covering the prior
-  `MSALErrorDomain -50000` regression.
-- A live Email OTP sign-in passed on that simulator against a local Entra
-  external tenant. The run retrieved an access token using the default OpenID
-  scopes, requested a forced refresh, and signed out successfully. The test
-  account, verification code, and tokens were supplied only at runtime and
-  were not stored in the repository.
-- A separate live Email OTP sign-up passed with a runtime-only Gmail alias.
-  It confirmed the code, completed automatic sign-in, retrieved and force
-  refreshed an access token using the default OpenID scopes, then signed out.
-- After a separate Email OTP sign-in, a new iOS app process initialized the
-  plugin and found the signed-in account through the native MSAL cache.
-- A sign-out followed by a new iOS app process returned the signed-out state
-  from the native MSAL cache.
-- The configured Debug example built, installed, and launched on that
-  simulator. Its Email OTP, Password, Attributes, Password Reset, and More
-  screens rendered after native initialization; no `MSALErrorDomain -50000`
-  was reported.
-- All 8 Android plugin unit tests passed through the example's Gradle wrapper.
-- `dart pub publish --dry-run` from a clean `git archive HEAD` snapshot:
-  zero warnings for `0.2.0-dev.4`.
+Passed locally:
 
-Xcode now discovers standard simulator test destinations, and the full
-Runner test build succeeds. This supersedes the simulator discovery and
-asset-compiler limitations recorded below on September 1. The initial Flutter
-build stalled while Git read files in its separate MSAL checkout; direct
-Xcode builds used the workspace's already-resolved SwiftPM dependencies.
-Direct Xcode commands need `IPHONEOS_DEPLOYMENT_TARGET=17.0` because the
-ephemeral Flutter-generated package initially declares iOS 15.
+- `dart format --output=none --set-exit-if-changed` for the package and example.
+- `flutter analyze --fatal-infos --fatal-warnings`.
+- 21 package tests and 8 example widget tests.
+- Pigeon regeneration with no generated-file drift.
+- Android plugin unit tests (8 tests).
+- iOS Swift plugin, Runner, and XCTest bundle compilation for iOS 17.
+- Four iOS XCTest cases on an iPhone 16 Pro simulator running iOS 18.6.
+- Flutter integration and configured native-client smoke tests on the same
+  simulator.
+- `dart pub publish --dry-run` from a clean `git archive HEAD` snapshot with
+  zero warnings.
 
-Running the Flutter integration test from the original checkout also exposed
-a SwiftPM package-identity conflict: Flutter's plugin-author integration adds
-`microsoft_entra_external_id`, while its generated dependency uses the checkout
-basename `oss-flutter-plugin-sdk-entra-id`. Xcode rejects these as duplicate
-targets with different package identities. Use a clean checkout whose directory
-is named `microsoft_entra_external_id` when validating the example through
-Flutter. This is separate from the successful direct Xcode tests above.
+Live iOS checks against a local External ID tenant passed for Email OTP sign-in
+and sign-up, password sign-up and sign-in, required attributes, password reset,
+cached-account persistence, sign-out persistence, protected-scope token refresh,
+and the registered system-browser redirect. The browser check reached the iOS
+app-to-identity-provider authorization prompt. Credentials, codes, tenant test
+accounts, and token values were supplied only at runtime and were not stored in
+the repository.
 
-The configured example subsequently built and launched on the simulator, but
-initialization displayed `MSALErrorDomain -50000`. The simulator app's signature
-contained empty entitlements despite the example's declared Keychain group.
-Ad-hoc signing with that group caused Simulator to reject launch
-(`FBSOpenApplicationServiceErrorDomain 1`, underlying spawn error 153).
+The example also built, installed, and launched as a signed Profile app on a
+physical iPhone 15 Pro from the Home Screen.
 
-The same error was reproduced on a developer-signed iPhone. It was caused by
-the missing `msauthv2` and `msauthv3` entries in `LSApplicationQueriesSchemes`.
-MSAL validates these schemes when a broker-capable `msauth.<bundle-id>://auth`
-redirect URI is configured and reports the validation failure as error `-50000`.
-The example now declares both schemes. Its signed Profile artifact was rebuilt,
-installed, and launched on the iPhone after the fix. Native-auth SDK
-initialization then completed successfully on the physical device.
+## Limits
 
-Reproduce the native checks from `example/ios`:
+The package does not yet implement MFA, strong-auth registration, or
+process-recreation recovery. Browser callback completion and advanced tenant
+policies still need broader live coverage. Passing compilation or deterministic
+tests does not replace a host application's own tenant and device validation.
+
+## Reproduce the iOS build
+
+Run from `example/ios`:
 
 ```sh
 xcodebuild -workspace Runner.xcworkspace -scheme Runner \
@@ -79,184 +47,9 @@ xcodebuild -workspace Runner.xcworkspace -scheme Runner \
   -destination 'generic/platform=iOS Simulator' \
   -disableAutomaticPackageResolution build-for-testing \
   CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=17.0
-xcodebuild -workspace Runner.xcworkspace -scheme Runner \
-  -configuration Debug -destination 'platform=iOS Simulator,id=<simulator-id>' \
-  -disableAutomaticPackageResolution -parallel-testing-enabled NO \
-  test-without-building CODE_SIGNING_ALLOWED=NO IPHONEOS_DEPLOYMENT_TARGET=17.0
 ```
 
-Run the configured simulator smoke test from a clean checkout named
-`microsoft_entra_external_id`. The ignored `.env.local` supplies local values;
-the command does not print them:
-
-```sh
-set -a
-source example/.env.local
-set +a
-(cd example && flutter test \
-  --dart-define=ENTRA_CLIENT_ID="$ENTRA_CLIENT_ID" \
-  --dart-define=ENTRA_TENANT_SUBDOMAIN="$ENTRA_TENANT_SUBDOMAIN" \
-  --dart-define=ENTRA_REDIRECT_URI="$ENTRA_REDIRECT_URI_IOS" \
-  integration_test/plugin_integration_test.dart -d <simulator-id>)
-```
-
-On 2026-09-05, the example was also built as a Profile application with a
-locally configured external tenant, signed by an Apple Development profile,
-installed on a physical iPhone 15 Pro, and launched successfully from the
-Home Screen without Flutter tooling. This confirms that the iOS device can run
-the plugin's signed Profile artifact. Authentication credentials were not
-entered during this launch.
-
-The password provider was enabled temporarily in a separate test user flow on
-2026-09-05. A live iOS run then passed password sign-up with a required
-attribute, automatic sign-in, default-scope access-token retrieval and forced
-refresh, sign-out, password sign-in, password reset by Email OTP, and sign-in
-with the new password. The example application was returned to its original
-Email OTP user flow after the check. Test aliases, passwords, codes, and token
-values were kept out of the repository.
-
-The remaining live iOS tenant gates have been exercised: a protected delegated
-API scope completed silent and forced token refresh, and a registered iOS
-redirect URI opened the system authentication session for that scope. The OS
-displayed the app-to-identity-provider authorization prompt, confirming that
-MSAL accepted the redirect configuration and began the external flow. Runtime
-credentials, verification codes, and token values were not persisted.
-
-## Earlier validation — 2026-09-01
-
-Reviewed on 2026-09-01. This report covers the repository bootstrap,
-deterministic native password/Email OTP sign-in and sign-up, required
-attributes, password reset, token-management slices, and the existing live
-Android Email OTP tenant test. It does not establish production readiness or
-live-tenant validation of the new password, attribute, and reset flows.
-
-## Environment
-
-- Flutter `3.47.2` stable, framework revision `d3b14c8769`.
-- Dart `3.13.2`; Pigeon `28.0.0`.
-- Android Gradle Plugin `9.1.0`; Gradle `9.3.1`; Java `17.0.18`.
-- Xcode `26.6`; Swift Package Manager only.
-- MSAL Android `8.4.2`; MSAL iOS `2.15.0`.
-
-## Implemented slice
-
-- Official native-authentication clients on both platforms:
-  `INativeAuthPublicClientApplication` on Android and
-  `MSALNativeAuthPublicClientApplication` on iOS.
-- Initialization from application client ID and external-tenant subdomain.
-- Cached-account lookup.
-- Password and Email OTP sign-in and sign-up.
-- Direct password submission and server-driven password continuations for
-  sign-in, sign-up, and password reset.
-- Required/custom sign-up attributes with native metadata and invalid-value
-  feedback.
-- Self-service password reset with Email OTP, new password, and automatic
-  native sign-in.
-- Verification-code submission and resend.
-- Automatic sign-in after sign-up.
-- ID token and API-scoped access-token results with scopes and expiry.
-- Silent MSAL cache retrieval, automatic expired-token refresh, and forced
-  access-token refresh without exposing refresh tokens to Dart.
-- Sign-out and typed browser-required/error states.
-- Explicit system-browser fallback through the native MSAL interactive token
-  APIs on Android and iOS.
-- Custom Flutter example UI with no embedded WebView.
-- SwiftPM-only iOS integration and MSAL keychain entitlement in the example.
-
-## Deterministic gates
-
-The implementation snapshot passed:
-
-```text
-Pigeon regeneration + generated-output drift check   PASS
-dart format                                           PASS
-flutter analyze                                      PASS
-flutter test                                        PASS (21 tests)
-flutter test (example)                              PASS (8 widget tests)
-Android plugin testDebugUnitTest                    PASS (8 native tests)
-Android device integration_test native bridge       PASS (1 test)
-Android API 35 install/start/native initialization   PASS
-Swift Package manifest resolution                    PASS
-iOS Swift plugin compilation                         PASS
-iOS Simulator install/start/native SDK invocation    PASS
-dart pub publish --dry-run (clean Git snapshot)      PASS
-repository secret/placeholder scan                   PASS
-GitHub CI (main and v0.1.0-dev.1 tag)                PASS
-GitHub CI (main and v0.2.0-dev.1 tag)                PASS
-pub.dev 0.1.0-dev.1 publication and indexing         PASS
-pub.dev 0.2.0-dev.1 publication and indexing         PASS
-```
-
-The published package,
-[`microsoft_entra_external_id 0.1.0-dev.1`](https://pub.dev/packages/microsoft_entra_external_id),
-and its matching
-[`v0.1.0-dev.1` GitHub prerelease](https://github.com/Wreos/microsoft_entra_external_id/releases/tag/v0.1.0-dev.1)
-come from the same validated commit.
-
-The feature snapshot is published as
-[`microsoft_entra_external_id 0.2.0-dev.1`](https://pub.dev/packages/microsoft_entra_external_id/versions/0.2.0-dev.1),
-with the matching
-[`v0.2.0-dev.1` GitHub prerelease](https://github.com/Wreos/microsoft_entra_external_id/releases/tag/v0.2.0-dev.1).
-Both are development previews; the new password sign-up, required-attribute,
-and password-reset paths still need live-tenant checks before a stable release.
-
-The iOS build resolves `MSAL` `2.15.0` from the official Microsoft repository
-and compiles the password delegates and token-cache adapter for both simulator
-architectures. The local full Runner build currently stops later in Apple's
-asset compiler because the installed iOS 26.5 CoreSimulator cannot create its
-requested device. CocoaPods is not part of the package or validation graph.
-
-The Android aggregate `testDebugUnitTest` task also executes tests shipped
-inside Flutter's `integration_test` module. Three of those upstream Mockito
-tests fail on this Java/AGP environment before the plugin task completes. The
-scoped plugin native test task passes, and the complete example APK builds.
-This upstream test-runner incompatibility is not hidden as a plugin pass.
-
-The example was also installed and started on a Pixel Tablet Android 15
-emulator. With syntactically valid non-production identifiers, the official
-MSAL native client initialized, cached-account lookup returned signed-out, and
-the custom Flutter sign-in/sign-up screen rendered without an embedded WebView.
-This verifies device-level bridge wiring without relying on tenant
-configuration.
-
-The scenario-catalog example was installed on a physical Motorola device with
-the live tenant configuration. Its Email OTP, Password, Attributes, Password
-Reset, and More destinations all rendered and switched independently through
-Material navigation. Widget tests exercise every destination without displaying
-raw access-token or ID-token values.
-
-## Environment and live-test boundaries
-
-The iOS app was ad-hoc signed with the example's MSAL keychain entitlement,
-installed, and started on an isolated iPhone 17 Pro simulator. With
-syntactically valid non-production identifiers, the official MSAL native client
-initialized, cached-account lookup returned signed-out, and the Flutter
-sign-in/sign-up screen rendered. This verifies the iOS runtime bridge and native
-SDK invocation, not a live-tenant authentication result. Xcode does
-not discover devices from this isolated device set as test destinations, so
-XCTest execution remains a manual release gate even though the XCTest bundle
-compiles for both simulator architectures.
-
-The complete Email OTP sign-up, automatic sign-in, sign-out, and subsequent
-sign-in flow passed against a real Microsoft Entra External ID tenant on a
-physical Android device. Tenant identifiers and the test account are not stored
-in the repository. The equivalent iOS live-tenant flow remains required before
-claiming cross-platform parity.
-
-Password sign-in also passed on the physical Android device. The live flow
-returned an ID token and an access token, completed an explicit forced access
-token acquisition, signed out, and remained signed out after the app process
-was restarted. The run used the SDK's default OpenID scopes; a custom API scope
-was not configured and remains an Android/iOS live-test gate. Password sign-in
-and token retrieval still require the equivalent iOS live-tenant test.
-
-The deterministic gates cover password sign-up, required attributes, password
-reset, explicit unsupported MFA/strong-auth mapping, and browser-required
-result mapping. The new password/attribute/reset flows still need live-tenant
-checks on a physical Android device and iOS before a stable release. The
-browser fallback bridge is
-compile-tested on both platforms but still needs a live tenant with a
-registered redirect URI and callback configuration. A browser-required MSAL
-result is exposed to Dart; the host must explicitly call
-`signInWithBrowser(...)` instead of relying on an automatic switch after an SDK
-error or fallback signal.
+For a configured simulator smoke test, use a clean checkout named
+`microsoft_entra_external_id`. Store local values in ignored
+`example/.env.local` and pass them through `--dart-define`; do not print or
+commit them.

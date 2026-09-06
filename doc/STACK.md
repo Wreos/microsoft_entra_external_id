@@ -1,8 +1,8 @@
 # Toolchain and dependency baseline
 
-These versions were checked on 2026-08-30. Pins are exact where build
-reproducibility depends on them. Revalidate the Microsoft SDK pins when each
-native integration stage starts.
+These versions were checked for the 0.2.0 release. Pins are exact where build
+reproducibility depends on them. Revalidate the Microsoft SDK pins before a
+native update.
 
 ## Flutter and Dart
 
@@ -13,7 +13,6 @@ native integration stage starts.
 
 The repository follows Flutter's current plugin template and its
 [built-in Kotlin migration for plugin authors][flutter-built-in-kotlin].
-The minimum avoids a second Android build setup before the public API exists.
 
 ## Android
 
@@ -28,11 +27,10 @@ The minimum avoids a second Android build setup before the public API exists.
 - MSAL Android: exact `8.4.2`.
 
 `android.newDsl=false` is retained because Flutter 3.47 still casts AGP 9's
-extension to `AbstractAppExtension`; removing the switch fails the example
-build. KGP 2.4 remains version-declared so Flutter's dependency validator sees
-a supported Kotlin baseline, while AGP built-in Kotlin performs compilation and
-the deprecated `kotlin-android` plugin is not applied. Re-test and remove both
-compatibility declarations once Flutter and AGP expose one converged baseline.
+extension to `AbstractAppExtension`; removing it fails the example build. KGP
+2.4 remains version-declared for Flutter's dependency validator, while AGP
+built-in Kotlin performs compilation. Re-test both declarations when Flutter
+and AGP converge on one setup.
 
 ## iOS
 
@@ -43,8 +41,7 @@ compatibility declarations once Flutter and AGP expose one converged baseline.
 - MSAL iOS: exact `2.15.0`.
 
 iOS 17 is the minimum because the official MSAL iOS `2.15.0` Swift package
-requires it. A lower plugin target would require an older MSAL release and add
-dependency debt before the first native flow exists.
+requires it.
 
 ## Dependency policy
 
@@ -52,8 +49,7 @@ dependency debt before the first native flow exists.
   such as `8.+`.
 - Both native SDKs are linked and `getNativeSdkStatus()` reports the exact pin
   compiled into each platform implementation.
-- Add automated dependency-update pull requests with CI before the first
-  prerelease.
+- Use automated dependency-update pull requests with CI.
 - A native version bump must pass package CI, followed by separate device and
   live External ID smoke tests before release.
 
