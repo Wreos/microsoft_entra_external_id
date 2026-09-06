@@ -1,3 +1,9 @@
+## 0.2.1
+
+- Reorganize the public documentation into a tutorial, how-to guides,
+  reference, and an architecture explanation.
+- Keep one Email OTP screenshot in the README and remove unused example images.
+
 ## 0.2.0
 
 - Release the native Email OTP and password flows, sign-up attributes,
