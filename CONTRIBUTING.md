@@ -48,6 +48,9 @@ Do not hand-edit generated Dart, Kotlin, or Swift channel files. Pin native
 MSAL versions exactly, preserve Swift Package Manager as the iOS dependency
 path, and keep Android API 24+, Java 17, and iOS 17+ compatibility.
 
+See the [dependency update review](doc/dependency-updates.md) for upstream
+compatibility notes and the native dependency update workflow.
+
 ## Validate before opening a pull request
 
 Run the package checks from the repository root:

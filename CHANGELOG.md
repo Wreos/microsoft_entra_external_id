@@ -1,3 +1,15 @@
+## 0.2.3
+
+- Update the development and CI Flutter SDK to stable 3.47.7 (Dart 3.13.5).
+- Update pinned MSAL SDKs to Android 8.5.0 and iOS 2.16.0 while keeping the
+  existing native-authentication API and platform minimums.
+- Update Pigeon to 29.0.8 and regenerate Dart, Kotlin, and Swift channels together.
+- Update Android build/test dependencies and the example's Dart dependencies.
+- Add weekly Dependabot coverage for the Android plugin module, including MSAL.
+  SwiftPM dependency updates remain enabled.
+- Avoid capturing the iOS plugin instance in the browser SDK's Sendable callback.
+- Add an iOS native-client initialization regression test.
+
 ## 0.2.2
 
 - Clarify that the package is an independent, unofficial project.

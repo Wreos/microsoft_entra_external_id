@@ -38,8 +38,11 @@ updates:
       - dependencies
       - dart
 
+  # Scan both the plugin's MSAL declaration and the example host toolchain.
   - package-ecosystem: gradle
-    directory: /example/android
+    directories:
+      - /android
+      - /example/android
     schedule:
       interval: weekly
       day: monday
@@ -51,7 +54,8 @@ updates:
     groups:
       android-toolchain:
         patterns:
-          - '*'
+          - '*gradle*'
+          - 'org.jetbrains.kotlin:*'
 
   - package-ecosystem: swift
     directory: /ios/microsoft_entra_external_id

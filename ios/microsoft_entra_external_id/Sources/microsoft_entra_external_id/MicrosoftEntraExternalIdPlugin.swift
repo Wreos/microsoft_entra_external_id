@@ -16,7 +16,7 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
   }
 
   func getNativeSdkStatus() throws -> NativeSdkStatusMessage {
-    NativeSdkStatusMessage(platform: .ios, linked: true, sdkVersion: "2.15.0")
+    NativeSdkStatusMessage(platform: .ios, linked: true, sdkVersion: "2.16.0")
   }
 
   func initialize(
@@ -70,9 +70,10 @@ public class MicrosoftEntraExternalIdPlugin: NSObject, FlutterPlugin, NativeAuth
       nativeAuth.acquireToken(with: tokenParameters) { result, error in
         guard let result else {
           continuation.resume(
-            returning: self.failure(
-              code: "browser_auth_failed",
-              message: error?.localizedDescription ?? "Browser authentication failed."
+            returning: NativeAuthResultMessage(
+              type: .error,
+              errorCode: "browser_auth_failed",
+              errorMessage: error?.localizedDescription ?? "Browser authentication failed."
             )
           )
           return
