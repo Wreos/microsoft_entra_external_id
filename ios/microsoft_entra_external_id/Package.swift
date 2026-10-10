@@ -15,7 +15,7 @@ let package = Package(
         .package(name: "FlutterFramework", path: "../FlutterFramework"),
         .package(
             url: "https://github.com/AzureAD/microsoft-authentication-library-for-objc",
-            exact: "2.15.0"
+            exact: "2.16.0"
         )
     ],
     targets: [

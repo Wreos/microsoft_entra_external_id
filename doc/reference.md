@@ -44,8 +44,8 @@ become invalid after completion, plugin detachment, or process termination.
 
 | Platform | Native client | Requirement |
 | --- | --- | --- |
-| Android | `INativeAuthPublicClientApplication` | API 24+, Java 17, MSAL 8.4.2. |
-| iOS | `MSALNativeAuthPublicClientApplication` | iOS 17+, Swift Package Manager, MSAL 2.15.0. |
+| Android | `INativeAuthPublicClientApplication` | API 24+, Java 17, MSAL 8.5.0. |
+| iOS | `MSALNativeAuthPublicClientApplication` | iOS 17+, Swift Package Manager, MSAL 2.16.0. |
 
 Generated channels come from `pigeons/native_auth_api.dart`. Do not edit the
 generated Dart, Kotlin, or Swift files by hand.

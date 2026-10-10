@@ -4,13 +4,27 @@ import XCTest
 @testable import microsoft_entra_external_id
 
 class RunnerTests: XCTestCase {
+  func testInitializeCreatesNativeClientWithPublicConfiguration() async throws {
+    let plugin = MicrosoftEntraExternalIdPlugin()
+    let configuration = NativeAuthConfigurationMessage(
+      clientId: "00000000-0000-0000-0000-000000000000",
+      tenantSubdomain: "contoso",
+      redirectUri: "msauth.io.github.wreos.microsoftEntraExternalIdExample://auth"
+    )
+
+    let result = try await plugin.initialize(configuration: configuration)
+
+    XCTAssertEqual(result.type, .initialized, result.errorMessage ?? "Initialization failed")
+    XCTAssertNil(result.errorCode)
+  }
+
   func testNativeSdkStatusReportsLinkedIOSSDK() throws {
     let plugin = MicrosoftEntraExternalIdPlugin()
     let status = try plugin.getNativeSdkStatus()
 
     XCTAssertEqual(status.platform, .ios)
     XCTAssertTrue(status.linked)
-    XCTAssertEqual(status.sdkVersion, "2.15.0")
+    XCTAssertEqual(status.sdkVersion, "2.16.0")
   }
 
   func testCurrentAccountBeforeInitializationReturnsTypedFailure() async throws {

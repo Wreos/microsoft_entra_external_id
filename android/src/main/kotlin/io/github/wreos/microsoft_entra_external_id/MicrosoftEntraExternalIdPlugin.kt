@@ -760,6 +760,6 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, ActivityAware, NativeAuthH
         takeIf { it.isNotEmpty() }?.toUserAttributes()
 
     private companion object {
-        const val MSAL_VERSION = "8.4.2"
+        const val MSAL_VERSION = "8.5.0"
     }
 }
