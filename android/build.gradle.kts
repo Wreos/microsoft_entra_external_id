@@ -76,7 +76,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.microsoft.identity.client:msal:8.5.0")
+    implementation("com.microsoft.identity.client:msal:8.6.0")
     testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

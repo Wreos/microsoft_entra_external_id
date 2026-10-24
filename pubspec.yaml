@@ -1,6 +1,6 @@
 name: microsoft_entra_external_id
 description: "Unofficial Flutter bridge for Microsoft Entra External ID native authentication."
-version: 0.2.3
+version: 0.2.4
 homepage: https://github.com/Wreos/microsoft_entra_external_id
 repository: https://github.com/Wreos/microsoft_entra_external_id
 issue_tracker: https://github.com/Wreos/microsoft_entra_external_id/issues
@@ -25,7 +25,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   # Pinned because generated channel code must stay in sync across languages.
-  pigeon: 29.0.8
+  pigeon: 29.0.11
 
 flutter:
   plugin:

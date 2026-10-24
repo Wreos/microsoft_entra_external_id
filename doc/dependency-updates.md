@@ -1,5 +1,46 @@
 # Dependency update review
 
+## Review on 2026-10-24
+
+| Dependency | Previous | Updated | Compatibility review |
+| --- | --- | --- | --- |
+| MSAL Android | 8.5.0 | 8.6.0 | Updates common to 25.0.0 and fixes MsalArgumentException field mapping. Adds upstream Native Auth V2 sign-up; this plugin continues using its existing native-auth APIs. Keep the exact pin and SDK status/test expectation aligned. |
+| Pigeon | 29.0.8 | 29.0.11 | Changes focus on optional FFI/JNI generation. Regenerating the method-channel Dart, Kotlin, and Swift files changes only the generator version header. |
+| Gradle | 9.8.1 | 9.8.2 | Patch update within 9.8; keep Java 17 and the existing AGP DSL compatibility settings. |
+| actions/setup-java | 6.0.1 | 6.1.0 | Keep the Java 17 configuration and pin the action by commit SHA. |
+| gradle/actions/setup-gradle | 6.3.0 | 6.4.0 | Keep the configured Gradle version and pin the action by commit SHA. |
+
+MSAL iOS 2.16.0, AGP 9.4.1, Kotlin 2.4.21, Mockito 5.24.0, JUnit
+6.1.3, meta 1.19.0, flutter_lints 6.0.0, and cupertino_icons 2.0.0 remain
+current stable releases at review time. Flutter SDK-pinned transitive packages
+remain under SDK control. The example lockfile refreshes compatible dependencies.
+
+Sources: [MSAL Android 8.6.0](https://github.com/AzureAD/microsoft-authentication-library-for-android/releases/tag/v8.6.0),
+[Pigeon changelog](https://pub.dev/packages/pigeon/changelog),
+[Gradle 9.8.2](https://docs.gradle.org/9.8.2/release-notes.html),
+[setup-java 6.1.0](https://github.com/actions/setup-java/releases/tag/v6.1.0),
+[Gradle actions 6.4.0](https://github.com/gradle/actions/releases/tag/v6.4.0).
+
+Validation on Flutter 3.47.7 / Dart 3.13.5:
+
+- Formatting and fatal analyzer checks passed.
+- Package tests: 21 passed; example widget tests: 8 passed.
+- Android plugin native tests on Java 17: 8 passed; example debug APK built.
+- Pigeon regeneration is reproducible across all three languages.
+- Publish dry-run from a clean Git snapshot: 0 warnings.
+- Native SDK status integration test on the temporary Android API 36 emulator: passed.
+- Example app launched on a temporary Android API 36 emulator; hot reload
+  succeeded and the Dart/Flutter tooling reported no runtime errors.
+- iOS plugin target compiled for arm64 and x86_64 simulators.
+- iOS Runner simulator build passed with `CODE_SIGNING_ALLOWED=NO` and
+  `COMPILATION_CACHE_CAS_PATH=/tmp/entra-update-xcode-cache`. The default local
+  cache location on the external disk fails; no SDK or repository workaround
+  was committed.
+
+Live tenant authentication is a separate check.
+
+## Previous review on 2026-10-10
+
 Reviewed on 2026-10-10 against stable upstream releases. Native MSAL and Pigeon
 versions remain exact pins. The package still requires Flutter 3.47+, Dart
 3.13.2+, Android API 24+, Java 17, and iOS 17+.
@@ -72,6 +113,7 @@ Live tenant authentication remains a separate release check.
 - Dart and Flutter plugin analyzer and fatal CLI analysis: no issues.
 - Formatting: unchanged after formatting all package and example Dart sources.
 - Package tests: 21 passed; example widget tests: 8 passed.
+- Android plugin native tests on Java 17: 8 passed; example debug APK built.
 - Pigeon regeneration: identical Dart, Kotlin, and Swift outputs on a second run.
 - Android plugin native tests with Java 17: 8 passed.
 - All Dart checks and Android native tests also passed after upgrading Flutter
