@@ -1,3 +1,9 @@
+## Unreleased
+
+- Update MSAL Android to 8.6.0; keep the native SDK status version in sync.
+- Update Pigeon to 29.0.11 and regenerate all platform channels.
+- Update Gradle to 9.8.2 and refresh CI setup actions.
+
 ## 0.2.3
 
 - Update the development and CI Flutter SDK to stable 3.47.7 (Dart 3.13.5).

@@ -13,7 +13,7 @@ internal class MicrosoftEntraExternalIdPluginTest {
 
         assertEquals(NativePlatformMessage.ANDROID, status.platform)
         assertTrue(status.linked)
-        assertEquals("8.5.0", status.sdkVersion)
+        assertEquals("8.6.0", status.sdkVersion)
     }
 
     @Test
