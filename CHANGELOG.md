@@ -1,4 +1,4 @@
-## Unreleased
+## 0.2.4
 
 - Update MSAL Android to 8.6.0; keep the native SDK status version in sync.
 - Update Pigeon to 29.0.11 and regenerate all platform channels.
