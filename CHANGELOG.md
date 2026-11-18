@@ -1,3 +1,16 @@
+## 0.2.5
+
+- Update Android MSAL to 8.7.0 and report the linked SDK version in
+  `getNativeSdkStatus()`. [#22](https://github.com/Wreos/microsoft_entra_external_id/pull/22)
+- Update Pigeon to 30.0.2 and regenerate the Dart, Kotlin, and Swift channels.
+  [#20](https://github.com/Wreos/microsoft_entra_external_id/pull/20)
+- Update the example to Gradle 9.9.1 and Android Gradle Plugin 9.5.1, and
+  refresh the CI setup actions. [#21](https://github.com/Wreos/microsoft_entra_external_id/pull/21),
+  [#19](https://github.com/Wreos/microsoft_entra_external_id/pull/19),
+  [#18](https://github.com/Wreos/microsoft_entra_external_id/pull/18)
+
+The public Dart API and platform minimums remain the same.
+
 ## 0.2.4
 
 - Update MSAL Android to 8.6.0; keep the native SDK status version in sync.
