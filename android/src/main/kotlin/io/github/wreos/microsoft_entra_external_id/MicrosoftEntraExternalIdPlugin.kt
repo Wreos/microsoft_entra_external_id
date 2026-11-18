@@ -73,7 +73,7 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, ActivityAware, NativeAuthH
         NativeSdkStatusMessage(
             platform = NativePlatformMessage.ANDROID,
             linked = true,
-            sdkVersion = MSAL_VERSION,
+            sdkVersion = PublicClientApplication.getSdkVersion(),
         )
 
     override suspend fun initialize(configuration: NativeAuthConfigurationMessage): NativeAuthResultMessage {
@@ -758,8 +758,4 @@ class MicrosoftEntraExternalIdPlugin : FlutterPlugin, ActivityAware, NativeAuthH
 
     private fun List<NativeAuthAttributeMessage>.toUserAttributesOrNull(): UserAttributes? =
         takeIf { it.isNotEmpty() }?.toUserAttributes()
-
-    private companion object {
-        const val MSAL_VERSION = "8.6.0"
-    }
 }

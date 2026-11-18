@@ -1,5 +1,6 @@
 package io.github.wreos.microsoft_entra_external_id
 
+import com.microsoft.identity.client.PublicClientApplication
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -13,7 +14,7 @@ internal class MicrosoftEntraExternalIdPluginTest {
 
         assertEquals(NativePlatformMessage.ANDROID, status.platform)
         assertTrue(status.linked)
-        assertEquals("8.6.0", status.sdkVersion)
+        assertEquals(PublicClientApplication.getSdkVersion(), status.sdkVersion)
     }
 
     @Test
